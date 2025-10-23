@@ -199,7 +199,7 @@ export async function GET() {
         if (installDate) leadData.installDate = parseDate(installDate)
 
         // Preserve archived status if document exists
-        const existingDoc = existingDocsMap.get(docId)
+        const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string } | undefined
         if (existingDoc) {
           // Preserve archived fields from existing document
           if (existingDoc.archived !== undefined) {
