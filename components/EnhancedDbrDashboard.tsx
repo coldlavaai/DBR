@@ -81,11 +81,19 @@ export default function EnhancedDbrDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-coldlava">
-        <div className="flex items-center justify-center h-screen">
+      <div className="min-h-screen relative">
+        <div className="animated-bg" />
+        <div className="geometric-patterns" />
+        <div className="flex items-center justify-center h-screen relative z-10">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-coldlava-cyan border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-white text-lg font-semibold">Loading analytics...</p>
+            <div className="relative">
+              <div className="w-20 h-20 border-4 border-coldlava-cyan border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-20 h-20 border-4 border-coldlava-pink border-b-transparent rounded-full animate-spin mx-auto absolute top-0 left-1/2 -translate-x-1/2" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+            </div>
+            <p className="text-white text-xl font-bold mt-6 bg-gradient-to-r from-coldlava-cyan via-coldlava-pink to-coldlava-purple bg-clip-text text-transparent animate-pulse">
+              Loading Cold Lava Analytics...
+            </p>
+            <p className="text-gray-400 text-sm mt-2 font-inter">Preparing your premium dashboard</p>
           </div>
         </div>
       </div>
@@ -95,7 +103,11 @@ export default function EnhancedDbrDashboard() {
   if (!stats) return null
 
   return (
-    <div className="min-h-screen bg-gradient-coldlava">
+    <div className="min-h-screen relative">
+      {/* Cold Lava Animated Background */}
+      <div className="animated-bg" />
+      <div className="geometric-patterns" />
+
       {/* Header */}
       <DashboardHeader
         lastUpdated={stats.lastUpdated}

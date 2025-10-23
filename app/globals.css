@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary-bg: #0a0a33;
+  --secondary-bg: #1a1a4a;
+  --accent-blue: #02bbd4;
+  --accent-yellow: #ffe14d;
+  --accent-pink: #ff44cc;
+  --accent-purple: #8a2be2;
+  --accent-gold: #ffd700;
+  --text-light: #ffffff;
+  --text-gray: #cccccc;
+  --text-muted: #aaaaaa;
+  --gradient-main: linear-gradient(135deg, #0a0a33 0%, #1a1a4a 50%, #2a2a5a 100%);
+  --luxury-gradient: linear-gradient(45deg, #02bbd4, #ffe14d, #ff44cc, #8a2be2, #ffd700);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -12,12 +27,90 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Cold Lava Animated Background */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -5;
+  background: var(--gradient-main);
+  animation: backgroundShift 30s ease-in-out infinite;
+}
+
+.animated-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(2, 187, 212, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 68, 204, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(255, 225, 77, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 60% 20%, rgba(138, 43, 226, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 30% 90%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+  animation: backgroundMove 40s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  33% { filter: hue-rotate(60deg) brightness(1.1); }
+  66% { filter: hue-rotate(-30deg) brightness(0.95); }
+}
+
+@keyframes backgroundMove {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(-30px, -20px) rotate(2deg) scale(1.02); }
+  50% { transform: translate(20px, 30px) rotate(-2deg) scale(0.98); }
+  75% { transform: translate(-20px, 20px) rotate(1deg) scale(1.01); }
+}
+
+/* Geometric Patterns Overlay */
+.geometric-patterns {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -4;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(2, 187, 212, 0.1) 35px, rgba(2, 187, 212, 0.1) 70px),
+    repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255, 68, 204, 0.1) 35px, rgba(255, 68, 204, 0.1) 70px);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 10, 51, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #02bbd4, #ff44cc);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #02bbd4, #8a2be2);
+}
+
+/* Inter font for secondary text */
+.font-inter {
+  font-family: var(--font-inter), 'Inter', sans-serif;
 }
