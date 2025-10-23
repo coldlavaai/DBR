@@ -7,6 +7,8 @@ import MetricCard from './MetricCard'
 import ConversionFunnel from './ConversionFunnel'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
+import HotLeadsSection from './HotLeadsSection'
+import RecentActivity from './RecentActivity'
 
 interface EnhancedStats {
   totalLeads: number
@@ -30,6 +32,8 @@ export default function EnhancedDbrDashboard() {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [hotLeads, setHotLeads] = useState<any[]>([])
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
 
   const fetchStats = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -39,10 +43,33 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/dbr-analytics?timeRange=${timeRange}`)
-      if (!response.ok) throw new Error('Failed to fetch analytics data')
-      const data = await response.json()
+      const [statsResponse, hotLeadsResponse] = await Promise.all([
+        fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
+        fetch('/api/hot-leads')
+      ])
+
+      if (!statsResponse.ok) throw new Error('Failed to fetch analytics data')
+      const data = await statsResponse.json()
       setStats(data)
+
+      if (hotLeadsResponse.ok) {
+        const hotData = await hotLeadsResponse.json()
+        setHotLeads(hotData.leads || [])
+
+        // Generate recent activity from hot leads
+        const activities = hotData.leads
+          .filter((lead: any) => lead.replyReceived)
+          .slice(0, 5)
+          .map((lead: any) => ({
+            id: lead._id,
+            type: 'reply' as const,
+            leadName: `${lead.firstName} ${lead.secondName}`,
+            message: lead.latestLeadReply || 'No message preview',
+            timestamp: lead.replyReceived,
+            sentiment: lead.leadSentiment
+          }))
+        setRecentActivity(activities)
+      }
     } catch (error) {
       console.error('Error fetching DBR stats:', error)
     } finally {
@@ -199,10 +226,13 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
-        {/* Conversion Funnel & Additional Metrics */}
+        {/* HOT LEADS SECTION - Prominent & Interactive */}
+        <HotLeadsSection leads={hotLeads} />
+
+        {/* Recent Activity & Additional Metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            {stats.funnelData && <ConversionFunnel data={stats.funnelData} />}
+            <RecentActivity activities={recentActivity} />
           </div>
 
           <div className="space-y-6">
@@ -311,6 +341,9 @@ export default function EnhancedDbrDashboard() {
             ))}
           </div>
         </div>
+
+        {/* Conversion Funnel - Moved to Bottom */}
+        {stats.funnelData && <ConversionFunnel data={stats.funnelData} />}
       </div>
 
       {/* Leads Modal */}
