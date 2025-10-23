@@ -19,7 +19,7 @@
  */
 
 // UPDATE THIS WITH YOUR DEPLOYMENT URL
-const WEBHOOK_URL = 'https://YOUR-DEPLOYMENT-URL.vercel.app/api/webhook/dbr-update'
+const WEBHOOK_URL = 'https://greenstar-dbr-dashboard.vercel.app/api/webhook/dbr-update'
 
 // Column mapping (based on your sheet structure)
 const COLUMNS = {

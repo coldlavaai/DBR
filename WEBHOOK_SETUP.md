@@ -16,14 +16,14 @@ Google Sheet → Apps Script Trigger → Webhook API → Sanity CMS → Dashboar
 
 ## Setup Steps
 
-### Step 1: Deploy to Vercel (if not already deployed)
+### Step 1: Deployment URL ✅
 
-```bash
-cd ~/Documents/greenstar-solar-redesign
-vercel --prod
+**Your DBR Dashboard is already deployed at:**
+```
+https://greenstar-dbr-dashboard.vercel.app
 ```
 
-Note your deployment URL (e.g., `https://greenstarwebsiteupgrade.vercel.app`)
+Use this URL for the webhook configuration below.
 
 ### Step 2: Configure Google Apps Script
 
@@ -38,14 +38,11 @@ Note your deployment URL (e.g., `https://greenstarwebsiteupgrade.vercel.app`)
    - Delete any existing code in the editor
    - Copy the entire contents of `scripts/google-apps-script-webhook.js`
    - Paste into the editor
-   - **IMPORTANT**: Update line 20 with your Vercel URL:
+   - **IMPORTANT**: The webhook URL is already set to:
      ```javascript
-     const WEBHOOK_URL = 'https://YOUR-DEPLOYMENT-URL.vercel.app/api/webhook/dbr-update'
+     const WEBHOOK_URL = 'https://greenstar-dbr-dashboard.vercel.app/api/webhook/dbr-update'
      ```
-     Replace with your actual URL, e.g.:
-     ```javascript
-     const WEBHOOK_URL = 'https://greenstarwebsiteupgrade.vercel.app/api/webhook/dbr-update'
-     ```
+     This is the correct production URL - no changes needed!
 
 4. **Save the Script**
    - Click the disk icon or press `Ctrl+S` (Windows) / `Cmd+S` (Mac)
@@ -100,7 +97,7 @@ Note your deployment URL (e.g., `https://greenstarwebsiteupgrade.vercel.app`)
 #### Option C: Test Webhook Endpoint Directly
 
 ```bash
-curl -X POST https://YOUR-DEPLOYMENT-URL.vercel.app/api/webhook/dbr-update \
+curl -X POST https://greenstar-dbr-dashboard.vercel.app/api/webhook/dbr-update \
   -H "Content-Type: application/json" \
   -d '{
     "phoneNumber": "447909225284",
@@ -226,7 +223,7 @@ Both methods work together - use whichever fits your workflow!
 4. Monitor the dashboard for real-time updates
 5. Share the dashboard URL with your team
 
-**Dashboard URL**: `https://YOUR-DEPLOYMENT-URL.vercel.app/dbr-analytics`
+**Dashboard URL**: `https://greenstar-dbr-dashboard.vercel.app/dbr-analytics`
 
 ---
 
