@@ -3,6 +3,8 @@ import { createClient } from '@sanity/client'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+export const revalidate = 0
 
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,

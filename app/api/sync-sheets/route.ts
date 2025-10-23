@@ -4,6 +4,8 @@ import { google } from 'googleapis'
 
 // Force this route to be dynamic (don't pre-render at build time)
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+export const revalidate = 0
 
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
