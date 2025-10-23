@@ -223,7 +223,15 @@ export const dbrLead = defineType({
       replyReceived: 'replyReceived',
       enquiryDate: 'enquiryDate',
     },
-    prepare({ firstName, secondName, phoneNumber, contactStatus, leadSentiment, replyReceived, enquiryDate }) {
+    prepare({ firstName, secondName, phoneNumber, contactStatus, leadSentiment, replyReceived, enquiryDate }: {
+      firstName: string;
+      secondName: string;
+      phoneNumber: string;
+      contactStatus: string;
+      leadSentiment: string;
+      replyReceived: string;
+      enquiryDate: string;
+    }) {
       // Status emoji mapping
       const statusEmoji = {
         'HOT': '🔥',
