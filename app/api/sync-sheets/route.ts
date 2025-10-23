@@ -105,12 +105,17 @@ export async function GET() {
     const rows = response.data.values || []
     console.log(`📊 Found ${rows.length} leads in Google Sheet`)
 
-    let created = 0
-    let updated = 0
+    let processed = 0
     let errors = 0
 
-    // Process each row
-    for (const row of rows) {
+    // Batch process rows for better performance
+    const BATCH_SIZE = 100
+
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE)
+      const operations = []
+
+      for (const row of batch) {
       // Extract all fields outside try block for error logging
       const contactStatus = row[0]
       const firstName = row[1]
@@ -185,16 +190,8 @@ export async function GET() {
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
 
-        // Check if document exists
-        const existing = await sanityClient.getDocument(docId).catch(() => null)
-
-        if (existing) {
-          await sanityClient.patch(docId).set(leadData).commit()
-          updated++
-        } else {
-          await sanityClient.create({ ...leadData, _id: docId })
-          created++
-        }
+        // Use createOrReplace for single API call (no need to check existence)
+        operations.push({ ...leadData, _id: docId })
       } catch (error) {
         console.error('Error processing lead:', phoneNumber, error)
         if (errors < 5) { // Log first 5 errors in detail
@@ -205,7 +202,20 @@ export async function GET() {
       }
     }
 
-    console.log(`✅ Sync complete: ${created} created, ${updated} updated, ${errors} errors`)
+      // Process batch in parallel
+      try {
+        await Promise.all(
+          operations.map(doc => sanityClient.createOrReplace(doc))
+        )
+        processed += operations.length
+        console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1} complete: ${operations.length} leads processed`)
+      } catch (batchError) {
+        console.error('Batch processing error:', batchError)
+        errors += operations.length
+      }
+    }
+
+    console.log(`✅ Sync complete: ${processed} processed, ${errors} errors`)
 
     // Store the sync timestamp in Sanity for "last updated" display
     const syncTimestamp = new Date().toISOString()
@@ -215,8 +225,7 @@ export async function GET() {
         _type: 'syncMetadata',
         lastSyncTimestamp: syncTimestamp,
         lastSyncStats: {
-          created,
-          updated,
+          processed,
           errors,
           total: rows.length
         }
@@ -227,11 +236,11 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      created,
-      updated,
+      processed,
       errors,
       total: rows.length,
-      timestamp: syncTimestamp
+      timestamp: syncTimestamp,
+      message: `Synced ${processed} leads in batches of ${100}`
     })
   } catch (error) {
     console.error('Sync error:', error)
