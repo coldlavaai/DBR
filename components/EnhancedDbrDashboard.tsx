@@ -83,13 +83,13 @@ export default function EnhancedDbrDashboard() {
     fetchStats()
   }, [fetchStats])
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh every 2 minutes (matches cron interval)
   useEffect(() => {
     if (!autoRefresh) return
 
     const interval = setInterval(() => {
       fetchStats(true)
-    }, 30000)
+    }, 120000)
 
     return () => clearInterval(interval)
   }, [autoRefresh, fetchStats])
