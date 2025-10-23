@@ -84,6 +84,36 @@ function parseDate(dateStr: string | undefined): string | null {
   }
 }
 
+function normalizePhoneNumber(phoneNumber: string): string {
+  if (!phoneNumber) return phoneNumber
+
+  // Remove all whitespace and non-numeric characters except +
+  let cleaned = phoneNumber.replace(/[^\d+]/g, '')
+
+  // If it already starts with +, return as-is
+  if (cleaned.startsWith('+')) {
+    return cleaned
+  }
+
+  // If it starts with 44, add the + prefix
+  if (cleaned.startsWith('44')) {
+    return '+' + cleaned
+  }
+
+  // If it starts with 0 (UK local format), replace 0 with +44
+  if (cleaned.startsWith('0')) {
+    return '+44' + cleaned.substring(1)
+  }
+
+  // If it's just digits and doesn't match above, assume UK and add +44
+  if (cleaned.match(/^\d{10,11}$/)) {
+    return '+44' + cleaned
+  }
+
+  // Default: add +44 prefix
+  return '+44' + cleaned
+}
+
 export async function GET() {
   try {
     console.log('🔄 Starting Google Sheets → Sanity sync...')
@@ -159,11 +189,13 @@ export async function GET() {
           continue // Skip rows without required fields
         }
 
-        const docId = `dbr-${phoneNumber.replace(/\D/g, '')}`
+        // Normalize phone number to international format (+44...)
+        const normalizedPhone = normalizePhoneNumber(phoneNumber)
+        const docId = `dbr-${normalizedPhone.replace(/\D/g, '')}`
 
         const leadData: any = {
           _type: 'dbrLead',
-          phoneNumber,
+          phoneNumber: normalizedPhone,
           firstName,
           secondName,
           contactStatus: contactStatus || 'Sent_1',
