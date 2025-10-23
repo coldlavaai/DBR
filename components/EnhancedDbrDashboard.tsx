@@ -137,8 +137,6 @@ export default function EnhancedDbrDashboard() {
       {/* Header */}
       <DashboardHeader
         lastUpdated={stats.lastUpdated}
-        onRefresh={() => fetchStats(true)}
-        isRefreshing={refreshing}
       />
 
       {/* Main content */}
