@@ -45,10 +45,11 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse, archivedLeadsResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
         fetch('/api/hot-leads'),
-        fetch('/api/archived-hot-leads')
+        fetch('/api/archived-hot-leads'),
+        fetch('/api/recent-activity')
       ])
 
       if (!statsResponse.ok) throw new Error('Failed to fetch analytics data')
@@ -58,25 +59,16 @@ export default function EnhancedDbrDashboard() {
       if (hotLeadsResponse.ok) {
         const hotData = await hotLeadsResponse.json()
         setHotLeads(hotData.leads || [])
+      }
 
       if (archivedLeadsResponse.ok) {
         const archivedData = await archivedLeadsResponse.json()
         setArchivedHotLeads(archivedData.leads || [])
       }
 
-        // Generate recent activity from hot leads
-        const activities = hotData.leads
-          .filter((lead: any) => lead.replyReceived)
-          .slice(0, 5)
-          .map((lead: any) => ({
-            id: lead._id,
-            type: 'reply' as const,
-            leadName: `${lead.firstName} ${lead.secondName}`,
-            message: lead.latestLeadReply || 'No message preview',
-            timestamp: lead.replyReceived,
-            sentiment: lead.leadSentiment
-          }))
-        setRecentActivity(activities)
+      if (recentActivityResponse.ok) {
+        const activityData = await recentActivityResponse.json()
+        setRecentActivity(activityData.activities || [])
       }
     } catch (error) {
       console.error('Error fetching DBR stats:', error)
