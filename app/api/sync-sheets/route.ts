@@ -108,14 +108,12 @@ export async function GET() {
     let processed = 0
     let errors = 0
 
-    // Batch process rows for better performance
-    const BATCH_SIZE = 100
+    // Process rows with rate limiting
+    // Sanity limits: 50 req/sec + 100 in-flight max
+    const DELAY_MS = 25 // 40 req/sec to stay under limit
 
-    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-      const batch = rows.slice(i, i + BATCH_SIZE)
-      const operations = []
-
-      for (const row of batch) {
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const row = rows[rowIndex]
       // Extract all fields outside try block for error logging
       const contactStatus = row[0]
       const firstName = row[1]
@@ -190,8 +188,24 @@ export async function GET() {
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
 
-        // Use createOrReplace for single API call (no need to check existence)
-        operations.push({ ...leadData, _id: docId })
+        // Save to Sanity with rate limiting
+        try {
+          await sanityClient.createOrReplace({ ...leadData, _id: docId })
+          processed++
+
+          // Progress logging every 100 leads
+          if (processed % 100 === 0) {
+            console.log(`✅ Progress: ${processed}/${rows.length} leads synced`)
+          }
+
+          // Rate limiting delay (except for last item)
+          if (rowIndex < rows.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, DELAY_MS))
+          }
+        } catch (saveError) {
+          console.error('Error saving lead:', phoneNumber, saveError)
+          errors++
+        }
       } catch (error) {
         console.error('Error processing lead:', phoneNumber, error)
         if (errors < 5) { // Log first 5 errors in detail
@@ -199,22 +213,6 @@ export async function GET() {
           console.error('Error details:', error instanceof Error ? error.message : error)
         }
         errors++
-      }
-    }
-
-      // Process batch in parallel
-      try {
-        console.log(`📦 Processing batch ${Math.floor(i / BATCH_SIZE) + 1} with ${operations.length} operations`)
-        await Promise.all(
-          operations.map(doc => sanityClient.createOrReplace(doc))
-        )
-        processed += operations.length
-        console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1} complete: ${operations.length} leads processed`)
-      } catch (batchError) {
-        console.error('Batch processing error:', batchError)
-        console.error('First operation sample:', JSON.stringify(operations[0], null, 2))
-        console.error('Error details:', batchError instanceof Error ? batchError.message : String(batchError))
-        errors += operations.length
       }
     }
 
@@ -243,7 +241,7 @@ export async function GET() {
       errors,
       total: rows.length,
       timestamp: syncTimestamp,
-      message: `Synced ${processed} leads in batches of ${100}`
+      message: `Synced ${processed} leads sequentially with rate limiting (40 req/sec)`
     })
   } catch (error) {
     console.error('Sync error:', error)
