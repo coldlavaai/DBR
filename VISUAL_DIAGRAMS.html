@@ -6,7 +6,7 @@
     <title>Greenstar DBR System - Visual Architecture</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
         * {
             margin: 0;
@@ -19,9 +19,14 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #fff;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a33;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(2, 187, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(255, 225, 77, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 68, 204, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(138, 43, 226, 0.12) 0px, transparent 50%);
+            color: #ffffff;
             overflow-x: hidden;
             position: relative;
         }
@@ -40,7 +45,7 @@
 
         .particle {
             position: absolute;
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(2, 187, 212, 0.1);
             border-radius: 50%;
             animation: float 20s infinite ease-in-out;
         }
@@ -81,7 +86,7 @@
             transform: translateX(-50%);
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.3) 0%, rgba(255, 68, 204, 0.2) 50%, transparent 70%);
             border-radius: 50%;
             filter: blur(60px);
             animation: pulse 4s ease-in-out infinite;
@@ -97,7 +102,7 @@
             font-size: 4.5em;
             font-weight: 900;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+            background: linear-gradient(135deg, #02bbd4 0%, #ff44cc 35%, #ffe14d 70%, #ffd700 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -138,37 +143,64 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1.5px solid transparent;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+                             linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(2, 187, 212, 0.3));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 28px;
             padding: 40px 30px;
             text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             overflow: hidden;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, rgba(255, 68, 204, 0.1) 40%, transparent 70%);
+            opacity: 0;
+            transition: all 0.6s ease;
+            transform: scale(0);
+        }
+
+        .stat-card::after {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.05) 0%, rgba(2, 187, 212, 0.05) 100%);
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(139, 92, 246, 0.5);
-            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+            transform: translateY(-12px) scale(1.03);
+            box-shadow:
+                0 20px 60px rgba(138, 43, 226, 0.4),
+                0 0 80px rgba(2, 187, 212, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .stat-card:hover::before {
+            opacity: 1;
+            transform: scale(1) rotate(180deg);
+        }
+
+        .stat-card:hover::after {
             opacity: 1;
         }
 
@@ -176,7 +208,7 @@
             font-size: 3.5em;
             font-weight: 800;
             margin-bottom: 12px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            background: linear-gradient(135deg, #02bbd4 0%, #ff44cc 50%, #ffe14d 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -192,17 +224,24 @@
 
         /* Glassmorphism diagram sections */
         .diagram-section {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1.5px solid transparent;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
+                             linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(2, 187, 212, 0.2), rgba(255, 225, 77, 0.2));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 36px;
             padding: 60px;
             margin-bottom: 50px;
             position: relative;
             overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             animation: slideInLeft 0.8s ease-out;
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
         @keyframes slideInLeft {
@@ -227,9 +266,9 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg,
-                rgba(139, 92, 246, 0.05) 0%,
-                rgba(6, 182, 212, 0.05) 50%,
-                rgba(16, 185, 129, 0.05) 100%);
+                rgba(138, 43, 226, 0.05) 0%,
+                rgba(2, 187, 212, 0.05) 50%,
+                rgba(255, 225, 77, 0.05) 100%);
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -239,16 +278,18 @@
         }
 
         .diagram-section:hover {
-            transform: translateY(-5px);
-            border-color: rgba(139, 92, 246, 0.3);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            transform: translateY(-8px) scale(1.005);
+            box-shadow:
+                0 25px 80px rgba(138, 43, 226, 0.3),
+                0 0 60px rgba(2, 187, 212, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .diagram-section h2 {
             font-size: 2.5em;
             font-weight: 800;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            background: linear-gradient(135deg, #ff44cc 0%, #02bbd4 50%, #ffe14d 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -263,7 +304,7 @@
             left: 0;
             width: 100px;
             height: 4px;
-            background: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 100%);
+            background: linear-gradient(90deg, #ff44cc 0%, #02bbd4 100%);
             border-radius: 2px;
         }
 
@@ -289,15 +330,15 @@
 
         .mermaid:hover {
             background: rgba(15, 23, 42, 0.6);
-            border-color: rgba(139, 92, 246, 0.2);
+            border-color: rgba(138, 43, 226, 0.2);
         }
 
         /* Floating badges */
         .badge {
             display: inline-block;
             padding: 8px 20px;
-            background: rgba(139, 92, 246, 0.2);
-            border: 1px solid rgba(139, 92, 246, 0.4);
+            background: rgba(2, 187, 212, 0.2);
+            border: 1px solid rgba(2, 187, 212, 0.4);
             border-radius: 20px;
             font-size: 0.9em;
             font-weight: 600;
@@ -308,7 +349,8 @@
         }
 
         .badge:hover {
-            background: rgba(139, 92, 246, 0.4);
+            background: rgba(255, 68, 204, 0.4);
+            border-color: rgba(255, 68, 204, 0.6);
             transform: scale(1.05);
         }
 
@@ -328,7 +370,7 @@
             font-size: 2.5em;
             font-weight: 800;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            background: linear-gradient(135deg, #02bbd4 0%, #ff44cc 50%, #ffd700 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -346,7 +388,7 @@
             top: 0;
             left: 0;
             height: 4px;
-            background: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+            background: linear-gradient(90deg, #02bbd4 0%, #ff44cc 35%, #ffe14d 70%, #ffd700 100%);
             z-index: 9999;
             transition: width 0.1s ease;
         }
@@ -821,24 +863,24 @@ timeline
     </div>
 
     <script>
-        // Initialize Mermaid
+        // Initialize Mermaid with Cold Lava branding
         mermaid.initialize({
             startOnLoad: true,
             theme: 'dark',
             themeVariables: {
-                primaryColor: '#8b5cf6',
+                primaryColor: '#02bbd4',       // Cold Lava cyan
                 primaryTextColor: '#fff',
-                primaryBorderColor: '#6d28d9',
-                lineColor: '#06b6d4',
-                secondaryColor: '#10b981',
-                tertiaryColor: '#f59e0b',
+                primaryBorderColor: '#8a2be2', // Cold Lava purple
+                lineColor: '#02bbd4',          // Cold Lava cyan
+                secondaryColor: '#ffe14d',     // Cold Lava yellow
+                tertiaryColor: '#ff44cc',      // Cold Lava pink
                 darkMode: true,
-                background: '#0f172a',
-                mainBkg: '#1e293b',
-                secondBkg: '#334155',
+                background: '#0a0a33',         // Cold Lava navy
+                mainBkg: '#1a1a4a',
+                secondBkg: '#2a2a5a',
                 textColor: '#fff',
                 fontSize: '16px',
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Montserrat, sans-serif'
             }
         });
 
