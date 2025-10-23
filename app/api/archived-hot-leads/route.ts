@@ -16,9 +16,9 @@ const sanityClient = createClient({
 
 export async function GET() {
   try {
-    // Fetch HOT leads (excluding archived) sorted by most recent reply
-    const hotLeads = await sanityClient.fetch(
-      `*[_type == "dbrLead" && contactStatus == "HOT" && archived != true] | order(replyReceived desc) [0...10] {
+    // Fetch archived HOT leads sorted by most recent archive date
+    const archivedLeads = await sanityClient.fetch(
+      `*[_type == "dbrLead" && contactStatus == "HOT" && archived == true] | order(archivedAt desc) {
         _id,
         firstName,
         secondName,
@@ -29,6 +29,7 @@ export async function GET() {
         conversationHistory,
         latestLeadReply,
         replyReceived,
+        archivedAt,
         m1Sent,
         m2Sent,
         m3Sent,
@@ -38,13 +39,13 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      leads: hotLeads,
-      count: hotLeads.length
+      leads: archivedLeads,
+      count: archivedLeads.length
     })
   } catch (error) {
-    console.error('Error fetching hot leads:', error)
+    console.error('Error fetching archived hot leads:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch hot leads' },
+      { success: false, error: 'Failed to fetch archived hot leads' },
       { status: 500 }
     )
   }

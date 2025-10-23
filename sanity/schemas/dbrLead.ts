@@ -195,6 +195,22 @@ export const dbrLead = defineType({
       rows: 3,
     },
 
+    // Archive Status
+    {
+      name: 'archived',
+      title: 'Archived',
+      type: 'boolean',
+      description: 'Archived hot leads that have been acknowledged',
+      initialValue: false,
+    },
+    {
+      name: 'archivedAt',
+      title: 'Archived At',
+      type: 'datetime',
+      description: 'When this lead was archived',
+      readOnly: true,
+    },
+
     // Sync Metadata
     {
       name: 'lastSyncedAt',

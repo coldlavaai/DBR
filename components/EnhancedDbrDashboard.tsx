@@ -8,6 +8,7 @@ import ConversionFunnel from './ConversionFunnel'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
+import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
 
 interface EnhancedStats {
@@ -33,6 +34,7 @@ export default function EnhancedDbrDashboard() {
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
+  const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
 
   const fetchStats = useCallback(async (isRefresh = false) => {
@@ -43,9 +45,10 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, archivedLeadsResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
-        fetch('/api/hot-leads')
+        fetch('/api/hot-leads'),
+        fetch('/api/archived-hot-leads')
       ])
 
       if (!statsResponse.ok) throw new Error('Failed to fetch analytics data')
@@ -55,6 +58,11 @@ export default function EnhancedDbrDashboard() {
       if (hotLeadsResponse.ok) {
         const hotData = await hotLeadsResponse.json()
         setHotLeads(hotData.leads || [])
+
+      if (archivedLeadsResponse.ok) {
+        const archivedData = await archivedLeadsResponse.json()
+        setArchivedHotLeads(archivedData.leads || [])
+      }
 
         // Generate recent activity from hot leads
         const activities = hotData.leads
@@ -225,7 +233,10 @@ export default function EnhancedDbrDashboard() {
         </div>
 
         {/* HOT LEADS SECTION - Prominent & Interactive */}
-        <HotLeadsSection leads={hotLeads} />
+        <HotLeadsSection leads={hotLeads} onArchive={() => fetchStats(true)} />
+
+        {/* ARCHIVED HOT LEADS SECTION - Collapsible */}
+        <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
 
         {/* Recent Activity & Additional Metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

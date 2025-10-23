@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Flame, Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar } from 'lucide-react'
+import { Flame, Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check } from 'lucide-react'
 
 interface Lead {
   _id: string
@@ -22,10 +22,13 @@ interface Lead {
 
 interface HotLeadsSectionProps {
   leads: Lead[]
+  onArchive?: () => void
 }
 
-export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
+export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionProps) {
   const [expandedLead, setExpandedLead] = useState<string | null>(null)
+  const [archiving, setArchiving] = useState<string | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A'
@@ -68,6 +71,47 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
         return '🤔'
       default:
         return '❓'
+    }
+  }
+
+  const handleArchive = async (leadId: string, leadName: string) => {
+    if (!confirm(`Archive ${leadName}? This will remove them from the hot leads view.`)) {
+      return
+    }
+
+    setArchiving(leadId)
+
+    try {
+      const response = await fetch('/api/archive-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, archived: true })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to archive lead')
+      }
+
+      // Call the refresh callback
+      if (onArchive) {
+        onArchive()
+      }
+    } catch (error) {
+      console.error('Error archiving lead:', error)
+      alert('Failed to archive lead. Please try again.')
+    } finally {
+      setArchiving(null)
+    }
+  }
+
+  const copyToClipboard = async (text: string, fieldId: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(fieldId)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      alert('Failed to copy to clipboard')
     }
   }
 
@@ -117,6 +161,20 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
                       <h4 className="text-xl font-bold text-white">
                         {lead.firstName} {lead.secondName}
                       </h4>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          copyToClipboard(`${lead.firstName} ${lead.secondName}`, `name-${lead._id}`)
+                        }}
+                        className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                        title="Copy name"
+                      >
+                        {copiedField === `name-${lead._id}` ? (
+                          <Check className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white`}>
                         {getSentimentEmoji(lead.leadSentiment)} {lead.leadSentiment || 'UNCLEAR'}
                       </span>
@@ -126,11 +184,39 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
                       <span className="flex items-center gap-2">
                         <Phone className="w-4 h-4" />
                         {lead.phoneNumber}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            copyToClipboard(lead.phoneNumber, `phone-${lead._id}`)
+                          }}
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                          title="Copy phone number"
+                        >
+                          {copiedField === `phone-${lead._id}` ? (
+                            <Check className="w-3 h-3 text-green-400" />
+                          ) : (
+                            <Copy className="w-3 h-3 text-gray-400" />
+                          )}
+                        </button>
                       </span>
                       {lead.emailAddress && (
                         <span className="flex items-center gap-2">
                           <Mail className="w-4 h-4" />
                           {lead.emailAddress}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              copyToClipboard(lead.emailAddress!, `email-${lead._id}`)
+                            }}
+                            className="p-1 hover:bg-white/10 rounded transition-colors"
+                            title="Copy email"
+                          >
+                            {copiedField === `email-${lead._id}` ? (
+                              <Check className="w-3 h-3 text-green-400" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-gray-400" />
+                            )}
+                          </button>
                         </span>
                       )}
                       {lead.replyReceived && (
@@ -143,10 +229,24 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
 
                     {/* Latest Reply Preview */}
                     {lead.latestLeadReply && !isExpanded && (
-                      <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                      <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10 relative group">
                         <p className="text-sm text-gray-300 italic line-clamp-2">
                           "{lead.latestLeadReply}"
                         </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            copyToClipboard(lead.latestLeadReply!, `reply-${lead._id}`)
+                          }}
+                          className="absolute top-2 right-2 p-1.5 hover:bg-white/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          title="Copy reply"
+                        >
+                          {copiedField === `reply-${lead._id}` ? (
+                            <Check className="w-3 h-3 text-green-400" />
+                          ) : (
+                            <Copy className="w-3 h-3 text-gray-400" />
+                          )}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -166,17 +266,17 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
               {isExpanded && (
                 <div className="p-5 pt-0 space-y-4 animate-fade-in">
                   {/* Quick Actions */}
-                  <div className="flex gap-3 pt-4 border-t border-white/10">
+                  <div className="flex flex-wrap gap-3 pt-4 border-t border-white/10">
                     <a
                       href={`tel:${lead.phoneNumber}`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-cyan to-coldlava-purple rounded-xl text-white font-semibold hover:scale-105 transition-transform"
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-cyan to-coldlava-purple rounded-xl text-white font-semibold hover:scale-105 transition-transform"
                     >
                       <Phone className="w-5 h-5" />
                       Call Now
                     </a>
                     <a
                       href={`sms:${lead.phoneNumber}`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
                     >
                       <MessageSquare className="w-5 h-5" />
                       SMS
@@ -184,12 +284,20 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
                     {lead.emailAddress && (
                       <a
                         href={`mailto:${lead.emailAddress}`}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
                       >
                         <Mail className="w-5 h-5" />
                         Email
                       </a>
                     )}
+                    <button
+                      onClick={() => handleArchive(lead._id, `${lead.firstName} ${lead.secondName}`)}
+                      disabled={archiving === lead._id}
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gray-700/50 rounded-xl text-white font-semibold hover:bg-gray-600/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Archive className="w-5 h-5" />
+                      {archiving === lead._id ? 'Archiving...' : 'Archive'}
+                    </button>
                   </div>
 
                   {/* Message Timeline */}
@@ -226,7 +334,26 @@ export default function HotLeadsSection({ leads }: HotLeadsSectionProps) {
                   {/* Full Conversation History */}
                   {lead.conversationHistory && (
                     <div className="space-y-2">
-                      <h5 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Conversation History</h5>
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Conversation History</h5>
+                        <button
+                          onClick={() => copyToClipboard(lead.conversationHistory!, `conversation-${lead._id}`)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                          title="Copy conversation"
+                        >
+                          {copiedField === `conversation-${lead._id}` ? (
+                            <>
+                              <Check className="w-3 h-3 text-green-400" />
+                              <span className="text-green-400">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-gray-400" />
+                              <span className="text-gray-300">Copy All</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <div className="p-4 bg-black/30 rounded-xl border border-white/10 max-h-64 overflow-y-auto custom-scrollbar">
                         <pre className="text-sm text-gray-300 whitespace-pre-wrap font-inter leading-relaxed">
                           {lead.conversationHistory}
