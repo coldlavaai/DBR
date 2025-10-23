@@ -220,10 +220,17 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
                           </button>
                         </span>
                         {lead.postcode && (
-                          <span className="flex items-center gap-1.5 text-gray-300 flex-shrink-0">
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.postcode)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1.5 text-gray-300 hover:text-gray-100 transition-colors flex-shrink-0 cursor-pointer"
+                            title="Open in Google Maps"
+                          >
                             <span className="text-coldlava-purple font-semibold">📍</span>
-                            <span className="uppercase font-medium">{lead.postcode}</span>
-                          </span>
+                            <span className="uppercase font-medium underline decoration-dotted">{lead.postcode}</span>
+                          </a>
                         )}
                         {lead.emailAddress && (
                           <span className="flex items-center gap-1.5 min-w-0">
