@@ -204,6 +204,7 @@ export async function GET() {
 
       // Process batch in parallel
       try {
+        console.log(`📦 Processing batch ${Math.floor(i / BATCH_SIZE) + 1} with ${operations.length} operations`)
         await Promise.all(
           operations.map(doc => sanityClient.createOrReplace(doc))
         )
@@ -211,6 +212,8 @@ export async function GET() {
         console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1} complete: ${operations.length} leads processed`)
       } catch (batchError) {
         console.error('Batch processing error:', batchError)
+        console.error('First operation sample:', JSON.stringify(operations[0], null, 2))
+        console.error('Error details:', batchError instanceof Error ? batchError.message : String(batchError))
         errors += operations.length
       }
     }
