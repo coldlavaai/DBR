@@ -24,6 +24,7 @@ export async function GET() {
         secondName,
         phoneNumber,
         emailAddress,
+        postcode,
         contactStatus,
         leadSentiment,
         conversationHistory,

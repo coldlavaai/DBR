@@ -24,39 +24,38 @@ function parseDateTime(dateStr: string | undefined): string | null {
 
   try {
     // If already in ISO format, return as-is
-    if (dateStr.includes('T') && dateStr.includes('Z') || dateStr.match(/\d{4}-\d{2}-\d{2}T/)) {
+    if (dateStr.includes('T') && (dateStr.includes('Z') || dateStr.includes('+') || dateStr.includes('-')) || dateStr.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)) {
       return dateStr
     }
 
-    // Try HH:MM DD/MM/YYYY format
+    // Try HH:MM DD/MM/YYYY format (UK timezone assumed)
     const match1 = dateStr.match(/(\d{1,2}):(\d{2})\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/)
     if (match1) {
       const [, hours, minutes, day, month, year] = match1
-      const date = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-        parseInt(hours),
-        parseInt(minutes)
-      )
-      return date.toISOString()
+      // Create date string in ISO format with UK timezone
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+01:00`
+      return new Date(isoStr).toISOString()
     }
 
-    // Try DD/MM/YYYY HH:MM format
+    // Try DD/MM/YYYY HH:MM format (UK timezone assumed)
     const match2 = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/)
     if (match2) {
       const [, day, month, year, hours, minutes] = match2
-      const date = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-        parseInt(hours),
-        parseInt(minutes)
-      )
-      return date.toISOString()
+      // Create date string in ISO format with UK timezone
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+01:00`
+      return new Date(isoStr).toISOString()
     }
 
-    // Fallback
+    // Try just DD/MM/YYYY format
+    const match3 = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+    if (match3) {
+      const [, day, month, year] = match3
+      // Assume noon UK time
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00+01:00`
+      return new Date(isoStr).toISOString()
+    }
+
+    // Fallback - try to parse as-is
     const date = new Date(dateStr)
     return isNaN(date.getTime()) ? null : date.toISOString()
   } catch {

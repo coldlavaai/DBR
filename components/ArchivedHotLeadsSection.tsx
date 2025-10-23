@@ -9,6 +9,7 @@ interface Lead {
   secondName: string
   phoneNumber: string
   emailAddress?: string
+  postcode?: string
   contactStatus: string
   leadSentiment: string
   conversationHistory?: string
@@ -218,6 +219,12 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
                             )}
                           </button>
                         </span>
+                        {lead.postcode && (
+                          <span className="flex items-center gap-1.5 text-gray-300 flex-shrink-0">
+                            <span className="text-coldlava-purple font-semibold">📍</span>
+                            <span className="uppercase font-medium">{lead.postcode}</span>
+                          </span>
+                        )}
                         {lead.emailAddress && (
                           <span className="flex items-center gap-1.5 min-w-0">
                             <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
