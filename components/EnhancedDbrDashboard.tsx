@@ -148,19 +148,19 @@ export default function EnhancedDbrDashboard() {
       />
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8 animate-fade-in">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 animate-fade-in">
         {/* Time Range Filters */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-          <span className="text-white font-semibold">Time Range:</span>
-          <div className="flex flex-wrap gap-2 flex-1">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
+          <span className="text-white font-semibold text-sm sm:text-base whitespace-nowrap">Time Range:</span>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 flex-1 w-full sm:w-auto">
             {(['all', 'month', 'week', 'today'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 sm:px-6 py-2 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm md:text-base whitespace-nowrap ${
                   timeRange === range
-                    ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg scale-105'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm'
+                    ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm active:scale-95'
                 }`}
               >
                 {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -169,17 +169,18 @@ export default function EnhancedDbrDashboard() {
           </div>
 
           {/* Auto-refresh toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-300">Auto-refresh</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">Auto-refresh</span>
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 flex-shrink-0 ${
                 autoRefresh ? 'bg-coldlava-cyan' : 'bg-white/20'
               }`}
+              aria-label="Toggle auto-refresh"
             >
               <div
                 className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${
-                  autoRefresh ? 'translate-x-6' : ''
+                  autoRefresh ? 'translate-x-5' : ''
                 }`}
               />
             </button>

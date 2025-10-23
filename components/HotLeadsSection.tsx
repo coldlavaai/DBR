@@ -156,73 +156,80 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                 className="w-full p-5 text-left hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-xl font-bold text-white">
-                        {lead.firstName} {lead.secondName}
-                      </h4>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          copyToClipboard(`${lead.firstName} ${lead.secondName}`, `name-${lead._id}`)
-                        }}
-                        className="p-1.5 hover:bg-white/10 rounded transition-colors"
-                        title="Copy name"
-                      >
-                        {copiedField === `name-${lead._id}` ? (
-                          <Check className="w-4 h-4 text-green-400" />
-                        ) : (
-                          <Copy className="w-4 h-4 text-gray-400" />
-                        )}
-                      </button>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white`}>
+                  <div className="flex-1 min-w-0">
+                    {/* Name row with copy button and sentiment - Now wraps properly */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <h4 className="text-base sm:text-lg md:text-xl font-bold text-white">
+                          {lead.firstName} {lead.secondName}
+                        </h4>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            copyToClipboard(`${lead.firstName} ${lead.secondName}`, `name-${lead._id}`)
+                          }}
+                          className="p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                          title="Copy name"
+                          aria-label="Copy name"
+                        >
+                          {copiedField === `name-${lead._id}` ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white whitespace-nowrap`}>
                         {getSentimentEmoji(lead.leadSentiment)} {lead.leadSentiment || 'UNCLEAR'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-6 text-sm text-gray-300">
-                      <span className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        {lead.phoneNumber}
+                    {/* Contact details - Now stacks on mobile, wraps on tablet */}
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-gray-300">
+                      <span className="flex items-center gap-1.5 flex-shrink-0">
+                        <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="truncate">{lead.phoneNumber}</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             copyToClipboard(lead.phoneNumber, `phone-${lead._id}`)
                           }}
-                          className="p-1 hover:bg-white/10 rounded transition-colors"
-                          title="Copy phone number"
+                          className="p-1.5 sm:p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                          title="Copy phone"
+                          aria-label="Copy phone number"
                         >
                           {copiedField === `phone-${lead._id}` ? (
-                            <Check className="w-3 h-3 text-green-400" />
+                            <Check className="w-3.5 h-3.5 text-green-400" />
                           ) : (
-                            <Copy className="w-3 h-3 text-gray-400" />
+                            <Copy className="w-3.5 h-3.5 text-gray-400" />
                           )}
                         </button>
                       </span>
                       {lead.emailAddress && (
-                        <span className="flex items-center gap-2">
-                          <Mail className="w-4 h-4" />
-                          {lead.emailAddress}
+                        <span className="flex items-center gap-1.5 min-w-0">
+                          <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate max-w-[200px] sm:max-w-none">{lead.emailAddress}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               copyToClipboard(lead.emailAddress!, `email-${lead._id}`)
                             }}
-                            className="p-1 hover:bg-white/10 rounded transition-colors"
+                            className="p-1.5 sm:p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
                             title="Copy email"
+                            aria-label="Copy email"
                           >
                             {copiedField === `email-${lead._id}` ? (
-                              <Check className="w-3 h-3 text-green-400" />
+                              <Check className="w-3.5 h-3.5 text-green-400" />
                             ) : (
-                              <Copy className="w-3 h-3 text-gray-400" />
+                              <Copy className="w-3.5 h-3.5 text-gray-400" />
                             )}
                           </button>
                         </span>
                       )}
                       {lead.replyReceived && (
-                        <span className="flex items-center gap-2 text-coldlava-cyan">
-                          <Clock className="w-4 h-4" />
-                          Replied {formatDate(lead.replyReceived)}
+                        <span className="flex items-center gap-1.5 text-coldlava-cyan flex-shrink-0">
+                          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="whitespace-nowrap">Replied {formatDate(lead.replyReceived)}</span>
                         </span>
                       )}
                     </div>
