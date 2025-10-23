@@ -30,8 +30,21 @@ export default function DashboardHeader({
 
       <div className="relative z-10 max-w-7xl mx-auto px-8 py-6">
         <div className="flex items-center justify-between">
-          {/* Left: Client branding */}
+          {/* Left: Cold Lava Logo */}
           <div className="flex items-center gap-6">
+            <div className="relative w-48 h-16">
+              <Image
+                src="/logos/cold-lava-logo.png"
+                alt="Cold Lava AI"
+                fill
+                className="object-contain object-left"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Center: Client Branding */}
+          <div className="flex items-center gap-4 px-8 py-4 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-white/20">
             {clientLogoUrl && (
               <div className="relative w-16 h-16 bg-white rounded-xl p-2 shadow-lg">
                 <Image
@@ -43,9 +56,8 @@ export default function DashboardHeader({
               </div>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1 flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                 {clientName}
-                <span className="text-coldlava-cyan">|</span>
                 <span className="bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
                   Analytics
                 </span>
@@ -54,11 +66,10 @@ export default function DashboardHeader({
             </div>
           </div>
 
-          {/* Right: Cold Lava branding + refresh */}
-          <div className="flex items-center gap-6">
-            {/* Last updated + refresh button */}
+          {/* Right: Last updated + refresh */}
+          <div className="flex items-center gap-3">
             {lastUpdated && (
-              <div className="flex items-center gap-3">
+              <>
                 <div className="text-right">
                   <p className="text-xs text-gray-400">Last updated</p>
                   <p className="text-sm text-gray-300">
@@ -76,22 +87,8 @@ export default function DashboardHeader({
                     />
                   </button>
                 )}
-              </div>
+              </>
             )}
-
-            {/* Powered by Cold Lava */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-coldlava-cyan rounded-full animate-pulse" />
-                <span className="text-xs text-gray-300">Powered by</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-bold bg-gradient-to-r from-coldlava-cyan via-coldlava-pink to-coldlava-purple bg-clip-text text-transparent">
-                  Cold Lava
-                </span>
-                <span className="text-xs text-coldlava-cyan">AI</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

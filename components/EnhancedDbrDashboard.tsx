@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { Users, MessageSquare, TrendingUp, Flame, Clock, Target } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
-import TrendChart from './TrendChart'
 import ConversionFunnel from './ConversionFunnel'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
@@ -199,30 +198,6 @@ export default function EnhancedDbrDashboard() {
             onClick={() => openModal('hot', '🔥 Hot Leads')}
           />
         </div>
-
-        {/* Charts Row */}
-        {stats.dailyData && stats.dailyData.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TrendChart
-              data={stats.dailyData}
-              title="Lead Engagement Trends"
-              metrics={[
-                { key: 'replies', name: 'Replies', color: '#02bbd4' },
-                { key: 'hot', name: 'Hot Leads', color: '#ff44cc' },
-              ]}
-            />
-
-            <TrendChart
-              data={stats.dailyData}
-              title="Conversion Performance"
-              type="line"
-              metrics={[
-                { key: 'converted', name: 'Converted', color: '#ffd700' },
-                { key: 'replyRate', name: 'Reply Rate %', color: '#8a2be2' },
-              ]}
-            />
-          </div>
-        )}
 
         {/* Conversion Funnel & Additional Metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
