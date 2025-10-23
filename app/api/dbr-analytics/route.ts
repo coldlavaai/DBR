@@ -8,70 +8,177 @@ const sanityClient = createClient({
   useCdn: false,
 })
 
+function getDateRanges(timeRange: string) {
+  const now = new Date()
+  let currentStart: Date, currentEnd: Date, previousStart: Date, previousEnd: Date
+
+  if (timeRange === 'today') {
+    currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    currentEnd = now
+    previousStart = new Date(currentStart.getTime() - 24 * 60 * 60 * 1000)
+    previousEnd = currentStart
+  } else if (timeRange === 'week') {
+    currentStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    currentEnd = now
+    previousStart = new Date(currentStart.getTime() - 7 * 24 * 60 * 60 * 1000)
+    previousEnd = currentStart
+  } else if (timeRange === 'month') {
+    currentStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    currentEnd = now
+    previousStart = new Date(currentStart.getTime() - 30 * 24 * 60 * 60 * 1000)
+    previousEnd = currentStart
+  } else {
+    // All time - use 30 days as "current" and 30 days before as "previous"
+    currentStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    currentEnd = now
+    previousStart = new Date(currentStart.getTime() - 30 * 24 * 60 * 60 * 1000)
+    previousEnd = currentStart
+  }
+
+  return { currentStart, currentEnd, previousStart, previousEnd }
+}
+
+function calculateStats(leads: any[]) {
+  const totalLeads = leads.length
+
+  const messagesSent = {
+    m1: leads.filter((l) => l.m1Sent).length,
+    m2: leads.filter((l) => l.m2Sent).length,
+    m3: leads.filter((l) => l.m3Sent).length,
+    total: 0,
+  }
+  messagesSent.total = messagesSent.m1 + messagesSent.m2 + messagesSent.m3
+
+  const sentiment = {
+    positive: leads.filter((l) => l.leadSentiment === 'POSITIVE').length,
+    negative: leads.filter((l) => l.leadSentiment === 'NEGATIVE').length,
+    neutral: leads.filter((l) => l.leadSentiment === 'NEUTRAL').length,
+    negativeRemoved: leads.filter((l) => l.leadSentiment === 'NEGATIVE_REMOVED').length,
+    unclear: leads.filter((l) => l.leadSentiment === 'UNCLEAR').length,
+  }
+
+  const statusBreakdown = {
+    hot: leads.filter((l) => l.contactStatus === 'HOT').length,
+    positive: leads.filter((l) => l.contactStatus === 'POSITIVE').length,
+    negative: leads.filter((l) => l.contactStatus === 'NEGATIVE').length,
+    removed: leads.filter((l) => l.contactStatus === 'REMOVED').length,
+    sent1: leads.filter((l) => l.contactStatus === 'Sent_1').length,
+    sent2: leads.filter((l) => l.contactStatus === 'Sent_2').length,
+    sent3: leads.filter((l) => l.contactStatus === 'Sent_3').length,
+    converted: leads.filter((l) => l.contactStatus === 'CONVERTED').length,
+    scheduled: leads.filter((l) => l.contactStatus === 'SCHEDULED').length,
+  }
+
+  const repliedLeads = leads.filter((l) => l.replyReceived).length
+  const replyRate = totalLeads > 0 ? (repliedLeads / totalLeads) * 100 : 0
+
+  return {
+    totalLeads,
+    messagesSent,
+    sentiment,
+    statusBreakdown,
+    replyRate,
+    repliedLeads,
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const timeRange = searchParams.get('timeRange') || 'all'
 
-    // Build date filter based on time range
-    let dateFilter = ''
-    const now = new Date()
+    const { currentStart, currentEnd, previousStart, previousEnd } = getDateRanges(timeRange)
 
-    if (timeRange === 'today') {
-      const today = now.toISOString().split('T')[0]
-      dateFilter = ` && m1Sent > "${today}"`
-    } else if (timeRange === 'week') {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      dateFilter = ` && m1Sent > "${weekAgo}"`
-    } else if (timeRange === 'month') {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      dateFilter = ` && m1Sent > "${monthAgo}"`
+    // Fetch all leads for calculations
+    const allLeadsQuery = `*[_type == "dbrLead"]`
+    const allLeads = await sanityClient.fetch(allLeadsQuery)
+
+    // Filter leads by date ranges
+    const currentLeads = timeRange === 'all'
+      ? allLeads
+      : allLeads.filter((l: any) => {
+          const leadDate = l.m1Sent ? new Date(l.m1Sent) : null
+          return leadDate && leadDate >= currentStart && leadDate <= currentEnd
+        })
+
+    const previousLeads = allLeads.filter((l: any) => {
+      const leadDate = l.m1Sent ? new Date(l.m1Sent) : null
+      return leadDate && leadDate >= previousStart && leadDate < previousEnd
+    })
+
+    // Calculate current and previous stats
+    const currentStats = calculateStats(currentLeads)
+    const previousStats = calculateStats(previousLeads)
+
+    // Calculate percentage changes
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0
+      return ((current - previous) / previous) * 100
     }
 
-    // Fetch all leads (or filtered by time)
-    const query = `*[_type == "dbrLead"${dateFilter}]`
-    const leads = await sanityClient.fetch(query)
-
-    // Calculate stats
-    const totalLeads = leads.length
-
-    const messagesSent = {
-      m1: leads.filter((l: any) => l.m1Sent).length,
-      m2: leads.filter((l: any) => l.m2Sent).length,
-      m3: leads.filter((l: any) => l.m3Sent).length,
-      total: 0,
-    }
-    messagesSent.total = messagesSent.m1 + messagesSent.m2 + messagesSent.m3
-
-    const sentiment = {
-      positive: leads.filter((l: any) => l.leadSentiment === 'POSITIVE').length,
-      negative: leads.filter((l: any) => l.leadSentiment === 'NEGATIVE').length,
-      neutral: leads.filter((l: any) => l.leadSentiment === 'NEUTRAL').length,
-      negativeRemoved: leads.filter((l: any) => l.leadSentiment === 'NEGATIVE_REMOVED').length,
-      unclear: leads.filter((l: any) => l.leadSentiment === 'UNCLEAR').length,
+    const trends = {
+      totalLeads: calculateChange(currentStats.totalLeads, previousStats.totalLeads),
+      messagesSent: calculateChange(currentStats.messagesSent.total, previousStats.messagesSent.total),
+      replyRate: calculateChange(currentStats.replyRate, previousStats.replyRate),
+      hotLeads: calculateChange(currentStats.statusBreakdown.hot, previousStats.statusBreakdown.hot),
+      converted: calculateChange(currentStats.statusBreakdown.converted, previousStats.statusBreakdown.converted),
     }
 
-    const statusBreakdown = {
-      hot: leads.filter((l: any) => l.contactStatus === 'HOT').length,
-      positive: leads.filter((l: any) => l.contactStatus === 'POSITIVE').length,
-      negative: leads.filter((l: any) => l.contactStatus === 'NEGATIVE').length,
-      removed: leads.filter((l: any) => l.contactStatus === 'REMOVED').length,
-      sent1: leads.filter((l: any) => l.contactStatus === 'Sent_1').length,
-      sent2: leads.filter((l: any) => l.contactStatus === 'Sent_2').length,
-      sent3: leads.filter((l: any) => l.contactStatus === 'Sent_3').length,
-      converted: leads.filter((l: any) => l.contactStatus === 'CONVERTED').length,
-      scheduled: leads.filter((l: any) => l.contactStatus === 'SCHEDULED').length,
+    // Generate daily trend data for charts (last 30 days)
+    const dailyData = []
+    const days = timeRange === 'today' ? 1 : timeRange === 'week' ? 7 : 30
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(currentEnd.getTime() - i * 24 * 60 * 60 * 1000)
+      const dateStr = date.toISOString().split('T')[0]
+
+      const dayLeads = allLeads.filter((l: any) => {
+        if (!l.m1Sent) return false
+        const leadDate = new Date(l.m1Sent).toISOString().split('T')[0]
+        return leadDate === dateStr
+      })
+
+      const dayStats = calculateStats(dayLeads)
+
+      dailyData.push({
+        date: dateStr,
+        totalLeads: dayStats.totalLeads,
+        replies: dayStats.repliedLeads,
+        hot: dayStats.statusBreakdown.hot,
+        converted: dayStats.statusBreakdown.converted,
+        replyRate: dayStats.replyRate,
+      })
     }
 
-    const repliedLeads = leads.filter((l: any) => l.replyReceived).length
-    const replyRate = totalLeads > 0 ? (repliedLeads / totalLeads) * 100 : 0
+    // Conversion funnel data
+    const funnelData = {
+      totalSent: currentStats.messagesSent.total,
+      replied: currentStats.repliedLeads,
+      positive: currentStats.statusBreakdown.hot + currentStats.statusBreakdown.positive,
+      scheduled: currentStats.statusBreakdown.scheduled,
+      converted: currentStats.statusBreakdown.converted,
+    }
+
+    // Response time analysis
+    const responseTimes = currentLeads
+      .filter((l: any) => l.m1Sent && l.replyReceived)
+      .map((l: any) => {
+        const sent = new Date(l.m1Sent).getTime()
+        const replied = new Date(l.replyReceived).getTime()
+        return (replied - sent) / (1000 * 60 * 60) // hours
+      })
+
+    const avgResponseTime = responseTimes.length > 0
+      ? responseTimes.reduce((a: number, b: number) => a + b, 0) / responseTimes.length
+      : 0
 
     return NextResponse.json({
-      totalLeads,
-      messagesSent,
-      sentiment,
-      statusBreakdown,
-      replyRate,
+      ...currentStats,
+      trends,
+      dailyData,
+      funnelData,
+      avgResponseTime: Math.round(avgResponseTime * 10) / 10,
+      previousPeriod: previousStats,
+      lastUpdated: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Error fetching DBR stats:', error)

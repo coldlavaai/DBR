@@ -1,5 +1,5 @@
-import DbrDashboard from '@/components/DbrDashboard'
+import EnhancedDbrDashboard from '@/components/EnhancedDbrDashboard'
 
 export default function DbrAnalyticsPage() {
-  return <DbrDashboard />
+  return <EnhancedDbrDashboard />
 }
