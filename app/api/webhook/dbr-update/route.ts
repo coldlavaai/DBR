@@ -42,6 +42,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    // Check if this is a sync trigger from Google Sheets Apps Script
+    if (body.sheetName && body.timestamp) {
+      // This is a notification that the sheet was updated
+      // Trigger a full sync by calling the existing sync logic
+      console.log(`Sheet update notification received for ${body.sheetName}, row ${body.editedRow}`)
+
+      // Instead of syncing here, just acknowledge
+      // The dashboard will auto-refresh every 30 seconds to pick up changes
+      return NextResponse.json({
+        success: true,
+        message: 'Update notification received. Dashboard will refresh automatically.',
+        editedRow: body.editedRow,
+        timestamp: body.timestamp
+      })
+    }
+
+    // Original webhook logic for direct lead updates
     // Validate required fields
     if (!body.phoneNumber) {
       return NextResponse.json(
