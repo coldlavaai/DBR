@@ -1,0 +1,30 @@
+{
+  "name": "greenstar-dbr-dashboard",
+  "version": "1.0.0",
+  "description": "DBR Analytics Dashboard for Greenstar Solar - Database Recovery campaign management",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "sync:dbr": "npx tsx scripts/sync-dbr-leads.ts"
+  },
+  "dependencies": {
+    "@sanity/client": "^6.24.5",
+    "googleapis": "^145.0.0",
+    "next": "14.2.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}
