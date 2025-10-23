@@ -108,9 +108,9 @@ export async function GET() {
     let processed = 0
     let errors = 0
 
-    // Process rows with rate limiting
-    // Sanity limits: 50 req/sec + 100 in-flight max
-    const DELAY_MS = 25 // 40 req/sec to stay under limit
+    // Use Sanity transactions to batch mutations (100 mutations per transaction)
+    const BATCH_SIZE = 100
+    const mutations = []
 
     for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
       const row = rows[rowIndex]
@@ -188,24 +188,10 @@ export async function GET() {
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
 
-        // Save to Sanity with rate limiting
-        try {
-          await sanityClient.createOrReplace({ ...leadData, _id: docId })
-          processed++
-
-          // Progress logging every 100 leads
-          if (processed % 100 === 0) {
-            console.log(`✅ Progress: ${processed}/${rows.length} leads synced`)
-          }
-
-          // Rate limiting delay (except for last item)
-          if (rowIndex < rows.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, DELAY_MS))
-          }
-        } catch (saveError) {
-          console.error('Error saving lead:', phoneNumber, saveError)
-          errors++
-        }
+        // Add to mutations array for batch processing
+        mutations.push({
+          createOrReplace: { ...leadData, _id: docId }
+        })
       } catch (error) {
         console.error('Error processing lead:', phoneNumber, error)
         if (errors < 5) { // Log first 5 errors in detail
@@ -213,6 +199,24 @@ export async function GET() {
           console.error('Error details:', error instanceof Error ? error.message : error)
         }
         errors++
+      }
+    }
+
+    // Process mutations in batches using transactions
+    console.log(`📦 Processing ${mutations.length} mutations in batches of ${BATCH_SIZE}`)
+
+    for (let i = 0; i < mutations.length; i += BATCH_SIZE) {
+      const batch = mutations.slice(i, i + BATCH_SIZE)
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1
+      const totalBatches = Math.ceil(mutations.length / BATCH_SIZE)
+
+      try {
+        await sanityClient.transaction().create(batch.map(m => m.createOrReplace)).commit()
+        processed += batch.length
+        console.log(`✅ Batch ${batchNum}/${totalBatches}: ${batch.length} leads synced (${processed}/${mutations.length} total)`)
+      } catch (batchError) {
+        console.error(`❌ Batch ${batchNum} failed:`, batchError)
+        errors += batch.length
       }
     }
 
@@ -241,7 +245,7 @@ export async function GET() {
       errors,
       total: rows.length,
       timestamp: syncTimestamp,
-      message: `Synced ${processed} leads sequentially with rate limiting (40 req/sec)`
+      message: `Synced ${processed} leads using ${Math.ceil(mutations.length / 100)} transaction batches`
     })
   } catch (error) {
     console.error('Sync error:', error)
