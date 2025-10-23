@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Flame, Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check } from 'lucide-react'
+import BookCallModal from './BookCallModal'
 
 interface Lead {
   _id: string
@@ -29,6 +30,7 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
   const [expandedLead, setExpandedLead] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [bookingLead, setBookingLead] = useState<Lead | null>(null)
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A'
@@ -281,6 +283,13 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                       <Phone className="w-5 h-5" />
                       Call Now
                     </a>
+                    <button
+                      onClick={() => setBookingLead(lead)}
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-semibold hover:scale-105 transition-transform"
+                    >
+                      <Calendar className="w-5 h-5" />
+                      Book Call
+                    </button>
                     <a
                       href={`sms:${lead.phoneNumber}`}
                       className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
@@ -374,6 +383,21 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
           )
         })}
       </div>
+
+      {/* Booking Modal */}
+      {bookingLead && (
+        <BookCallModal
+          lead={bookingLead}
+          isOpen={!!bookingLead}
+          onClose={() => setBookingLead(null)}
+          onSuccess={() => {
+            setBookingLead(null)
+            if (onArchive) {
+              onArchive() // Refresh the leads
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

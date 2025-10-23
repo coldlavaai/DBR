@@ -195,6 +195,29 @@ export const dbrLead = defineType({
       rows: 3,
     },
 
+    // Cal.com Booking Integration
+    {
+      name: 'calBookingId',
+      title: 'Cal.com Booking ID',
+      type: 'string',
+      description: 'Cal.com booking reference ID',
+      readOnly: true,
+    },
+    {
+      name: 'calBookingUrl',
+      title: 'Cal.com Booking URL',
+      type: 'url',
+      description: 'Direct link to the Cal.com booking',
+      readOnly: true,
+    },
+    {
+      name: 'lastUpdatedAt',
+      title: 'Last Updated At',
+      type: 'datetime',
+      description: 'When this lead was last modified in the dashboard',
+      readOnly: true,
+    },
+
     // Archive Status
     {
       name: 'archived',
