@@ -60,7 +60,7 @@ export default function DashboardHeader({
             <h1 className="text-4xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent tracking-wide">
               DBR
             </h1>
-            <div className="relative w-40 h-14 bg-white rounded-xl p-2 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+            <div className="relative w-48 h-14 group-hover:scale-105 transition-all duration-300 drop-shadow-lg">
               <Image
                 src="/greenstar-logo.png"
                 alt="Greenstar Solar"
