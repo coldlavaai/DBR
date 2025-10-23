@@ -19,6 +19,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'DBR Analytics Dashboard | Cold Lava AI',
   description: 'Premium Database Recovery Campaign Analytics - Powered by Cold Lava AI',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
 }
 
 export default function RootLayout({

@@ -140,16 +140,16 @@ export default function EnhancedDbrDashboard() {
       />
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-8 py-8 space-y-8 animate-fade-in">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8 animate-fade-in">
         {/* Time Range Filters */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           <span className="text-white font-semibold">Time Range:</span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 flex-1">
             {(['all', 'month', 'week', 'today'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-6 py-2 rounded-xl font-medium transition-all duration-300 ${
+                className={`px-4 sm:px-6 py-2 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base ${
                   timeRange === range
                     ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg scale-105'
                     : 'bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm'
@@ -161,7 +161,7 @@ export default function EnhancedDbrDashboard() {
           </div>
 
           {/* Auto-refresh toggle */}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-gray-300">Auto-refresh</span>
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}

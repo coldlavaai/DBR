@@ -32,15 +32,15 @@ export default function DashboardHeader({
       {/* Gradient overlay for extra depth */}
       <div className="absolute inset-0 bg-gradient-to-r from-coldlava-cyan/5 via-transparent to-coldlava-pink/5 pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-8 py-6">
-        <div className="flex items-center justify-between">
-          {/* Left: Cold Lava Logo with hover effect */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left: Cold Lava Logo - Smaller on mobile */}
           <div className="flex items-center gap-6">
             <a
               href="https://coldlava.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="relative w-72 h-20 group cursor-pointer"
+              className="relative w-48 sm:w-56 md:w-72 h-14 sm:h-16 md:h-20 group cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-coldlava-cyan to-coldlava-pink rounded-xl blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500" />
               <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-105">
@@ -55,12 +55,12 @@ export default function DashboardHeader({
             </a>
           </div>
 
-          {/* Center: DBR + Greenstar Logo */}
-          <div className="group flex items-center gap-6 px-8 py-4 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-white/20 hover:border-coldlava-cyan/50 transition-all duration-300 hover:shadow-lg hover:shadow-coldlava-cyan/20">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent tracking-wide">
+          {/* Center: DBR + Greenstar Logo - Responsive sizing */}
+          <div className="group flex items-center gap-3 sm:gap-4 md:gap-6 px-4 sm:px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-white/20 hover:border-coldlava-cyan/50 transition-all duration-300 hover:shadow-lg hover:shadow-coldlava-cyan/20">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent tracking-wide">
               DBR
             </h1>
-            <div className="relative w-48 h-14 group-hover:scale-105 transition-all duration-300 drop-shadow-lg">
+            <div className="relative w-32 sm:w-40 md:w-48 h-10 sm:h-12 md:h-14 group-hover:scale-105 transition-all duration-300 drop-shadow-lg">
               <Image
                 src="/greenstar-logo.png"
                 alt="Greenstar Solar"
@@ -71,28 +71,15 @@ export default function DashboardHeader({
             </div>
           </div>
 
-          {/* Right: Last updated + refresh */}
+          {/* Right: Last updated */}
           <div className="flex items-center gap-3">
             {lastUpdated && (
-              <>
-                <div className="text-right px-4 py-2 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10">
-                  <p className="text-xs text-gray-400 font-medium">Last updated</p>
-                  <p className="text-sm text-coldlava-cyan font-bold">
-                    {new Date(lastUpdated).toLocaleTimeString()}
-                  </p>
-                </div>
-                {onRefresh && (
-                  <button
-                    onClick={onRefresh}
-                    disabled={isRefreshing}
-                    className="p-3 bg-gradient-to-br from-coldlava-cyan/20 to-coldlava-purple/20 hover:from-coldlava-cyan/30 hover:to-coldlava-purple/30 border-2 border-coldlava-cyan/30 hover:border-coldlava-cyan rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-coldlava-cyan/50 disabled:opacity-50 disabled:cursor-not-allowed group"
-                  >
-                    <RefreshCw
-                      className={`w-5 h-5 text-coldlava-cyan ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`}
-                    />
-                  </button>
-                )}
-              </>
+              <div className="text-center md:text-right px-3 sm:px-4 py-2 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10">
+                <p className="text-xs text-gray-400 font-medium">Last updated</p>
+                <p className="text-sm text-coldlava-cyan font-bold">
+                  {new Date(lastUpdated).toLocaleTimeString()}
+                </p>
+              </div>
             )}
           </div>
         </div>
