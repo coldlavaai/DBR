@@ -75,7 +75,8 @@ function calculateStats(leads: any[]) {
   }
 
   const repliedLeads = leads.filter((l) => l.replyReceived).length
-  const replyRate = totalLeads > 0 ? (repliedLeads / totalLeads) * 100 : 0
+  // Calculate reply rate based on messages sent, not total leads
+  const replyRate = messagesSent.total > 0 ? (repliedLeads / messagesSent.total) * 100 : 0
 
   return {
     totalLeads,
