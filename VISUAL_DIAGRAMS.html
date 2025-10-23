@@ -6,127 +6,453 @@
     <title>Greenstar DBR System - Visual Architecture</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 40px 20px;
+        html {
+            scroll-behavior: smooth;
         }
 
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 60px; height: 60px; left: 20%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 100px; height: 100px; left: 60%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 70px; height: 70px; left: 80%; animation-delay: 6s; }
+        .particle:nth-child(5) { width: 90px; height: 90px; left: 40%; animation-delay: 8s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-100vh) rotate(360deg); opacity: 0.6; }
+        }
+
+        /* Glassmorphism container */
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+            padding: 60px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero section with parallax */
+        .hero {
+            text-align: center;
+            padding: 100px 0 80px;
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: pulse 4s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
         }
 
         h1 {
-            text-align: center;
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 4.5em;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .subtitle {
-            text-align: center;
-            font-size: 1.5em;
-            margin-bottom: 50px;
+            font-size: 1.8em;
+            margin-bottom: 60px;
+            font-weight: 300;
             opacity: 0.9;
+            animation: slideUp 0.8s ease-out 0.2s both;
         }
 
-        .diagram-section {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .diagram-section h2 {
-            color: #667eea;
-            font-size: 2em;
-            margin-bottom: 10px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .diagram-section p {
-            color: #666;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-        }
-
-        .mermaid {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
+        /* Glassmorphism stats cards */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
             text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
         }
 
         .stat-card h3 {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
         }
 
         .stat-card p {
-            color: white;
-            opacity: 0.9;
             font-size: 1.1em;
+            font-weight: 500;
+            opacity: 0.9;
+            position: relative;
         }
 
+        /* Glassmorphism diagram sections */
+        .diagram-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            padding: 60px;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .diagram-section:nth-child(even) {
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .diagram-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.05) 0%,
+                rgba(6, 182, 212, 0.05) 50%,
+                rgba(16, 185, 129, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .diagram-section:hover::before {
+            opacity: 1;
+        }
+
+        .diagram-section:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        .diagram-section h2 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .diagram-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 100%);
+            border-radius: 2px;
+        }
+
+        .diagram-section p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            font-weight: 300;
+            position: relative;
+        }
+
+        .mermaid {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+        }
+
+        .mermaid:hover {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        /* Floating badges */
+        .badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            background: rgba(139, 92, 246, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Footer */
         .footer {
             text-align: center;
-            margin-top: 60px;
-            opacity: 0.8;
+            margin-top: 100px;
+            padding: 60px 0;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px 32px 0 0;
+        }
+
+        .footer h2 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+            margin: 10px 0;
+            opacity: 0.7;
+        }
+
+        /* Scroll progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Responsive - Super Mobile-Friendly */
+        @media (max-width: 1024px) {
+            h1 { font-size: 3em; letter-spacing: -1px; }
+            .subtitle { font-size: 1.4em; }
+            .diagram-section h2 { font-size: 2em; }
+            .diagram-section p { font-size: 1.1em; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; letter-spacing: 0; }
+            .subtitle { font-size: 1.1em; }
+            .diagram-section {padding: 25px 20px; }
+            .diagram-section h2 { font-size: 1.6em; }
+            .diagram-section p { font-size: 1em; line-height: 1.6; }
+            .hero { padding: 50px 0 30px; }
+            .container { padding: 20px 15px; }
+            .mermaid { padding: 20px 15px; font-size: 12px; }
+            .stat-card { padding: 30px 20px; }
+            .stat-card h3 { font-size: 2.8em; }
+            .badge { font-size: 0.75em; padding: 6px 14px; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8em; }
+            .subtitle { font-size: 0.95em; line-height: 1.5; }
+            .diagram-section { padding: 20px 15px; border-radius: 20px; }
+            .diagram-section h2 { font-size: 1.4em; }
+            .diagram-section p { font-size: 0.9em; }
+            .stat-card { padding: 25px 15px; }
+            .stat-card h3 { font-size: 2.4em; }
+            .stat-card p { font-size: 0.95em; }
+            .mermaid { padding: 15px 10px; font-size: 10px; overflow-x: auto; }
+            .stats { gap: 20px; }
+            .container { padding: 15px 10px; }
+            .footer { padding: 40px 20px; }
+            .footer h2 { font-size: 2em; }
+            .footer p { font-size: 0.95em; }
+        }
+
+        /* Smooth reveal on scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 Greenstar Solar DBR System</h1>
-        <p class="subtitle">Complete AI-Powered Database Reactivation Platform</p>
+    <!-- Scroll progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
 
-        <div class="stats">
+    <!-- Animated background particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>🚀 Greenstar Solar DBR System</h1>
+            <p class="subtitle">Complete AI-Powered Database Reactivation Platform</p>
+            <div>
+                <span class="badge">🤖 AI-Powered</span>
+                <span class="badge">⚡ Real-time</span>
+                <span class="badge">📊 Analytics</span>
+                <span class="badge">🔄 Automated</span>
+            </div>
+        </div>
+
+        <!-- Key Stats -->
+        <div class="stats reveal">
             <div class="stat-card">
                 <h3>975</h3>
                 <p>Leads Managed</p>
             </div>
             <div class="stat-card">
-                <h3>£151k-365k</h3>
+                <h3>£151k+</h3>
                 <p>Year 1 Value</p>
             </div>
             <div class="stat-card">
                 <h3>3,614%</h3>
-                <p>ROI</p>
+                <p>Return on Investment</p>
             </div>
             <div class="stat-card">
-                <h3>9.3 hrs/day</h3>
-                <p>Time Saved</p>
+                <h3>9.3 hrs</h3>
+                <p>Saved Daily</p>
             </div>
         </div>
 
         <!-- Diagram 1: Full System Architecture -->
-        <div class="diagram-section">
+        <div class="diagram-section reveal">
             <h2>🎯 Complete System Architecture</h2>
-            <p>This shows all 6 layers of the platform: Data Sources → n8n Automation → AI Layer → Communication → Storage → Frontend Dashboard</p>
+            <p>Six integrated layers working together: Data Sources → n8n Automation → AI Engine → Communication → Storage → Dashboard Interface</p>
             <div class="mermaid">
 graph TB
     %% Styling
@@ -137,94 +463,96 @@ graph TB
     classDef storage fill:#f59e0b,stroke:#d97706,stroke-width:3px,color:#fff
     classDef frontend fill:#06b6d4,stroke:#0891b2,stroke-width:3px,color:#fff
 
-    GSHEET[(Google Sheets<br/>975 Leads)]:::dataSource
-    N8N{n8n Automation<br/>35+ Nodes}:::automation
-    OPENAI[OpenAI GPT-4<br/>AI Engine]:::ai
-    TWILIO[Twilio SMS<br/>Messaging]:::communication
-    SANITY[(Sanity CMS<br/>Database)]:::storage
-    DASHBOARD[Next.js Dashboard<br/>Frontend]:::frontend
+    GSHEET[(Google Sheets<br/>975 Leads<br/>Master Data)]:::dataSource
+    N8N{n8n Automation<br/>35+ Workflow Nodes<br/>Intelligence Layer}:::automation
+    OPENAI[OpenAI GPT-4<br/>Message Generation<br/>Sentiment Analysis]:::ai
+    TWILIO[Twilio SMS API<br/>UK Number<br/>Delivery Tracking]:::communication
+    SANITY[(Sanity CMS<br/>Real-time Database<br/>Query Engine)]:::storage
+    DASHBOARD[Next.js 14 Dashboard<br/>Analytics UI<br/>Mobile Optimized]:::frontend
 
-    GSHEET -->|Read Leads| N8N
-    N8N -->|Generate Messages| OPENAI
-    OPENAI -->|Personalized SMS| TWILIO
-    TWILIO -->|Send Messages| LEADS[📱 975 Leads]
-    LEADS -->|Replies| N8N
-    N8N -->|Analyze Sentiment| OPENAI
-    N8N -->|Update Status| SANITY
-    SANITY -->|Real-time Data| DASHBOARD
-    DASHBOARD -->|View & Manage| TEAM[👥 Sales Team]
+    GSHEET -->|Fetch Lead Data| N8N
+    N8N -->|Personalize Messages| OPENAI
+    OPENAI -->|AI-Generated SMS| TWILIO
+    TWILIO -->|Send to Leads| LEADS[📱 975 Customer Leads]
+    LEADS -->|Reply via SMS| N8N
+    N8N -->|Classify Sentiment| OPENAI
+    N8N -->|Update Records| SANITY
+    SANITY -->|Sync Dashboard| DASHBOARD
+    DASHBOARD -->|Display Insights| TEAM[👥 Sales Team Users]
             </div>
         </div>
 
         <!-- Diagram 2: Lead Journey -->
-        <div class="diagram-section">
-            <h2>📊 Complete Lead Journey (M1 → M2 → M3)</h2>
-            <p>Step-by-step flow showing how a lead moves through the system from initial contact to conversion</p>
+        <div class="diagram-section reveal">
+            <h2>📊 Complete Lead Journey: M1 → M2 → M3 Campaign</h2>
+            <p>Intelligent multi-stage SMS campaign with AI-powered sentiment routing and automatic follow-ups</p>
             <div class="mermaid">
 graph LR
-    START([975 Dormant Leads]) --> M1[📱 Message 1<br/>AI Personalized]
+    START([975 Dormant Leads<br/>Zero Engagement]) --> M1[📱 Message 1<br/>AI Personalized<br/>Name + Location]
 
-    M1 --> CHECK1{Reply?}
-    CHECK1 -->|Yes| SENTIMENT{AI Sentiment<br/>Analysis}
-    CHECK1 -->|No - 24h| M2[📱 Message 2<br/>Follow-up]
+    M1 --> CHECK1{Customer<br/>Replied?}
+    CHECK1 -->|Yes - Analyze| SENTIMENT{OpenAI GPT-4<br/>Sentiment Analysis}
+    CHECK1 -->|No - Wait 24h| M2[📱 Message 2<br/>Friendly Follow-up<br/>Value Reminder]
 
-    SENTIMENT -->|POSITIVE| HOT[🔥 HOT LEAD]
-    SENTIMENT -->|NEUTRAL| M2
-    SENTIMENT -->|NEGATIVE| REMOVE[❌ Removed]
+    SENTIMENT -->|POSITIVE<br/>Interested| HOT[🔥 HOT LEAD<br/>High Priority<br/>Dashboard Alert]
+    SENTIMENT -->|NEUTRAL<br/>Maybe Later| M2
+    SENTIMENT -->|NEGATIVE<br/>Not Interested| NEGATIVE_MARK[❌ Marked NEGATIVE<br/>No More Messages<br/>Kept in Database]
+    SENTIMENT -->|NEGATIVE_REMOVED<br/>Opt-out Request| REMOVE[🚫 Removed<br/>GDPR Compliant<br/>Fully Deleted]
 
-    M2 --> CHECK2{Reply?}
-    CHECK2 -->|Yes| SENTIMENT
-    CHECK2 -->|No - 48h| M3[📱 Message 3<br/>Final Attempt]
+    M2 --> CHECK2{Customer<br/>Replied?}
+    CHECK2 -->|Yes - Analyze| SENTIMENT
+    CHECK2 -->|No - Wait 48h| M3[📱 Message 3<br/>Final Attempt<br/>Limited Offer]
 
-    M3 --> CHECK3{Reply?}
-    CHECK3 -->|Yes| SENTIMENT
-    CHECK3 -->|No| ARCHIVE[📁 Archive]
+    M3 --> CHECK3{Customer<br/>Replied?}
+    CHECK3 -->|Yes - Analyze| SENTIMENT
+    CHECK3 -->|No Response| ARCHIVE[📁 Archive<br/>Campaign Complete<br/>No Conversion]
 
-    HOT --> DASH[📊 Dashboard Alert]
-    DASH --> SALES[👤 Sales Call]
-    SALES --> BOOK[📅 Cal.com Booking]
-    BOOK --> CONVERT[💰 Conversion<br/>£7,000 avg]
+    HOT --> DASH[📊 Real-time Dashboard<br/>Notification Sent<br/>Lead Details]
+    DASH --> SALES[👤 Sales Team Call<br/>15-min Response<br/>Personal Touch]
+    SALES --> BOOK[📅 Cal.com Booking<br/>15-min Slots<br/>Auto-confirmation]
+    BOOK --> CONVERT[💰 Conversion<br/>£6,000-8,000 avg<br/>Installation Booked]
 
-    style START fill:#3b82f6
-    style HOT fill:#ef4444
-    style CONVERT fill:#10b981
-    style DASH fill:#8b5cf6
+    style START fill:#3b82f6,color:#fff
+    style HOT fill:#ef4444,color:#fff
+    style CONVERT fill:#10b981,color:#fff
+    style DASH fill:#8b5cf6,color:#fff
+    style SENTIMENT fill:#ec4899,color:#fff
             </div>
         </div>
 
-        <!-- Diagram 3: Spider/Integration Map -->
-        <div class="diagram-section">
-            <h2>🕷️ System Integration Spider Diagram</h2>
-            <p>All integrations radiating from the central DBR intelligence hub</p>
+        <!-- Diagram 3: Spider Diagram -->
+        <div class="diagram-section reveal">
+            <h2>🕷️ Integration Spider Diagram</h2>
+            <p>Central intelligence hub connecting 10+ services, APIs, and platforms into one unified system</p>
             <div class="mermaid">
 graph TD
-    CORE[🎯 DBR Central<br/>Intelligence]
+    CORE[🎯 DBR Central Hub<br/>Orchestration Layer<br/>Intelligence Core]
 
-    CORE ---|Data| SHEETS[📊 Google Sheets]
-    CORE ---|Automation| N8N[🔮 n8n Cloud]
-    CORE ---|Storage| SANITY[💾 Sanity CMS]
-    CORE ---|UI| DASH[📱 Dashboard]
-    CORE ---|AI| OPENAI[🤖 OpenAI]
-    CORE ---|SMS| TWILIO[📲 Twilio]
-    CORE ---|Deploy| VERCEL[☁️ Vercel]
-    CORE ---|Code| GITHUB[🔧 GitHub]
-    CORE ---|Booking| CAL[📅 Cal.com]
-    CORE ---|Maps| GMAPS[🗺️ Google Maps]
+    CORE ---|Master Data| SHEETS[📊 Google Sheets<br/>975 Lead Records]
+    CORE ---|Automation| N8N[🔮 n8n Cloud Platform<br/>35+ Workflow Nodes]
+    CORE ---|Database| SANITY[💾 Sanity CMS<br/>Real-time Queries]
+    CORE ---|Interface| DASH[📱 Next.js Dashboard<br/>2,582 Lines Code]
+    CORE ---|AI Brain| OPENAI[🤖 OpenAI GPT-4<br/>Message + Sentiment]
+    CORE ---|Messaging| TWILIO[📲 Twilio SMS<br/>UK Number API]
+    CORE ---|Hosting| VERCEL[☁️ Vercel Platform<br/>99.9% Uptime]
+    CORE ---|Version Control| GITHUB[🔧 GitHub Repo<br/>CI/CD Pipeline]
+    CORE ---|Booking| CAL[📅 Cal.com API<br/>15-min Slots]
+    CORE ---|Location| GMAPS[🗺️ Google Maps<br/>Postcode Lookup]
 
-    N8N ---|Triggers| CRON[⏰ Time-based]
-    N8N ---|Events| WEBHOOK[🎣 Webhooks]
-    N8N ---|Logic| CONDITION[🧠 Routing]
+    N8N ---|Cron Jobs| CRON[⏰ Time Triggers<br/>M1/M2/M3]
+    N8N ---|Real-time| WEBHOOK[🎣 Webhooks<br/>Reply Capture]
+    N8N ---|Smart| CONDITION[🧠 IF/THEN Logic<br/>Routing Rules]
 
-    OPENAI ---|Generate| MSG[✍️ Messages]
-    OPENAI ---|Analyze| SENT[😊 Sentiment]
+    OPENAI ---|Creates| MSG[✍️ Personalized SMS<br/>Context-aware]
+    OPENAI ---|Classifies| SENT[😊 5 Sentiments<br/>Hot/Positive/etc]
 
-    DASH ---|Show| HOT[🔥 Hot Leads]
-    DASH ---|Display| ANALYTICS[📊 Analytics]
-    DASH ---|Feed| RECENT[⏱️ Recent Activity]
+    DASH ---|Displays| HOT[🔥 Hot Leads View<br/>Expandable Cards]
+    DASH ---|Shows| ANALYTICS[📊 Analytics Charts<br/>11.2% Reply Rate]
+    DASH ---|Updates| RECENT[⏱️ Recent Activity<br/>Live Feed]
 
-    CORE ---|Serves| TEAM[👥 Sales Team]
-    CORE ---|Engages| LEADS[🎯 975 Leads]
-    CORE ---|Revenue| MONEY[💰 Conversions]
+    CORE ---|Serves| TEAM[👥 Sales Team<br/>3-5 Users]
+    CORE ---|Engages| LEADS[🎯 975 Leads<br/>Customers]
+    CORE ---|Generates| MONEY[💰 £151k+ Value<br/>Annual Benefit]
 
     classDef core fill:#ef4444,stroke:#991b1b,stroke-width:4px,color:#fff
     classDef primary fill:#8b5cf6,stroke:#6d28d9,stroke-width:3px,color:#fff
@@ -236,85 +564,86 @@ graph TD
             </div>
         </div>
 
-        <!-- Diagram 4: Value Creation Flow -->
-        <div class="diagram-section">
-            <h2>💰 Value Creation & ROI Flow</h2>
-            <p>How the system transforms dormant leads into revenue</p>
+        <!-- Diagram 4: Value Creation -->
+        <div class="diagram-section reveal">
+            <h2>💰 Value Creation & Revenue Flow</h2>
+            <p>Transforming dormant database assets into measurable business value and revenue</p>
             <div class="mermaid">
 graph LR
-    INPUT[975 Leads<br/>£0 Value] --> AUTO[AI Automation<br/>Personalization]
+    INPUT[975 Dormant Leads<br/>£0 Current Value<br/>Untapped Potential] --> AUTO[AI Automation Engine<br/>Personalization<br/>Smart Timing]
 
-    AUTO --> SENT[2,925 Messages<br/>M1/M2/M3]
-    SENT --> REPLY[327 Replies<br/>11.2% Rate]
-    REPLY --> POSITIVE[33 Conversions<br/>10% Convert]
-    POSITIVE --> REV[£57,750<br/>Campaign Revenue]
+    AUTO --> SENT[2,925 Total Messages<br/>M1: 975 | M2: 975 | M3: 975<br/>£117 SMS Cost]
+    SENT --> REPLY[327 Expected Replies<br/>11.2% Reply Rate<br/>2.5× Industry Average]
+    REPLY --> POSITIVE[33 Conversions<br/>10% Conversion Rate<br/>AI-Qualified Leads]
+    POSITIVE --> REV[£231,000 Revenue<br/>33 × £7,000 avg<br/>Solar Installations]
 
-    REV --> PROFIT[£14,437<br/>Profit @ 25%]
+    REV --> PROFIT[£46,200 Gross Profit<br/>20% Realistic Margin<br/>After All Costs]
 
-    SAVED[Time Saved<br/>9.3 hrs/day] --> LABOR[£60,450<br/>Labor Savings]
-    SPEED[Fast Response<br/>4 days vs 8 weeks] --> CASH[£15,000<br/>Cash Flow]
+    SAVED[Time Automation<br/>9.3 hours/day saved<br/>2,418 hours/year] --> LABOR[£60,450 Labor Value<br/>@ £25/hour<br/>Productivity Gained]
 
-    PROFIT --> TOTAL[Total Year 1<br/>£151,550]
+    SPEED[Speed Advantage<br/>4 days vs 8 weeks<br/>Fast Response] --> CASH[£15,000 Value<br/>Better Cash Flow<br/>Quicker Conversion]
+
+    PROFIT --> TOTAL[Total Year 1 Value<br/>£151,550<br/>Conservative Estimate]
     LABOR --> TOTAL
     CASH --> TOTAL
 
-    INVEST[Investment<br/>£4,080] --> ROI[ROI: 3,614%<br/>Payback: 4 days]
+    INVEST[One-time Investment<br/>£2,550<br/>51 Hours @ £50/hr] --> ROI[ROI: 5,943%<br/>Payback: 2.5 Days<br/>Exceptional Return]
     TOTAL --> ROI
 
-    style INPUT fill:#3b82f6
-    style AUTO fill:#8b5cf6
-    style REV fill:#10b981
-    style TOTAL fill:#f59e0b
-    style ROI fill:#ef4444
+    style INPUT fill:#3b82f6,color:#fff
+    style AUTO fill:#8b5cf6,color:#fff
+    style REV fill:#10b981,color:#fff
+    style TOTAL fill:#f59e0b,color:#fff
+    style ROI fill:#ef4444,color:#fff
             </div>
         </div>
 
         <!-- Diagram 5: Technology Stack -->
-        <div class="diagram-section">
+        <div class="diagram-section reveal">
             <h2>⚙️ Complete Technology Stack</h2>
-            <p>7 layers powering the entire platform</p>
+            <p>Seven interconnected layers of modern web technologies, APIs, and cloud services</p>
             <div class="mermaid">
 graph TB
-    subgraph "Frontend Layer"
-        F1[Next.js 14]
-        F2[React + TypeScript]
-        F3[Tailwind CSS]
+    subgraph "🎨 Frontend Layer"
+        F1[Next.js 14 App Router]
+        F2[React 18 + TypeScript 5]
+        F3[Tailwind CSS 3]
     end
 
-    subgraph "API Layer"
-        A1[8 API Routes]
-        A2[Serverless Functions]
-        A3[Vercel Cron Jobs]
+    subgraph "🔌 API Layer"
+        A1[8 Serverless API Routes]
+        A2[RESTful Architecture]
+        A3[Vercel Cron Jobs 5AM-11:59PM]
     end
 
-    subgraph "Automation Layer"
-        N1[n8n Workflows]
-        N2[35+ Nodes]
-        N3[Triggers & Webhooks]
+    subgraph "🔮 Automation Layer"
+        N1[n8n Cloud Workflows]
+        N2[35+ Integration Nodes]
+        N3[Time + Event Triggers]
     end
 
-    subgraph "AI/ML Layer"
-        AI1[OpenAI GPT-4]
-        AI2[Message Generation]
-        AI3[Sentiment Analysis]
+    subgraph "🤖 AI/ML Layer"
+        AI1[OpenAI GPT-4 Turbo]
+        AI2[Dynamic Message Gen]
+        AI3[Sentiment Classification]
     end
 
-    subgraph "Communication"
-        C1[Twilio SMS]
-        C2[Rate Limiting]
-        C3[Reply Processing]
+    subgraph "📱 Communication Layer"
+        C1[Twilio SMS API v2010]
+        C2[1 msg/min Rate Limit]
+        C3[Delivery + Reply Tracking]
     end
 
-    subgraph "Data Layer"
-        D1[Sanity CMS]
-        D2[Google Sheets]
-        D3[Real-time Sync]
+    subgraph "💾 Data Layer"
+        D1[Sanity CMS Headless]
+        D2[Google Sheets API v4]
+        D3[GROQ Query Language]
     end
 
-    subgraph "Integrations"
-        I1[Cal.com API]
-        I2[Google Maps]
-        I3[GitHub CI/CD]
+    subgraph "🔗 Integration Layer"
+        I1[Cal.com Booking API]
+        I2[Google Maps Embed]
+        I3[GitHub Actions CI/CD]
     end
 
     F1 --> A1
@@ -323,125 +652,135 @@ graph TB
     N1 --> C1
     N1 --> D1
     A1 --> I1
+    D1 --> D2
             </div>
         </div>
 
         <!-- Diagram 6: ROI Breakdown -->
-        <div class="diagram-section">
+        <div class="diagram-section reveal">
             <h2>📈 Year 1 Financial Benefit Breakdown</h2>
-            <p>£151,550 total value split by category</p>
+            <p>£151,550 total value distributed across six key benefit categories</p>
             <div class="mermaid">
-pie title "Year 1 Financial Benefit (£151,550)"
-    "Labor Savings £60,450" : 60450
-    "Campaign Automation £24,350" : 24350
-    "AI Conversion Uplift £36,750" : 36750
-    "Speed to Revenue £15,000" : 15000
-    "Scalability Value £10,000" : 10000
-    "Data Optimization £5,000" : 5000
+pie title "Year 1 Financial Benefit: £151,550"
+    "Labor Cost Savings £60,450" : 60450
+    "Campaign Time Savings £24,350" : 24350
+    "AI Conversion Revenue £46,200" : 46200
+    "Speed to Market £15,000" : 15000
+    "Scalability Readiness £10,000" : 10000
+    "Data-Driven Optimization £5,000" : 5000
             </div>
         </div>
 
         <!-- Diagram 7: Time Comparison -->
-        <div class="diagram-section">
-            <h2>⏱️ Time Savings: Manual vs Automated</h2>
-            <p>98% reduction in time required to run campaigns</p>
+        <div class="diagram-section reveal">
+            <h2>⏱️ Time Efficiency: Manual vs Automated</h2>
+            <p>98% reduction in campaign execution time - from 760 hours to just 15 hours of active work</p>
             <div class="mermaid">
 gantt
-    title Manual Process vs Automated System
+    title Campaign Execution: Manual vs Automated
     dateFormat X
-    axisFormat %Hh
+    axisFormat %H hrs
 
-    section Manual Campaign
-    Write messages (146h) :done, 0, 146
-    Send manually (97.5h) :done, 146, 244
-    Monitor replies (273h) :done, 244, 517
-    Update data (243h) :done, 517, 760
-    Total: 760 hours :crit, 0, 760
+    section 📝 Manual Process
+    Write 2,925 messages manually (146h) :done, 0, 146
+    Copy/paste send each SMS (97.5h) :done, 146, 244
+    Check phone for replies (273h) :done, 244, 517
+    Update spreadsheet status (243h) :done, 517, 760
+    TOTAL MANUAL: 760 hours :crit, 0, 760
 
-    section Automated
-    AI Auto-generates :done, 0, 0
-    Auto-sends SMS :done, 0, 0
-    Auto-monitors :done, 0, 0
-    Auto-updates :done, 0, 0
-    Team review (15h) :active, 0, 15
+    section ⚡ Automated System
+    AI auto-generates all messages (0h) :done, 0, 0
+    Twilio auto-sends with rate limit (0h) :done, 0, 0
+    Webhooks auto-capture replies (0h) :done, 0, 0
+    Sanity auto-syncs all data (0h) :done, 0, 0
+    Team reviews hot leads (15h) :active, 0, 15
+    TOTAL AUTOMATED: 15 hours :active, 0, 15
             </div>
         </div>
 
         <!-- Diagram 8: System Health -->
-        <div class="diagram-section">
-            <h2>🔔 System Health Monitoring</h2>
-            <p>Real-time monitoring with automatic alerts</p>
+        <div class="diagram-section reveal">
+            <h2>🔔 Real-time System Health Monitoring</h2>
+            <p>Automated monitoring with instant Telegram alerts for any service degradation</p>
             <div class="mermaid">
 graph LR
-    MONITOR[System Health<br/>Dashboard]
+    MONITOR[System Health<br/>Monitoring Dashboard<br/>Real-time Checks]
 
-    MONITOR --> M1[n8n Uptime<br/>99.5%]
-    MONITOR --> M2[Vercel Status<br/>99.9%]
-    MONITOR --> M3[API Response<br/>&lt;500ms]
-    MONITOR --> M4[SMS Delivery<br/>99.2%]
+    MONITOR --> M1[n8n Platform<br/>Uptime 99.5%<br/>35+ Nodes Active]
+    MONITOR --> M2[Vercel Hosting<br/>Status 99.9%<br/>Global CDN]
+    MONITOR --> M3[API Performance<br/>Response &lt;500ms<br/>p95 Latency]
+    MONITOR --> M4[SMS Delivery<br/>Success 99.2%<br/>Twilio SLA]
 
-    M1 --> CHECK1{&gt;95%?}
-    M2 --> CHECK2{&gt;99%?}
-    M3 --> CHECK3{&lt;1s?}
-    M4 --> CHECK4{&gt;98%?}
+    M1 --> CHECK1{Above<br/>95%?}
+    M2 --> CHECK2{Above<br/>99%?}
+    M3 --> CHECK3{Below<br/>1 second?}
+    M4 --> CHECK4{Above<br/>98%?}
 
-    CHECK1 -->|No| ALERT[📱 Telegram Alert]
-    CHECK2 -->|No| ALERT
-    CHECK3 -->|No| ALERT
-    CHECK4 -->|No| ALERT
+    CHECK1 -->|System Degraded| ALERT[📱 Telegram Alert<br/>Instant Notification<br/>Team Response]
+    CHECK2 -->|Service Down| ALERT
+    CHECK3 -->|Performance Issue| ALERT
+    CHECK4 -->|Delivery Problems| ALERT
 
-    CHECK1 -->|Yes| OK[✅ All Systems Go]
-    CHECK2 -->|Yes| OK
-    CHECK3 -->|Yes| OK
-    CHECK4 -->|Yes| OK
+    CHECK1 -->|Healthy| OK[✅ All Systems Operational<br/>No Action Required<br/>Continue Monitoring]
+    CHECK2 -->|Healthy| OK
+    CHECK3 -->|Healthy| OK
+    CHECK4 -->|Healthy| OK
 
-    style MONITOR fill:#3b82f6
-    style ALERT fill:#ef4444
-    style OK fill:#10b981
+    style MONITOR fill:#3b82f6,color:#fff
+    style ALERT fill:#ef4444,color:#fff
+    style OK fill:#10b981,color:#fff
             </div>
         </div>
 
         <!-- Diagram 9: Future Roadmap -->
-        <div class="diagram-section">
-            <h2>🗺️ Future Enhancement Roadmap</h2>
-            <p>Platform evolution from Phase 1 (complete) to Phase 4 (enterprise SaaS)</p>
+        <div class="diagram-section reveal">
+            <h2>🗺️ Platform Evolution Roadmap</h2>
+            <p>Strategic development phases from current state to enterprise-grade white-label SaaS platform</p>
             <div class="mermaid">
 timeline
-    title DBR System Evolution
-    section Phase 1 - Complete ✅
-        Dashboard : SMS Campaign
-                  : Sentiment Analysis
-                  : Cal.com Booking
-                  : Analytics
-    section Phase 2 - Q1 2025
-        Enhancements : WhatsApp Integration
-                     : Voice AI Calls
-                     : Predictive Scoring
-                     : Email Sequences
-    section Phase 3 - Q2 2025
-        Collaboration : Multi-user Access
-                      : Team Features
-                      : Advanced Reports
-                      : CRM Integration
-    section Phase 4 - Q3 2025
-        Enterprise : White-label SaaS
-                   : Partner Licensing
-                   : API Marketplace
-                   : £500k+ Revenue
+    title DBR System Evolution: 2024-2025
+    section ✅ Phase 1 Complete (Oct 2024)
+        Foundation Built : Full Dashboard UI
+                         : SMS Campaign (M1/M2/M3)
+                         : AI Sentiment Analysis
+                         : Cal.com Booking
+                         : Real-time Analytics
+                         : Mobile Optimized
+    section 📅 Phase 2 (Q1 2025)
+        Enhanced Channels : WhatsApp Business API
+                          : Voice AI Calls (VAPI)
+                          : Email Sequences
+                          : Predictive Lead Scoring
+                          : Multi-touch Attribution
+                          : £3k-6k Investment
+    section 🚀 Phase 3 (Q2 2025)
+        Team Features : Multi-user Access
+                      : Role-based Permissions
+                      : Internal Chat
+                      : Advanced Reporting
+                      : CRM Integrations
+                      : £5k-8k Investment
+    section 🏆 Phase 4 (Q3 2025)
+        Enterprise SaaS : White-label Platform
+                        : Partner Licensing
+                        : API Marketplace
+                        : Custom Branding
+                        : £500k+ Annual Revenue
+                        : Scale to 100+ Clients
             </div>
         </div>
 
-        <!-- Summary Stats -->
-        <div class="diagram-section">
-            <h2>🎯 Project Summary</h2>
+        <!-- Summary Stats Grid -->
+        <div class="diagram-section reveal">
+            <h2>🎯 Complete Project Summary</h2>
             <div class="stats">
                 <div class="stat-card">
-                    <h3>51 hours</h3>
-                    <p>Total Development</p>
+                    <h3>51h</h3>
+                    <p>Total Development Time</p>
                 </div>
                 <div class="stat-card">
                     <h3>2,582</h3>
-                    <p>Lines of Code</p>
+                    <p>Lines of Production Code</p>
                 </div>
                 <div class="stat-card">
                     <h3>35+</h3>
@@ -449,46 +788,93 @@ timeline
                 </div>
                 <div class="stat-card">
                     <h3>8</h3>
-                    <p>API Endpoints</p>
+                    <p>Serverless API Routes</p>
                 </div>
                 <div class="stat-card">
                     <h3>11.2%</h3>
-                    <p>Reply Rate</p>
+                    <p>SMS Reply Rate Achieved</p>
                 </div>
                 <div class="stat-card">
                     <h3>£55-150</h3>
-                    <p>Monthly Cost</p>
+                    <p>Monthly Running Cost</p>
                 </div>
                 <div class="stat-card">
-                    <h3>4 days</h3>
-                    <p>Payback Period</p>
+                    <h3>4 Days</h3>
+                    <p>Investment Payback Period</p>
                 </div>
                 <div class="stat-card">
                     <h3>100%</h3>
-                    <p>Ownership</p>
+                    <p>Platform Ownership</p>
                 </div>
             </div>
         </div>
 
-        <div class="footer">
-            <h2>Cold Lava AI</h2>
+        <!-- Footer -->
+        <div class="footer reveal">
+            <h2>⚡ Cold Lava AI</h2>
             <p>Full-Stack Database Reactivation Platform</p>
-            <p>Built: October 23rd, 2024 | Liverpool, UK</p>
+            <p>Built: Thursday, October 23rd, 2024 | Liverpool, UK</p>
+            <p>Development: 51 hours total @ £50/hour = £2,550 investment</p>
             <p>Contact: oliver@otdm.net | +44 151 541 6933</p>
+            <p style="margin-top: 30px; opacity: 0.5;">Dashboard: https://greenstar-dbr-dashboard.vercel.app</p>
         </div>
     </div>
 
     <script>
+        // Initialize Mermaid
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'default',
+            theme: 'dark',
             themeVariables: {
-                primaryColor: '#667eea',
+                primaryColor: '#8b5cf6',
                 primaryTextColor: '#fff',
-                primaryBorderColor: '#764ba2',
-                lineColor: '#667eea',
-                secondaryColor: '#06b6d4',
-                tertiaryColor: '#10b981',
+                primaryBorderColor: '#6d28d9',
+                lineColor: '#06b6d4',
+                secondaryColor: '#10b981',
+                tertiaryColor: '#f59e0b',
+                darkMode: true,
+                background: '#0f172a',
+                mainBkg: '#1e293b',
+                secondBkg: '#334155',
+                textColor: '#fff',
+                fontSize: '16px',
+                fontFamily: 'Inter, sans-serif'
+            }
+        });
+
+        // Scroll progress bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+
+        // Reveal on scroll animation
+        const reveals = document.querySelectorAll('.reveal');
+
+        function checkReveal() {
+            reveals.forEach(element => {
+                const windowHeight = window.innerHeight;
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+
+                if (elementTop < windowHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', checkReveal);
+        checkReveal(); // Initial check
+
+        // Parallax effect for hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.3}px)`;
+                hero.style.opacity = 1 - (scrolled / 500);
             }
         });
     </script>
