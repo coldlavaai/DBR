@@ -327,8 +327,8 @@ export default function EnhancedDbrDashboard() {
         <div className="flex items-center justify-between text-sm text-gray-400">
           <p>© 2025 Cold Lava AI - Database Recovery Analytics Platform</p>
           <div className="flex items-center gap-4">
-            <a href="https://coldlavaai.github.io/home" target="_blank" rel="noopener noreferrer" className="hover:text-coldlava-cyan transition-colors">
-              coldlavaai.com
+            <a href="https://coldlava.ai" target="_blank" rel="noopener noreferrer" className="hover:text-coldlava-cyan transition-colors">
+              coldlava.ai
             </a>
             <span>|</span>
             <a href="mailto:oliver@otdm.net" className="hover:text-coldlava-cyan transition-colors">

@@ -37,7 +37,7 @@ export default function DashboardHeader({
           {/* Left: Cold Lava Logo with hover effect */}
           <div className="flex items-center gap-6">
             <a
-              href="https://coldlavaai.github.io/home"
+              href="https://coldlava.ai"
               target="_blank"
               rel="noopener noreferrer"
               className="relative w-72 h-20 group cursor-pointer"
