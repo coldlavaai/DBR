@@ -205,13 +205,31 @@ export async function GET() {
 
     console.log(`✅ Sync complete: ${created} created, ${updated} updated, ${errors} errors`)
 
+    // Store the sync timestamp in Sanity for "last updated" display
+    const syncTimestamp = new Date().toISOString()
+    try {
+      await sanityClient.createOrReplace({
+        _id: 'syncMetadata',
+        _type: 'syncMetadata',
+        lastSyncTimestamp: syncTimestamp,
+        lastSyncStats: {
+          created,
+          updated,
+          errors,
+          total: rows.length
+        }
+      })
+    } catch (metaError) {
+      console.error('Error storing sync metadata:', metaError)
+    }
+
     return NextResponse.json({
       success: true,
       created,
       updated,
       errors,
       total: rows.length,
-      timestamp: new Date().toISOString()
+      timestamp: syncTimestamp
     })
   } catch (error) {
     console.error('Sync error:', error)

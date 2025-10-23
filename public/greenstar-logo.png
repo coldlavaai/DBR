@@ -1,0 +1,1428 @@
+<!doctype html >
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      class="">
+<head>
+    <meta charset="utf-8">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    window._currentDevice = 'desktop';
+    window.Parameters = window.Parameters || {
+        HomeUrl: 'https://www.greenstarsolar.co.uk/',
+        AccountUUID: '6266ca0b90ca44ccb5dac0f72b36f569',
+        SystemID: 'US_DIRECT_PRODUCTION',
+        SiteAlias: '8f142869',
+        SiteType: atob('RFVEQU9ORQ=='),
+        PublicationDate: 'Thu Oct 02 06:43:15 UTC 2025',
+        ExternalUid: 'looka',
+        IsSiteMultilingual: false,
+        InitialPostAlias: '',
+        InitialPostPageUuid: '',
+        InitialDynamicItem: '',
+        DynamicPageInfo: {
+            isDynamicPage: false,
+            base64JsonRowData: 'null',
+        },
+        InitialPageAlias: 'dmPageNotFound',
+        InitialPageUuid: '01b09593e2434b4fb3110d8ec6da79de',
+        InitialPageId: '0',
+        InitialEncodedPageAlias: 'ZG1QYWdlTm90Rm91bmQ=',
+        InitialHeaderUuid: 'c00e9ca7d7844a669c2b50edfe2c4b6a',
+        CurrentPageUrl: '',
+        IsCurrentHomePage: false,
+        AllowAjax: false,
+        AfterAjaxCommand: null,
+        HomeLinkText: 'Back To Home',
+        UseGalleryModule: false,
+        CurrentThemeName: 'Layout Theme',
+        ThemeVersion: '500000',
+        DefaultPageAlias: '',
+        RemoveDID: true,
+        WidgetStyleID: null,
+        IsHeaderFixed: false,
+        IsHeaderSkinny: false,
+        IsBfs: true,
+        StorePageAlias: 'null',
+        StorePagesUrls: 'e30=',
+        IsNewStore: 'false',
+        StorePath: '',
+        StoreId: 'null',
+        StoreVersion: 0,
+        StoreBaseUrl: '',
+        StoreCleanUrl: true,
+        StoreDisableScrolling: true,
+        IsStoreSuspended: false,
+        HasCustomDomain: true,
+        SimpleSite: false,
+        showCookieNotification: false,
+        cookiesNotificationMarkup: 'null',
+        translatedPageUrl: '',
+        isFastMigrationSite: false,
+        sidebarPosition: 'LEFT',
+        currentLanguage: 'en',
+        currentLocale: 'en',
+        NavItems: '{}',
+        errors: {
+            general: 'There was an error connecting to the page.<br/> Make sure you are not offline.',
+            password: 'Incorrect name/password combination',
+            tryAgain: 'Try again'
+        },
+        NavigationAreaParams: {
+            ShowBackToHomeOnInnerPages: true,
+            NavbarSize: -1,
+            NavbarLiveHomePage: 'https://www.greenstarsolar.co.uk/',
+            BlockContainerSelector: '.dmBody',
+            NavbarSelector: '#dmNav:has(a)',
+            SubNavbarSelector: '#subnav_main'
+        },
+        hasCustomCode: true,
+        planID: '7',
+        customTemplateId: 'null',
+        siteTemplateId: 'null',
+        productId: 'DM_DIRECT',
+        disableTracking: false,
+        pageType: 'FROM_SCRATCH',
+        isRuntimeServer: true,
+        isInEditor: false,
+        hasNativeStore: false,
+        defaultLang: 'en',
+        hamburgerMigration: null,
+        isFlexSite: false
+    };
+
+    window.Parameters.LayoutID = {};
+    window.Parameters.LayoutID[window._currentDevice] = 6;
+    window.Parameters.LayoutVariationID = {};
+    window.Parameters.LayoutVariationID[window._currentDevice] = 5;
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Injecting site-wide to the head -->
+
+
+
+
+<!-- End Injecting site-wide to the head -->
+
+<!-- Inject secured cdn script -->
+
+
+<!-- ========= Meta Tags ========= -->
+<!-- PWA settings -->
+<script>
+    function toHash(str) {
+        var hash = 5381, i = str.length;
+        while (i) {
+            hash = hash * 33 ^ str.charCodeAt(--i)
+        }
+        return hash >>> 0
+    }
+</script>
+<script>
+    (function (global) {
+    //const cacheKey = global.cacheKey;
+    const isOffline = 'onLine' in navigator && navigator.onLine === false;
+    const hasServiceWorkerSupport = 'serviceWorker' in navigator;
+    if (isOffline) {
+        console.log('offline mode');
+    }
+    if (!hasServiceWorkerSupport) {
+        console.log('service worker is not supported');
+    }
+    if (hasServiceWorkerSupport && !isOffline) {
+        window.addEventListener('load', function () {
+            const serviceWorkerPath = '/runtime-service-worker.js?v=3';
+            navigator.serviceWorker
+                .register(serviceWorkerPath, { scope: './' })
+                .then(
+                    function (registration) {
+                        // Registration was successful
+                        console.log(
+                            'ServiceWorker registration successful with scope: ',
+                            registration.scope
+                        );
+                    },
+                    function (err) {
+                        // registration failed :(
+                        console.log('ServiceWorker registration failed: ', err);
+                    }
+                )
+                .catch(function (err) {
+                    console.log(err);
+                });
+        });
+
+        // helper function to refresh the page
+        var refreshPage = (function () {
+            var refreshing;
+            return function () {
+                if (refreshing) return;
+                // prevent multiple refreshes
+                var refreshkey = 'refreshed' + location.href;
+                var prevRefresh = localStorage.getItem(refreshkey);
+                if (prevRefresh) {
+                    localStorage.removeItem(refreshkey);
+                    if (Date.now() - prevRefresh < 30000) {
+                        return; // dont go into a refresh loop
+                    }
+                }
+                refreshing = true;
+                localStorage.setItem(refreshkey, Date.now());
+                console.log('refereshing page');
+                window.location.reload();
+            };
+        })();
+
+        function messageServiceWorker(data) {
+            return new Promise(function (resolve, reject) {
+                if (navigator.serviceWorker.controller) {
+                    var worker = navigator.serviceWorker.controller;
+                    var messageChannel = new MessageChannel();
+                    messageChannel.port1.onmessage = replyHandler;
+                    worker.postMessage(data, [messageChannel.port2]);
+                    function replyHandler(event) {
+                        resolve(event.data);
+                    }
+                } else {
+                    resolve();
+                }
+            });
+        }
+    }
+})(window);
+</script>
+<!-- Add manifest -->
+<!-- End PWA settings -->
+
+
+
+<link rel="canonical" href="https://www.greenstarsolar.co.uk/dmPageNotFound">
+
+<meta id="view" name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!--Add favorites icons-->
+
+<link rel="icon" type="image/x-icon" href="https://irp.cdn-website.com/8f142869/site_favicon_16_1757089865778.ico"/>
+
+<!-- End favorite icons -->
+<link rel="preconnect" href="https://lirp.cdn-website.com/"/>
+
+
+
+<!-- render the required CSS and JS in the head section -->
+<script id='d-js-dmapi'>
+    window.SystemID = 'US_DIRECT_PRODUCTION';
+
+    if (!window.dmAPI) {
+        window.dmAPI = {
+            registerExternalRuntimeComponent: function () {
+            },
+            getCurrentDeviceType: function () {
+                return window._currentDevice;
+            },
+            runOnReady: (ns, fn) => {
+                const safeFn = dmAPI.toSafeFn(fn);
+                ns = ns || 'global_' + Math.random().toString(36).slice(2, 11);
+                const eventName = 'afterAjax.' + ns;
+
+                if (document.readyState === 'complete') {
+                    $.DM.events.off(eventName).on(eventName, safeFn);
+                    setTimeout(function () {
+                        safeFn({
+                            isAjax: false,
+                        });
+                    }, 0);
+                } else {
+                    window?.waitForDeferred?.('dmAjax', () => {
+                        $.DM.events.off(eventName).on(eventName, safeFn);
+                        safeFn({
+                            isAjax: false,
+                        });
+                    });
+                }
+            },
+            toSafeFn: (fn) => {
+                if (fn?.safe) {
+                    return fn;
+                }
+                const safeFn = function (...args) {
+                    try {
+                        return fn?.apply(null, args);
+                    } catch (e) {
+                        console.log('function failed ' + e.message);
+                    }
+                };
+                safeFn.safe = true;
+                return safeFn;
+            }
+        };
+    }
+
+    if (!window.requestIdleCallback) {
+        window.requestIdleCallback = function (fn) {
+            setTimeout(fn, 0);
+        }
+    }
+</script>
+
+<!-- loadCSS function header.jsp-->
+
+
+
+
+
+
+<script id="d-js-load-css">
+/**
+ * There are a few <link> tags with CSS resource in them that are preloaded in the page
+ * in each of those there is a "onload" handler which invokes the loadCSS callback
+ * defined here.
+ * We are monitoring 3 main CSS files - the runtime, the global and the page.
+ * When each load we check to see if we can append them all in a batch. If threre
+ * is no page css (which may happen on inner pages) then we do not wait for it
+ */
+(function () {
+  let cssLinks = {};
+  function loadCssLink(link) {
+    link.onload = null;
+    link.rel = "stylesheet";
+    link.type = "text/css";
+  }
+  
+    function checkCss() {
+      const pageCssLink = document.querySelector("[id*='CssLink']");
+      const widgetCssLink = document.querySelector("[id*='widgetCSS']");
+
+        if (cssLinks && cssLinks.runtime && cssLinks.global && (!pageCssLink || cssLinks.page) && (!widgetCssLink || cssLinks.widget)) {
+            const storedRuntimeCssLink = cssLinks.runtime;
+            const storedPageCssLink = cssLinks.page;
+            const storedGlobalCssLink = cssLinks.global;
+            const storedWidgetCssLink = cssLinks.widget;
+
+            storedGlobalCssLink.disabled = true;
+            loadCssLink(storedGlobalCssLink);
+
+            if (storedPageCssLink) {
+                storedPageCssLink.disabled = true;
+                loadCssLink(storedPageCssLink);
+            }
+
+            if(storedWidgetCssLink) {
+                storedWidgetCssLink.disabled = true;
+                loadCssLink(storedWidgetCssLink);
+            }
+
+            storedRuntimeCssLink.disabled = true;
+            loadCssLink(storedRuntimeCssLink);
+
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    storedRuntimeCssLink.disabled = false;
+                    storedGlobalCssLink.disabled = false;
+                    if (storedPageCssLink) {
+                      storedPageCssLink.disabled = false;
+                    }
+                    if (storedWidgetCssLink) {
+                      storedWidgetCssLink.disabled = false;
+                    }
+                    // (SUP-4179) Clear the accumulated cssLinks only when we're
+                    // sure that the document has finished loading and the document 
+                    // has been parsed.
+                    if(document.readyState === 'interactive') {
+                      cssLinks = null;
+                    }
+                }, 0);
+            });
+        }
+    }
+  
+
+  function loadCSS(link) {
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var noCSS = !!urlParams.get("nocss");
+      var cssTimeout = urlParams.get("cssTimeout") || 0;
+
+      if (noCSS) {
+        return;
+      }
+      if (link.href && link.href.includes("d-css-runtime")) {
+        cssLinks.runtime = link;
+        checkCss();
+      } else if (link.id === "siteGlobalCss") {
+        cssLinks.global = link;
+        checkCss();
+      } 
+      
+      else if (link.id && link.id.includes("CssLink")) {
+        cssLinks.page = link;
+        checkCss();
+      } else if (link.id && link.id.includes("widgetCSS")) {
+        cssLinks.widget = link;
+        checkCss();
+      }
+      
+      else {
+        requestIdleCallback(function () {
+          window.setTimeout(function () {
+            loadCssLink(link);
+          }, parseInt(cssTimeout, 10));
+        });
+      }
+    } catch (e) {
+      throw e
+    }
+  }
+  window.loadCSS = window.loadCSS || loadCSS;
+})();
+</script>
+
+
+
+<script data-role="deferred-init" type="text/javascript">
+    /* usage: window.getDeferred(<deferred name>).resolve() or window.getDeferred(<deferred name>).promise.then(...)*/
+    function Def() {
+        this.promise = new Promise((function (a, b) {
+            this.resolve = a, this.reject = b
+        }).bind(this))
+    }
+
+    const defs = {};
+    window.getDeferred = function (a) {
+        return null == defs[a] && (defs[a] = new Def), defs[a]
+    }
+    window.waitForDeferred = function (b, a, c) {
+        let d = window?.getDeferred?.(b);
+        d
+            ? d.promise.then(a)
+            : c && ["complete", "interactive"].includes(document.readyState)
+                ? setTimeout(a, 1)
+                : c
+                    ? document.addEventListener("DOMContentLoaded", a)
+                    : console.error(`Deferred  does not exist`);
+    };
+</script>
+<style id="forceCssIncludes">
+    /* This file is auto-generated from a `scss` file with the same name */
+
+.videobgwrapper{overflow:hidden;position:absolute;z-index:0;width:100%;height:100%;top:0;left:0;pointer-events:none;border-radius:inherit}.videobgframe{position:absolute;width:101%;height:100%;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);object-fit:fill}#dm video.videobgframe{margin:0}@media (max-width:767px){.dmRoot .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:80vh}}@media (min-width:1025px){.dmRoot .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:45vh}}@media (min-width:768px) and (max-width:1024px){.responsiveTablet .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:45vh}}#dm [data-show-on-page-only]{display:none!important}#dmRoot div.stickyHeaderFix div.site_content{margin-top:0!important}#dmRoot div.stickyHeaderFix div.hamburger-header-container{position:relative}
+    
+
+</style>
+<style id="cssVariables" type="text/css">
+    
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Google Fonts Include -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- loadCSS function fonts.jsp-->
+
+
+
+<link type="text/css" rel="stylesheet" href="https://irp.cdn-website.com/fonts/css2?family=Belgrano:ital,wght@0,400&family=Staatliches:ital,wght@0,400&family=Indie+Flower:ital,wght@0,400&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Bebas+Neue:ital,wght@0,400&family=DM+Sans:ital,wght@0,100..1000;1,100..1000&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto+Slab:ital,wght@0,100..900;1,100..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Alata:ital,wght@0,400&family=Alice:ital,wght@0,400&family=Rock+Salt:ital,wght@0,400&family=Cinzel:ital,wght@0,400..900;1,400..900&family=Overlock:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Delius:ital,wght@0,400&family=Rubik:ital,wght@0,300..900;1,300..900&family=Exo:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&amp;subset=latin-ext&amp;display=swap"  />
+
+
+
+
+
+<!-- RT CSS Include d-css-runtime-desktop-one-package-structured-global-->
+<link rel="stylesheet" type="text/css" href="https://static.cdn-website.com/mnlt/production/5849/_dm/s/rt/dist/css/d-css-runtime-desktop-one-package-structured-global.min.css" />
+
+<!-- End of RT CSS Include -->
+
+<link type="text/css" rel="stylesheet" href="https://irp.cdn-website.com/WIDGET_CSS/e25bea3b77670000d2606baf86004517.css" id="widgetCSS" />
+
+<!-- Support `img` size attributes -->
+<style>img[width][height] {
+  height: auto;
+}</style>
+
+<!-- Support showing sticky element on page only -->
+<style>
+  body[data-page-alias="dmPageNotFound"] #dm [data-show-on-page-only="dmPageNotFound"] {
+    display: block !important;
+  }
+</style>
+
+<!-- This is populated in Ajax navigation -->
+<style id="pageAdditionalWidgetsCss" type="text/css">
+</style>
+
+
+
+
+<!-- Site CSS -->
+<link type="text/css" rel="stylesheet" href="https://irp.cdn-website.com/8f142869/files/8f142869_1.min.css?v=29" id="siteGlobalCss" />
+
+
+
+<style id="customWidgetStyle" type="text/css">
+    
+</style>
+<style id="innerPagesStyle" type="text/css">
+    
+</style>
+
+
+<style
+        id="additionalGlobalCss" type="text/css"
+>
+</style>
+
+<style id="pagestyle" type="text/css">
+    
+</style>
+
+<style id="pagestyleDevice" type="text/css">
+    
+</style>
+
+<!-- Flex Sections CSS -->
+
+
+
+
+
+
+
+<style id="globalFontSizeStyle" type="text/css">
+    .font-size-24, .size-24, .size-24 > font { font-size: 24px !important; }
+</style>
+<style id="pageFontSizeStyle" type="text/css">
+</style>
+
+
+
+
+<style id="hideAnimFix">
+  .dmDesktopBody:not(.editGrid) [data-anim-desktop]:not([data-anim-desktop='none']), .dmDesktopBody:not(.editGrid) [data-anim-extended] {
+    visibility: hidden;
+  }
+
+  .dmDesktopBody:not(.editGrid) .dmNewParagraph[data-anim-desktop]:not([data-anim-desktop='none']), .dmDesktopBody:not(.editGrid) .dmNewParagraph[data-anim-extended] {
+    visibility: hidden !important;
+  }
+
+
+  #dmRoot:not(.editGrid) .flex-element [data-anim-extended] {
+    visibility: hidden;
+  }
+
+</style>
+
+
+
+
+<style id="fontFallbacks">
+    @font-face {
+  font-family: "Belgrano Fallback";
+  src: local('Arial');
+  ascent-override: 87.5736%;
+  descent-override: 24.5914%;
+  size-adjust: 113.0478%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Staatliches Fallback";
+  src: local('Arial');
+  ascent-override: 110.3516%;
+  descent-override: 34.8479%;
+  size-adjust: 86.0885%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Indie Flower Fallback";
+  src: local('Arial');
+  ascent-override: 101.0963%;
+  descent-override: 50.8533%;
+  size-adjust: 96.0177%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Roboto Fallback";
+  src: local('Arial');
+  ascent-override: 92.6709%;
+  descent-override: 24.3871%;
+  size-adjust: 100.1106%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Amiri Fallback";
+  src: local('Arial');
+  ascent-override: 123.7258%;
+  descent-override: 69.7884%;
+  size-adjust: 90.846%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Montserrat Fallback";
+  src: local('Arial');
+  ascent-override: 84.9466%;
+  descent-override: 22.0264%;
+  size-adjust: 113.954%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Poppins Fallback";
+  src: local('Arial');
+  ascent-override: 92.326%;
+  descent-override: 30.7753%;
+  line-gap-override: 8.793%;
+  size-adjust: 113.7274%;
+}@font-face {
+  font-family: "Noto Sans Fallback";
+  src: local('Arial');
+  ascent-override: 100.1833%;
+  descent-override: 27.459%;
+  size-adjust: 106.7044%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Bebas Neue Fallback";
+  src: local('Arial');
+  ascent-override: 116.5002%;
+  descent-override: 38.8334%;
+  size-adjust: 77.2531%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "DM Sans Fallback";
+  src: local('Arial');
+  ascent-override: 94.3696%;
+  descent-override: 29.4905%;
+  size-adjust: 105.1186%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Noto Serif Fallback";
+  src: local('Arial');
+  ascent-override: 98.7162%;
+  descent-override: 27.0569%;
+  size-adjust: 108.2903%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Roboto Slab Fallback";
+  src: local('Arial');
+  ascent-override: 97.7562%;
+  descent-override: 25.2818%;
+  size-adjust: 107.1903%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Ubuntu Fallback";
+  src: local('Arial');
+  ascent-override: 90.8147%;
+  descent-override: 18.4163%;
+  line-gap-override: 2.7283%;
+  size-adjust: 102.6265%;
+}@font-face {
+  font-family: "Alata Fallback";
+  src: local('Arial');
+  ascent-override: 107.1847%;
+  descent-override: 27.2834%;
+  size-adjust: 102.6265%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Alice Fallback";
+  src: local('Arial');
+  ascent-override: 89.5621%;
+  descent-override: 23.0556%;
+  size-adjust: 101.4938%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Rock Salt Fallback";
+  src: local('Arial');
+  ascent-override: 112.6419%;
+  descent-override: 54.69%;
+  line-gap-override: 2.2209%;
+  size-adjust: 140.708%;
+}@font-face {
+  font-family: "Cinzel Fallback";
+  src: local('Arial');
+  ascent-override: 76.7937%;
+  descent-override: 29.2697%;
+  size-adjust: 127.0938%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Overlock Fallback";
+  src: local('Arial');
+  ascent-override: 106.0693%;
+  descent-override: 27.8898%;
+  size-adjust: 91.0726%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Lato Fallback";
+  src: local('Arial');
+  ascent-override: 101.3181%;
+  descent-override: 21.865%;
+  size-adjust: 97.4159%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Delius Fallback";
+  src: local('Arial');
+  ascent-override: 97.1488%;
+  descent-override: 26.6026%;
+  size-adjust: 101.4938%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Rubik Fallback";
+  src: local('Arial');
+  ascent-override: 88.5654%;
+  descent-override: 23.6806%;
+  size-adjust: 105.5717%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Exo Fallback";
+  src: local('Arial');
+  ascent-override: 95.3209%;
+  descent-override: 31.1077%;
+  size-adjust: 105.1186%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Open Sans Fallback";
+  src: local('Arial');
+  ascent-override: 101.1768%;
+  descent-override: 27.7323%;
+  size-adjust: 105.6416%;
+  line-gap-override: 0%;
+ }
+</style>
+
+
+<!-- End render the required css and JS in the head section -->
+
+
+
+
+
+
+
+
+
+  <link type="application/rss+xml" rel="alternate" href="https://www.greenstarsolar.co.uk/feed/rss2"/>
+  <link type="application/atom+xml" rel="alternate" href="https://www.greenstarsolar.co.uk/feed/atom"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://www.greenstarsolar.co.uk/dmPageNotFound"/>
+
+  <meta name="twitter:card" content="summary"/>
+
+
+
+
+<!-- SYS- VVNfRElSRUNUX1BST0RVQ1RJT04= -->
+</head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<body id="dmRoot" data-page-alias="dmPageNotFound"  class="dmRoot dmDesktopBody fix-mobile-scrolling addCanvasBorder dmResellerSite mac dmLargeBody responsiveTablet "
+      style="padding:0;margin:0;"
+      
+    >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ========= Site Content ========= -->
+<div id="dm" class='dmwr'>
+    
+    <div class="dm_wrapper standard-var5 widgetStyle-3 standard">
+         <body dmwrapped="true" id="1084548655"> <div dmtemplateid="StandardLayoutMultiD" class="standardHeaderLayout dm-bfs dm-layout-sec hasAnimations rows-1200 dmPageBody inputs-css-clean dmFreeHeader" id="dm-outer-wrapper" data-soch="true" data-background-parallax-selector=".dmHomeSection1, .dmSectionParallex"> <div id="dmStyle_outerContainer" class="dmOuter"> <div id="dmStyle_innerContainer" class="dmInner"> <div class="dmLayoutWrapper standard-var dmStandardDesktop"> <div> <div id="iscrollBody"> <div id="site_content"> <div class="dmHeaderContainer fHeader d-header-wrapper"> <div id="hcontainer" class="u_hcontainer dmHeader p_hfcontainer hasBackgroundOverlay" freeheader="true" headerlayout="b58ba5b5703b4cd7b5f5f7951565dc87===horizontal-layout-5" layout="3e258119881349f1b0afec8887fc1e4b===header" mini-header-show-only-navigation-row="true"> <div dm:templateorder="85" class="dmHeaderResp dmHeaderStack noSwitch sc-header-custom" id="1709005236"> <div class="u_1063894103 dmRespRow" id="1063894103"> <div class="dmRespColsWrapper" id="1850524969"> <div class="dmRespCol large-12 medium-12 small-12" id="1952843573"> <div class="u_1673896578 imageWidget align-center" data-element-type="image" data-widget-type="image" id="1673896578"><img src="https://lirp.cdn-website.com/8f142869/dms3rep/multi/opt/Greenstar_Solar_Logo_WHITE.TAG_STACKED-3x-1920w.png" alt="" id="1695173739" class="" width="1920" height="832" data-dm-image-path="https://irp.cdn-website.com/8f142869/dms3rep/multi/Greenstar_Solar_Logo_WHITE.TAG_STACKED-3x.png" onerror="handleImageLoadError(this)"/></div> 
+</div> 
+</div> 
+</div> 
+ <div class="u_1355554402 dmRespRow" id="1355554402"> <div class="dmRespColsWrapper" id="1070325888"> <div class="dmRespCol large-12 medium-12 small-12" id="1794266046"> <nav class="u_1631965431 effect-text-fill main-navigation unifiednav dmLinksMenu" role="navigation" layout-main="horizontal_nav_layout_5" layout-sub="submenu_horizontal_2" data-show-vertical-sub-items="HOVER" data-divider="SLASH" id="1631965431" dmle_extension="onelinksmenu" data-element-type="onelinksmenu" wr="true" icon="true" surround="true" adwords="" navigation-id="unifiedNav"> <ul role="menubar" class="unifiednav__container  " data-auto="navigation-pages"> <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/" class="unifiednav__item  dmUDNavigationItem_00  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="HOME" data-auto="page-text-style">HOME<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/#ABOUTUS" class="unifiednav__item  dmUDNavigationItem_01010134704  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="ABOUT US" data-auto="page-text-style">ABOUT US<span class="icon icon-angle-down"></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" aria-haspopup="true" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/systems" class="unifiednav__item  dmUDNavigationItem_01010169332  unifiednav__item_has-sub-nav" target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="SYSTEMS" data-auto="page-text-style">SYSTEMS<span class="icon icon-angle-down"></span> 
+</span> 
+</a> 
+ <ul role="menu" aria-expanded="false" class="unifiednav__container unifiednav__container_sub-nav" data-depth="0" data-auto="sub-pages"> <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="1"> <a href="/solar-panels-for-home" class="unifiednav__item  dmUDNavigationItem_010101231575  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="SOLAR PANELS FOR HOME" data-auto="page-text-style">SOLAR PANELS FOR HOME<span class="icon icon-angle-right"></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="1"> <a href="/battery-storage-for-home" class="unifiednav__item  dmUDNavigationItem_010101693587  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="BATTERY STORAGE FOR HOME" data-auto="page-text-style">BATTERY STORAGE FOR HOME<span class="icon icon-angle-right"></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="1"> <a href="/solar-panels-for-business" class="unifiednav__item  dmUDNavigationItem_010101647050  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="SOLAR PANELS FOR BUSINESS" data-auto="page-text-style">SOLAR PANELS FOR BUSINESS<span class="icon icon-angle-right" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="1"> <a href="/battery-storage-for-business" class="unifiednav__item  dmUDNavigationItem_010101978937  " target="" data-target-page-alias=""> <span class="nav-item-text " data-link-text="BATTERY STORAGE FOR BUSINESS" data-auto="page-text-style">BATTERY STORAGE FOR BUSINESS<span class="icon icon-angle-right"></span> 
+</span> 
+</a> 
+</li> 
+</ul> 
+</li> 
+</ul> 
+</nav> 
+</div> 
+</div> 
+</div> 
+ <div class="dmRespRow" id="1644754972"> <div class="dmRespColsWrapper" id="1263111166"> <div class="dmRespCol empty-column large-12 medium-12 small-12" id="1109712431"></div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+ <div class="dmRespRow dmRespRowStable dmRespRowNoPadding dmPageTitleRow "> <div class="dmRespColsWrapper"> <div class="large-12 dmRespCol"> <div id="innerBar" class="innerBar lineInnerBar dmDisplay_None"> <div class="titleLine display_None"><hr/></div> 
+<!-- Page title is hidden in css for new responsive sites. It is left here only so we don't break old sites. Don't copy it to new layouts --> <div id="pageTitleText"></div> 
+ <div class="titleLine display_None"><hr/></div> 
+</div> 
+</div> 
+</div> 
+</div> 
+ <div dmwrapped="true" id="dmFirstContainer" class="dmBody u_dmStyle_template_dmPageNotFound"> <div id="allWrapper" class="allWrapper"> <div id="dm_content" class="dmContent"> <div> <style>#dm #error-container {
+			display: block;
+			position: relative;
+			width: 100%;
+			padding-top:120px;
+			background: #fff;
+			color: #bababa;
+			text-align: center;
+			font-family: 'Source Sans Pro';
+			overflow: hidden;
+		}
+
+		.dmMobileBody #error-container {
+			padding-top: 60px;
+		}
+
+		.four-o-four {
+			font-family: 'Oswald', sans-serif;
+			font-size: 130px;
+			text-align: center;
+			line-height: 130px;
+		}
+
+		.lean {
+			display: inline-block;
+			-webkit-transform: rotate(15deg) translate(-5px,-4px);
+			-moz-transform: rotate(15deg) translate(-5px,-4px);
+			transform: rotate(15deg) translate(-5px,-4px);
+		}
+
+		.description {
+			font-size: 22px;
+			margin: 45px 0;
+		}
+
+		.dmInner .back-button {
+			display: inline-block;
+			width: 184px;
+			height: 37px;
+			margin-bottom: 20px;
+			background: #898989;
+			color: #fff;
+			text-align: center;
+			font-size: 16px;
+			line-height: 37px;
+			border-radius: 2px;
+			box-sizing: border-box;
+			text-decoration: none;
+			cursor: pointer;
+		}</style> 
+ <div id="error-container" class="dmRespRowsWrapper"> <div class="text-container dmRespRow"> <div class="large-12 medium-12 small-12 dmRespCol"> <div class="four-o-four"> <span class="lean">4</span> 
+04</div> 
+ <div class="description">The page you are looking for<br/>can not be found</div> 
+ <a href="/" class="back-button">Return to Homepage</a> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+ <div class="sticky-widgets-container-global" id="1122902485"></div> 
+ <div class="dmFooterContainer"> <div id="fcontainer" class="u_fcontainer f_hcontainer dmFooter p_hfcontainer"> <div dm:templateorder="250" class="dmFooterResp generalFooter" id="1943048428"> <div class="u_1289157781 dmRespRow dmFooterContent" id="1289157781" data-page-element-type="section" data-page-element-id="1939878972"> <div class="dmRespColsWrapper" id="1962673187"> <div class="dmRespCol small-12 medium-12 large-12" id="1008808273"> <div class="dmRespRow u_1272842112 fullBleedChanged fullBleedMode" id="1272842112"> <div class="dmRespColsWrapper" id="1408908320"> <div class="u_1844630844 dmRespCol small-12 large-6 medium-6" id="1844630844"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1062085968" style="transition: opacity 1s ease-in-out 0s;"><h2 style="color:rgb(255, 255, 255);" class=""><span style="display: initial; color: rgb(255, 255, 255);">Let&rsquo;s talk!﻿</span></h2></div> 
+ <div class="u_1372779110 dmNewParagraph" data-element-type="paragraph" data-version="5" id="1372779110" style="transition: none 0s ease 0s; text-align: left; display: block;"> <span style="color:rgb(255, 255, 255);display:initial;">Have a question or comment? Let us know.</span> 
+</div> 
+ <div class="dmform default native-inputs u_1493509199" data-element-type="dContactUsRespId" captcha="true" data-require-captcha="true" data-captcha-position="bottomleft" id="1493509199" data-layout="layout-3"> <h3 class="dmform-title dmwidget-title" id="1579980408" hide="true">Contact Us</h3> 
+ <div class="dmform-wrapper" id="1501560187" captcha-lang="en"> <form method="post" class="dmRespDesignRow" locale="ENGLISH" id="1000351026"> <div class="spacing-container" id="1809126481"> <div class="dmforminput required  small-12 medium-4 large-4  dmRespDesignCol" id="1366772608"> <label for="1292180707" id="1568988362" data-dm-for="dmform-0">Name:</label> 
+<input type="text" class="" name="dmform-0" id="1292180707"/><input type="hidden" name="label-dmform-0" value="Name" id="1619231752"/></div> 
+ <div class="dmforminput required  small-12 medium-4 large-4  dmRespDesignCol" id="1496401159"> <label for="1200505509" id="1806509116" data-dm-for="dmform-1">Email:</label> 
+<input type="email" class="" name="dmform-1" id="1200505509"/><input type="hidden" name="label-dmform-1" value="Email" id="1120111941"/></div> 
+ <div class="dmforminput required  small-12 medium-4 large-4  dmRespDesignCol" id="1901302504"> <label for="1091111464" id="1307213064" data-dm-for="dmform-2">Phone:</label> 
+<input type="tel" class="" name="dmform-2" id="1091111464"/><input type="hidden" name="label-dmform-2" value="Phone" id="1770602199"/></div> 
+ <div class="dmforminput large-12 medium-12 dmRespDesignCol" id="1609882760"> <label for="1629417741" id="1938714347" data-dm-for="dmform-3">Message:</label> 
+ <textarea name="dmform-3" id="1629417741"></textarea> 
+<input type="hidden" name="label-dmform-3" value="Message" id="1540542838"/></div> 
+</div> 
+ <div class="dmformsubmit dmWidget R" id="1813885560"><input class="" name="submit" type="submit" value="Send Message" id="1174953972"/></div> 
+<input name="dmformsendto" type="hidden" value="O0wrseIfFLsSlLR4GAldF7BuQvG2sHT2fmNnT6Q+MtlOdVCq9zdQkf/aJn5xeMIu7TPwq6Cm+kw=" id="1739141431" class="" data-dec="true"/><input class="dmActionInput" type="hidden" name="action" value="/_dm/s/rt/widgets/dmform.submit.jsp" id="1374470096"/><input name="dmformsubject" type="hidden" value="" id="1159628937"/><input name="dmformfrom" type="hidden" value="" id="1268118537"/><input name="dmformautoreplyenabled" type="hidden" value="true" id="1401015468"/><input name="dmformautoreplyfrom" type="hidden" value="form-processor" id="1426539502"/><input name="dmformautoreplysubject" type="hidden" value="Thank you for your submission" id="1953401559"/><input name="dmformautoreplymsg" type="hidden" value="V2UndmUgcmVjZWl2ZWQgeW91ciBtZXNzYWdlIC0gdGhhbmsgeW91LiBPbmUgb2Ygb3VyIHRlYW0gbWVtYmVycyB3aWxsIGdldCBiYWNrIHRvIHlvdSBzb29uLg==" id="1990244725"/><input name="dmformautoreplyincludeformcopy" type="hidden" value="true" id="1221820157"/><input name="dmformsubmitparams" type="hidden" value="8mpKnCSiNQXK/d9M7IDrSzRkXjNcoSR4Sn/BPOWPSx7VE7FY48HKiNDJkM799VePvbwvkEkO1e3pun4R++y3d7UT1byMHRskmJM4Uu2ykLPP0ai9TtNQjWuJXWztYZvg2iego4Qs4J4v/37DJnTes6G7bIhbwN6cLaI55lmxGqFw2nSSNolncIZkJkGPRPMFC5XNWpOYT318LHHBuDkxfMlSWiBCpF4AZpmF4Wv6JeR+acTwCFbe0ZiSAFYrW716gEL1x0hsQKiTz9mBJ78YbJlZzOxmNz5NicAcAy6EjGFPz0owPrCfsovSl8KhBsb1HFxXntKfTwxTvQ4mA4we6xAQu8tFpazQ8APcaGk1Vhlx4B37c0n9+ioZuhlP53XssLCnzV4irjCe38ijBmEt8mvNgYz4MWd52IRAtfDCmlPrn0VoEZmO3GuiytTG1zPoufYjTvCX7EHrn0VoEZmO3CYOy+0VMvYVFvsbdT2UtHS59iNO8JfsQf2HGz6vfqBkIOHQ9587S2M=" data-dec="true"/><input type="hidden" name="page_uuid" value="c00e9ca7d7844a669c2b50edfe2c4b6a"/></form> 
+</div> 
+ <div class="dmform-success" style="display:none" id="1238199357">Thank you for contacting us.<br id="1040606535"/>We will get back to you as soon as possible.</div> 
+ <div class="dmform-error" style="display:none" id="1292178294">Oops, there was an error sending your message.<br id="1610782208"/>Please try again later.</div> 
+</div> 
+</div> 
+ <div class="u_1905319480 dmRespCol small-12 large-6 medium-6" id="1905319480"> <div class="u_1650496412 dmNewParagraph" data-element-type="paragraph" data-version="5" id="1650496412" style="transition: none 0s ease 0s; text-align: left; display: block;"> <span style="color:rgb(255, 255, 255);display:initial;">Email us:</span> 
+</div> 
+ <div class="u_1498182374 dmNewParagraph" data-element-type="paragraph" data-version="5" id="1498182374" style="transition: opacity 1s ease-in-out 0s;"> <h3><span style="display: initial; color: rgb(255, 255, 255);">info@greenstarsolar.co.uk</span></h3> 
+</div> 
+ <div class="u_1909863989 dmNewParagraph" data-element-type="paragraph" data-version="5" id="1909863989" data-styletopreserve="{"background-image":""}"><p class="m-size-19 size-24"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';" class="font-size-24 m-font-size-19">Office: 02382 123763</span></p></div> 
+ <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1635099963" style="transition: opacity 1s ease-in-out;"><p class="text-align-left"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">Address:</span></p><p class="text-align-left"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">Arena Business Offices,</span></p><p class="text-align-left"><span class="" style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">&nbsp;Lancaster Court,</span> 
+</span></p><p class="text-align-left"><span class="" style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">8 Barnes Wallis Road,</span> 
+</span></p><p class="text-align-left"><span class="" style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">Fareham,</span> 
+</span></p><p class="text-align-left"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">PO15 5TU</span></p><p class="text-align-left"><br/></p><p class="text-align-left"><span style="color:rgb(255, 255, 255);display:initial;font-family:Alata, 'Alata Fallback';">Company Reg No : 160389</span></p></div> 
+</div> 
+</div> 
+</div> 
+ <div class="u_1736976272 dmDividerWrapper clearfix" data-element-type="dDividerId" data-layout="divider-style-1" data-widget-version="2" id="1736976272"><hr class="dmDivider" style="border-width:2px; border-top-style:solid; color:grey;" id="1698114217"/></div> 
+ <div class="u_1474157336 dmRespRow fullBleedChanged fullBleedMode" id="1474157336"> <div class="dmRespColsWrapper" id="1730635696"> <div class="u_1110733777 dmRespCol small-12 large-5 medium-5" id="1110733777"> <div class="u_1989227983 imageWidget align-center" data-element-type="image" data-widget-type="image" id="1989227983"> <a id="1344325767"><img src="https://lirp.cdn-website.com/8f142869/dms3rep/multi/opt/Greenstar_Solar_Logo_WHITE.TAG_HZ-3x-1920w.png" alt="" id="1077647289" class="" data-dm-image-path="https://irp.cdn-website.com/8f142869/dms3rep/multi/Greenstar_Solar_Logo_WHITE.TAG_HZ-3x.png" width="1920" height="386" onerror="handleImageLoadError(this)"/></a> 
+</div> 
+</div> 
+ <div class="u_1017434623 dmRespCol small-12 large-5 medium-5" id="1017434623"> <div class="u_1073630024 widget-1f5975 dmCustomWidget" data-lazy-load="" data-title="" id="1073630024" dmle_extension="custom_extension" data-element-type="custom_extension" icon="false" surround="false" data-widget-id="1f5975986930429f819d4cd2154b5c4a" data-widget-version="24" data-widget-config="eyJyZXZlcnNlRmxhZyI6bnVsbCwiY29weXJpZ2h0VGV4dCI6IjxwIGNsYXNzPVwicnRlQmxvY2tcIj5BbGwgUmlnaHRzIFJlc2VydmVkIHwgR3JlZW5zdGFyIFNvbGFyIExURDwvcD4ifQ=="> <div class="copyright"> <span class="copyright-year">&copy; 2025&nbsp;</span> 
+ <span><p class="rteBlock">All Rights Reserved | Greenstar Solar LTD</p></span> 
+</div> 
+</div> 
+</div> 
+ <div class="u_1226451046 dmRespCol small-12 large-2 medium-2" id="1226451046"> <a data-display-type="block" class="align-center dmButtonLink dmWidget dmWwr default dmOnlyButton dmDefaultGradient flexButton u_1326223593 button_2" file="false" href="/privacy-policy" data-element-type="dButtonLinkId" id="1326223593"> <span class="iconBg" aria-hidden="true" id="1072236234"> <span class="icon hasFontIcon icon-star" id="1755278115"></span> 
+</span> 
+ <span class="text" id="1050792784">PRIVACY/TERMS</span> 
+</a> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+ <div id="1236746004" dmle_extension="powered_by" data-element-type="powered_by" icon="true" surround="false"></div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</body> 
+
+    </div>
+</div>
+<!--  Add full CSS and Javascript before the close tag of the body if needed -->
+<!-- ========= JS Section ========= -->
+<script>
+    var isWLR = true;
+
+    window.customWidgetsFunctions = {};
+    window.customWidgetsStrings = {};
+    window.collections = {};
+    window.currentLanguage = "ENGLISH"
+    window.isSitePreview = false;
+</script>
+<script>
+    window.customWidgetsFunctions["1f5975986930429f819d4cd2154b5c4a~24"] = function (element, data, api) {
+        null
+    };
+</script>
+<script type="text/javascript">
+
+    var d_version = "production_5849";
+    var build = "2025-10-13T08_51_14";
+    window['v' + 'ersion'] = d_version;
+
+    function buildEditorParent() {
+        window.isMultiScreen = true;
+        window.editorParent = {};
+        window.previewParent = {};
+        window.assetsCacheQueryParam = "?version=2025-10-13T08_51_14";
+        try {
+            var _p = window.parent;
+            if (_p && _p.document && _p.$ && _p.$.dmfw) {
+                window.editorParent = _p;
+            } else if (_p.isSitePreview) {
+                window.previewParent = _p;
+            }
+        } catch (e) {
+
+        }
+    }
+
+    buildEditorParent();
+</script>
+
+<!-- Load jQuery -->
+<script type="text/javascript" id='d-js-jquery'
+        src="https://static.cdn-website.com/libs/jquery/jquery-3.7.0.min.js"></script>
+<!-- End Load jQuery -->
+<!-- Injecting site-wide before scripts -->
+<!-- End Injecting site-wide to the head -->
+
+
+<script>
+    var _jquery = window.$;
+
+    var jqueryAliases = ['$', 'jquery', 'jQuery'];
+
+    jqueryAliases.forEach((alias) => {
+        Object.defineProperty(window, alias, {
+            get() {
+                return _jquery;
+            },
+            set() {
+                console.warn("Trying to over-write the global jquery object!");
+            }
+        });
+    });
+    window.jQuery.migrateMute = true;
+</script>
+<script>
+    window.cookiesNotificationMarkupPreview = 'null';
+</script>
+
+<!-- HEAD RT JS Include -->
+<script id='d-js-params'>
+    window.INSITE = window.INSITE || {};
+    window.INSITE.device = "desktop";
+
+    window.rtCommonProps = {};
+    rtCommonProps["rt.ajax.ajaxScriptsFix"] =true;
+    rtCommonProps["rt.pushnotifs.sslframe.encoded"] = 'aHR0cHM6Ly97c3ViZG9tYWlufS5wdXNoLW5vdGlmcy5jb20=';
+    rtCommonProps["runtimecollector.url"] = 'https://rtc.multiscreensite.com';
+    rtCommonProps["performance.tabletPreview.removeScroll"] = 'false';
+    rtCommonProps["inlineEditGrid.snap"] =true;
+    rtCommonProps["popup.insite.cookie.ttl"] = '0.5';
+    rtCommonProps["rt.pushnotifs.force.button"] =true;
+    rtCommonProps["common.mapbox.token"] = 'pk.eyJ1IjoiZGFubnliMTIzIiwiYSI6ImNqMGljZ256dzAwMDAycXBkdWxwbDgzeXYifQ.Ck5P-0NKPVKAZ6SH98gxxw';
+    rtCommonProps["common.mapbox.js.override"] =false;
+    rtCommonProps["common.here.appId"] = 'iYvDjIQ2quyEu0rg0hLo';
+    rtCommonProps["common.here.appCode"] = '1hcIxLJcbybmtBYTD9Z1UA';
+    rtCommonProps["isCoverage.test"] =false;
+    rtCommonProps["ecommerce.ecwid.script"] = 'https://app.multiscreenstore.com/script.js';
+    rtCommonProps["feature.flag.mappy.kml"] =false;
+    rtCommonProps["common.resources.dist.cdn"] =true;
+    rtCommonProps["common.build.dist.folder"] = 'production/5849';
+    rtCommonProps["common.resources.cdn.host"] = 'https://static.cdn-website.com';
+    rtCommonProps["common.resources.folder"] = 'https://static.cdn-website.com/mnlt/production/5849';
+    rtCommonProps["feature.flag.runtime.backgroundSlider.preload.slowly"] =true;
+    rtCommonProps["feature.flag.runtime.newAnimation.enabled"] =true;
+    rtCommonProps["feature.flag.runtime.newAnimation.jitAnimation.enabled"] =true;
+    rtCommonProps["feature.flag.sites.google.analytics.gtag"] =true;
+    rtCommonProps["feature.flag.runOnReadyNewTask"] =true;
+    rtCommonProps["isAutomation.test"] =false;
+    rtCommonProps["booking.cal.api.domain"] = 'api.cal.com';
+
+    
+    rtCommonProps['common.mapsProvider'] = 'mapbox';
+    
+    rtCommonProps['common.mapsProvider.version'] = '0.52.0';
+    rtCommonProps['common.geocodeProvider'] = 'mapbox';
+    rtCommonProps['common.map.defaults.radiusSize'] = '1500';
+    rtCommonProps['common.map.defaults.radiusBg'] = 'rgba(255, 255, 255, 0.4)';
+    rtCommonProps['common.map.defaults.strokeColor'] = 'rgba(255, 255, 255, 1)';
+    rtCommonProps['common.map.defaults.strokeSize'] = '2';
+    rtCommonProps['server.for.resources'] = '';
+    rtCommonProps['feature.flag.lazy.widgets'] = true;
+    rtCommonProps['feature.flag.single.wow'] = false;
+    rtCommonProps['feature.flag.disallowPopupsInEditor'] = true;
+    rtCommonProps['feature.flag.mark.anchors'] = true;
+    rtCommonProps['captcha.public.key'] = '6LffcBsUAAAAAMU-MYacU-6QHY4iDtUEYv_Ppwlz';
+    rtCommonProps['captcha.invisible.public.key'] = '6LeiWB8UAAAAAHYnVJM7_-7ap6bXCUNGiv7bBPME';
+    rtCommonProps["images.sizes.small"] =160;
+    rtCommonProps["images.sizes.mobile"] =640;
+    rtCommonProps["images.sizes.tablet"] =1280;
+    rtCommonProps["images.sizes.desktop"] =1920;
+    rtCommonProps["modules.resources.cdn"] =true;
+    rtCommonProps["import.images.storage.imageCDN"] = 'https://lirp.cdn-website.com/';
+    rtCommonProps["feature.flag.runtime.inp.threshold"] =150;
+    rtCommonProps["feature.flag.performance.logs"] =true;
+    rtCommonProps["site.widget.form.captcha.type"] = 'g_recaptcha';
+    rtCommonProps["friendly.captcha.site.key"] = 'FCMGSQG9GVNMFS8K';
+    rtCommonProps["cookiebot.mapbox.consent.category"] = 'marketing';
+    // feature flags that's used out of runtime module (in  legacy files)
+    rtCommonProps["platform.monolith.personalization.dateTimeCondition.popupMsgAction.moveToclient.enabled"] =true;
+    rtCommonProps["streamline.monolith.personalization.skipRuleConditionsForPreview.enabled"] =true;
+    rtCommonProps["streamline.personalization.decodeTimeZone.enabled"] =true;
+
+    window.rtFlags = {};
+    rtFlags["unsuspendEcwidStoreOnRuntime.enabled"] =true;
+    rtFlags["scripts.widgetCount.enabled"] =true;
+    rtFlags["fnb.animations.tracking.enabled"] =true;
+    rtFlags["ecom.ecwidNewUrlStructure.enabled"] = false;
+    rtFlags["ecom.ecwid.accountPage.emptyBaseUrl.enabled"] = true;
+    rtFlags["ecom.ecwid.pages.links.disable.listeners"] = true;
+    rtFlags["ecom.ecwid.storefrontV3.enabled"] = false;
+    rtFlags["ecom.ecwid.old.store.fix.facebook.share"] = true;
+    rtFlags["feature.flag.photo.gallery.exact.size"] =true;
+    rtFlags["geocode.search.localize"] =false;
+    rtFlags["feature.flag.runtime.newAnimation.asyncInit.setTimeout.enabled"] =false;
+    rtFlags["twitter.heightLimit.enabled"] = true;
+    rtFlags["runtime.lottieOverflow"] =false;
+    rtFlags["runtime.monitoring.sentry.ignoreErrors"] = "";
+    rtFlags["contact.form.browserValidation.enabled"] =true;
+    rtFlags["streamline.monolith.personalization.supportMultipleConditions.enabled"] =false;
+    rtFlags["runtime.cwv.report.cls.enabled"] =true;
+    rtFlags["flex.runtime.popup.with.show"] =true;
+    rtFlags["contact.form.useActiveForm"] =true;
+    rtFlags["runtime.ssr.productStore.internal.observer"] =true;
+    rtFlags["runtime.ssr.productCustomizations"] =true;
+    rtFlags["runtime.ssr.booking.dryrun.for.default.staffmember"] =false;
+</script>
+<script src="https://static.cdn-website.com/mnlt/production/5849/_dm/s/rt/dist/scripts/d-js-one-runtime-unified-desktop.min.js"  id="d-js-core"></script>
+<!-- End of HEAD RT JS Include -->
+<script src="https://static.cdn-website.com/mnlt/production/5849/_dm/s/rt/dist/scripts/d-js-jquery-migrate.min.js" ></script>
+<script>
+    
+    $(window).bind("orientationchange", function (e) {
+        $.layoutManager.initLayout();
+        
+    });
+    $(document).resize(function () {
+        
+    });
+</script>
+<script type="text/javascript" id="d_track_campaign">
+(function() {
+    if (!window.location.search) {
+        return;
+    }
+	const cleanParams = window.location.search.substring(1); // Strip ?
+	const queryParams = cleanParams.split('&');
+
+	const expires = 'expires=' + new Date().getTime() + 24 * 60 * 60 * 1000;
+	const domain = 'domain=' + window.location.hostname;
+	const path = "path=/";
+
+	queryParams.forEach((param) => {
+		const [key, value = ''] = param.split('=');
+		if (key.startsWith('utm_')) {
+			const cookieName = "_dm_rt_" + key.substring(4);
+			const cookie = cookieName + "=" + value;
+			const joined = [cookie, expires, domain, path].join(";");
+			document.cookie = joined;
+		}
+	});
+}());
+</script>
+<script type="text/javascript" >
+  var _dm_gaq = {};
+  var _gaq = _gaq || [];
+  var _dm_insite = [];
+</script>
+
+<div style="display:none;" id="P6iryBW0Wu"></div>
+
+<!-- photoswipe markup -->
+
+
+
+
+
+
+
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div id="fb-root"
+        data-locale="en"></div>
+<!-- Alias: 8f142869 -->
+<div class="dmPopupMask" id="dmPopupMask"></div>
+<div id="dmPopup" class="dmPopup">
+	<div class="dmPopupCloseWrapper"> <div class="dmPopupClose dm-common-icons-close oneIcon" onclick="dmHidePopup(event);"></div> </div>
+ 	<div class="dmPopupTitle"> <span></span> Share by:</div> 
+	<div class="data"></div>
+</div><script id="d_track_personalization">
+	window?.waitForDeferred?.('dmAjax', () => {
+		// Collects client data and updates cookies used by smart sites
+		window.expireDays = 365;
+		window.visitLength = 30 * 60000;
+		$.setCookie("dm_timezone_offset", (new Date()).getTimezoneOffset(), window.expireDays);
+			setSmartSiteCookiesInternal("dm_this_page_view","dm_last_page_view","dm_total_visits","dm_last_visit");
+	});
+</script>
+<script type="text/javascript">
+    
+    Parameters.NavigationAreaParams.MoreButtonText = 'MORE';
+    
+    Parameters.NavigationAreaParams.LessButtonText = 'LESS';
+    Parameters.HomeLinkText = 'Home';
+    </script>
+<!--  End Script tags -->
+<!--  Begin Body End Markup -->
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Greenstar Solar - Mobile Responsive Chat</title>
+      <style>
+          /* Mobile Portrait */
+          @media (max-width: 768px) and (orientation: portrait) {
+              vapi-widget {
+                  --widget-width: calc(100vw - 24px) !important;
+                  --widget-max-width: none !important;
+                  --widget-height: calc(100vh - 120px) !important;
+                  --widget-max-height: none !important;
+                  --widget-right: 12px !important;
+                  --widget-bottom: 12px !important;
+                  --widget-left: 12px !important;
+              }
+          }
+
+          /* Mobile Landscape */
+          @media (max-width: 1024px) and (orientation: landscape) and (max-height: 600px) {
+              vapi-widget {
+                  --widget-width: 400px !important;
+                  --widget-max-width: 50vw !important;
+                  --widget-height: calc(100vh - 40px) !important;
+                  --widget-max-height: none !important;
+                  --widget-right: 20px !important;
+                  --widget-bottom: 20px !important;
+              }
+          }
+
+          /* Very small screens (portrait) */
+          @media (max-width: 480px) and (orientation: portrait) {
+              vapi-widget {
+                  --widget-width: calc(100vw - 16px) !important;
+                  --widget-height: calc(100vh - 100px) !important;
+                  --widget-right: 8px !important;
+                  --widget-bottom: 8px !important;
+                  --widget-left: 8px !important;
+              }
+          }
+
+          /* Tablet portrait adjustments */
+          @media (min-width: 481px) and (max-width: 768px) and (orientation: portrait) {
+              vapi-widget {
+                  --widget-width: calc(100vw - 40px) !important;
+                  --widget-max-width: 450px !important;
+                  --widget-right: 20px !important;
+                  --widget-bottom: 20px !important;
+              }
+          }
+
+          /* Additional optimizations */
+          @media (max-width: 768px) {
+              body {
+                  padding-bottom: 80px;
+              }
+          }
+
+          /* Ensure widget doesn't interfere with page content on mobile */
+          @media (orientation: landscape) and (max-height: 500px) {
+              body {
+                  padding-bottom: 60px;
+              }
+          }
+      </style>
+  </head>
+  <body>
+      <!-- Your page content goes here -->
+
+      <!-- Vapi Widget -->
+      <vapi-widget
+          public-key="b3f38fb7-8541-4e3e-8708-5d49c3f54f00"
+          assistant-id="cb76e1bc-dc2d-4ea8-84a1-c17499ed6387"
+          mode="chat"
+          theme="dark"
+          base-bg-color="#262e4a"
+          accent-color="#8cc740"
+          cta-button-color="#262e4a"
+          cta-button-text-color="#ffffff"
+          border-radius="large"
+          size="compact"
+          position="bottom-right"
+          title="Ask Sophie"
+          start-button-text="Start"
+          end-button-text="End Call"
+          cta-subtitle="Need a callback?"
+          chat-first-message="Welcome to Greenstar Solar, how can i help today?"
+          chat-placeholder="Type your message..."
+          voice-show-transcript="true"
+          consent-required="true"
+          consent-title="Terms and conditions"
+          consent-content="By clicking "Agree," and each time I interact with this AI agent, I consent to the recording, storage, and sharing of 
+  my communications with third-party service providers, and as otherwise described in our Terms of Service."
+          consent-storage-key="vapi_widget_consent">
+      </vapi-widget>
+
+      <!-- Vapi SDK Script -->
+      <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+  </body>
+  </html><!--  End Body End Markup -->
+<!--  Site Wide Html Markup -->
+<!--  Site Wide Html Markup -->
+</body>
+</html>

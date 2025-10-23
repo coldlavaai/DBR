@@ -174,6 +174,17 @@ export async function GET(request: NextRequest) {
       ? responseTimes.reduce((a: number, b: number) => a + b, 0) / responseTimes.length
       : 0
 
+    // Fetch the real last sync timestamp from Sanity
+    let lastUpdated = new Date().toISOString()
+    try {
+      const syncMeta = await sanityClient.getDocument('syncMetadata').catch(() => null)
+      if (syncMeta && (syncMeta as any).lastSyncTimestamp) {
+        lastUpdated = (syncMeta as any).lastSyncTimestamp
+      }
+    } catch (error) {
+      console.error('Error fetching sync metadata:', error)
+    }
+
     return NextResponse.json({
       ...currentStats,
       trends,
@@ -181,7 +192,7 @@ export async function GET(request: NextRequest) {
       funnelData,
       avgResponseTime: Math.round(avgResponseTime * 10) / 10,
       previousPeriod: previousStats,
-      lastUpdated: new Date().toISOString(),
+      lastUpdated,
     })
   } catch (error) {
     console.error('Error fetching DBR stats:', error)

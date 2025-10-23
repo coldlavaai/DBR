@@ -55,26 +55,19 @@ export default function DashboardHeader({
             </a>
           </div>
 
-          {/* Center: Client Branding */}
-          <div className="group flex items-center gap-4 px-8 py-4 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-white/20 hover:border-coldlava-cyan/50 transition-all duration-300 hover:shadow-lg hover:shadow-coldlava-cyan/20">
-            {clientLogoUrl && (
-              <div className="relative w-16 h-16 bg-white rounded-xl p-2 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                <Image
-                  src={clientLogoUrl}
-                  alt={`${clientName} logo`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                {clientName}
-                <span className="bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent animate-glow">
-                  Analytics
-                </span>
-              </h1>
-              <p className="text-gray-300 text-sm">{campaignName}</p>
+          {/* Center: DBR + Greenstar Logo */}
+          <div className="group flex items-center gap-6 px-8 py-4 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-white/20 hover:border-coldlava-cyan/50 transition-all duration-300 hover:shadow-lg hover:shadow-coldlava-cyan/20">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent tracking-wide">
+              DBR
+            </h1>
+            <div className="relative w-40 h-14 bg-white rounded-xl p-2 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+              <Image
+                src="/greenstar-logo.png"
+                alt="Greenstar Solar"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
           </div>
 
