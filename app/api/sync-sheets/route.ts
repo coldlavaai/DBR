@@ -108,6 +108,16 @@ export async function GET() {
     let processed = 0
     let errors = 0
 
+    // Fetch all existing documents to preserve archived status
+    console.log('🔍 Fetching existing documents to preserve archived status...')
+    const existingDocs = await sanityClient.fetch(
+      `*[_type == "dbrLead"] { _id, archived, archivedAt }`
+    )
+    const existingDocsMap = new Map(
+      existingDocs.map((doc: any) => [doc._id, { archived: doc.archived, archivedAt: doc.archivedAt }])
+    )
+    console.log(`📋 Found ${existingDocs.length} existing documents`)
+
     // Use Sanity transactions to batch mutations (100 mutations per transaction)
     const BATCH_SIZE = 100
     const mutations = []
@@ -187,6 +197,18 @@ export async function GET() {
 
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
+
+        // Preserve archived status if document exists
+        const existingDoc = existingDocsMap.get(docId)
+        if (existingDoc) {
+          // Preserve archived fields from existing document
+          if (existingDoc.archived !== undefined) {
+            leadData.archived = existingDoc.archived
+          }
+          if (existingDoc.archivedAt) {
+            leadData.archivedAt = existingDoc.archivedAt
+          }
+        }
 
         // Add to mutations array for batch processing
         mutations.push({
