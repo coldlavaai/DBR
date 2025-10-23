@@ -32,7 +32,7 @@ export default function DashboardHeader({
         <div className="flex items-center justify-between">
           {/* Left: Cold Lava Logo */}
           <div className="flex items-center gap-6">
-            <div className="relative w-48 h-16">
+            <div className="relative w-72 h-20">
               <Image
                 src="/logos/cold-lava-logo.png"
                 alt="Cold Lava AI"
