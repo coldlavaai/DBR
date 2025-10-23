@@ -211,7 +211,11 @@ export async function GET() {
       const totalBatches = Math.ceil(mutations.length / BATCH_SIZE)
 
       try {
-        await sanityClient.transaction().create(batch.map(m => m.createOrReplace)).commit()
+        const transaction = sanityClient.transaction()
+        batch.forEach(m => {
+          transaction.createOrReplace(m.createOrReplace)
+        })
+        await transaction.commit()
         processed += batch.length
         console.log(`✅ Batch ${batchNum}/${totalBatches}: ${batch.length} leads synced (${processed}/${mutations.length} total)`)
       } catch (batchError) {
