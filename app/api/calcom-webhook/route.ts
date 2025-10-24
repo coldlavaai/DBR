@@ -92,6 +92,8 @@ export async function POST(request: NextRequest) {
       try {
         const sheets = getGoogleSheetsClient()
 
+        console.log('📊 Searching Google Sheet for lead phone:', lead.phoneNumber)
+
         // Get all phone numbers from column D
         const phoneColumnData = await sheets.spreadsheets.values.get({
           spreadsheetId: SPREADSHEET_ID,
@@ -100,11 +102,24 @@ export async function POST(request: NextRequest) {
 
         const rows = phoneColumnData.data.values || []
         const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+        const digitsOnly = phoneWithoutPlus.replace(/\D/g, '')
+
+        console.log('🔎 Searching for digits:', digitsOnly, '(from', lead.phoneNumber, ')')
+        console.log('📋 Searching through', rows.length, 'phone numbers in sheet')
+
+        // Log first 5 phone numbers for debugging
+        console.log('📱 Sample sheet phones:', rows.slice(0, 5).map((r: any[]) => r[0]))
 
         // Find the row index by matching phone number (without +)
-        const rowIndex = rows.findIndex((row: any[]) =>
-          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
-        )
+        const rowIndex = rows.findIndex((row: any[], index: number) => {
+          if (!row[0]) return false
+          const sheetDigits = row[0].replace(/\D/g, '')
+          const matches = sheetDigits === digitsOnly
+          if (matches) {
+            console.log(`✓ Match found at index ${index}: sheet="${row[0]}" (digits: ${sheetDigits}) === lead="${lead.phoneNumber}" (digits: ${digitsOnly})`)
+          }
+          return matches
+        })
 
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2 // +2 because row 1 is headers, array is 0-indexed
@@ -131,7 +146,9 @@ export async function POST(request: NextRequest) {
 
           console.log('✅ Google Sheet updated: row', sheetRow, 'phone:', phoneWithoutPlus)
         } else {
-          console.log('⚠️  Could not find phone', phoneWithoutPlus, 'in Google Sheet')
+          console.log('⚠️  Could not find phone', digitsOnly, 'in Google Sheet (searched', rows.length, 'rows)')
+          // Log all sheet phone digits for comparison
+          console.log('🔍 All sheet phone digits:', rows.map((r: any[]) => r[0] ? r[0].replace(/\D/g, '') : 'empty').join(', '))
         }
       } catch (sheetsError) {
         console.error('⚠️  Failed to update Google Sheet:', sheetsError)
