@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
+import { getGoogleSheetsClient } from '@/lib/google-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,7 @@ const sanityClient = createClient({
 
 const CAL_API_KEY = 'cal_live_3f6e6da57376dc32becef1d218758439'
 const CAL_EVENT_TYPE_ID = 3721996 // "intro" event type
+const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
 export async function POST(request: Request) {
   try {
@@ -94,6 +96,56 @@ export async function POST(request: Request) {
     } catch (sanityError) {
       console.error('Sanity update error:', sanityError)
       // Don't fail the request if Sanity update fails - booking is still created
+    }
+
+    // Update Google Sheets directly (same pattern as update-lead-status)
+    try {
+      const sheets = getGoogleSheetsClient()
+
+      // Search for the phone number in column D (index 3)
+      const phoneWithoutPlus = phone.replace(/\+/g, '')
+      const allRows = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'D2:D', // Column D (Phone_number) from row 2 onwards
+      })
+
+      const rows = allRows.data.values || []
+      const rowIndex = rows.findIndex((row: any[]) =>
+        row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+      )
+
+      if (rowIndex >= 0) {
+        const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
+
+        // Format the date/time for Google Sheets (DD/MM/YYYY HH:MM)
+        const callDate = start
+        const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+
+        // Update both column A (Contact_Status) and column X (call_booked)
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: {
+            data: [
+              {
+                range: `A${sheetRow}`,
+                values: [['CALL_BOOKED']]
+              },
+              {
+                range: `X${sheetRow}`,
+                values: [[formattedTime]]
+              }
+            ],
+            valueInputOption: 'USER_ENTERED'
+          }
+        })
+
+        console.log(`✅ Updated Google Sheets for row ${sheetRow}: status=CALL_BOOKED, time=${formattedTime}`)
+      } else {
+        console.warn(`⚠️ Phone number ${phone} not found in Google Sheets (searched ${rows.length} rows)`)
+      }
+    } catch (sheetsError) {
+      console.error('⚠️ Failed to update Google Sheets:', sheetsError)
+      // Don't fail the request if Sheets update fails - booking is still created
     }
 
     return NextResponse.json({
