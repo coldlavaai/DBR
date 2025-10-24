@@ -81,9 +81,9 @@ export async function POST(request: Request) {
       await sanityClient
         .patch(leadId)
         .set({
-          installDate: start.toISOString().split('T')[0], // Store as date
-          contactStatus: 'SCHEDULED',
-          notes: notes || `Call scheduled via DBR Dashboard on ${start.toLocaleDateString()}`,
+          callBookedTime: start.toISOString(), // Store call booking time
+          contactStatus: 'CALL_BOOKED',
+          notes: notes || `Call booked via DBR Dashboard on ${start.toLocaleDateString()}`,
           lastUpdatedAt: new Date().toISOString(),
           calBookingId: calData.id,
           calBookingUrl: calData.uid ? `https://cal.com/booking/${calData.uid}` : undefined
