@@ -9,10 +9,6 @@ interface FeaturedLeadsProps {
 }
 
 export default function FeaturedLeads({ leads, onRefresh }: FeaturedLeadsProps) {
-  if (leads.length === 0) {
-    return null // Don't show the section if there are no starred leads
-  }
-
   return (
     <div className="bg-white/5 backdrop-blur-sm border-2 border-yellow-400/30 rounded-2xl p-6 shadow-xl">
       {/* Header */}
@@ -26,16 +22,24 @@ export default function FeaturedLeads({ leads, onRefresh }: FeaturedLeadsProps) 
       </div>
 
       {/* Leads Grid */}
-      <div className="space-y-4">
-        {leads.map((lead) => (
-          <LeadCard
-            key={lead._id}
-            lead={lead}
-            onRefresh={onRefresh}
-            showArchiveButton={false}
-          />
-        ))}
-      </div>
+      {leads.length === 0 ? (
+        <div className="text-center py-8 text-gray-400">
+          <Star className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+          <p>No featured leads yet</p>
+          <p className="text-sm mt-1">Click the star icon on any lead to feature it here</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {leads.map((lead) => (
+            <LeadCard
+              key={lead._id}
+              lead={lead}
+              onRefresh={onRefresh}
+              showArchiveButton={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

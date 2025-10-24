@@ -243,16 +243,19 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
-        {/* FEATURED LEADS SECTION */}
-        <FeaturedLeads leads={featuredLeads} onRefresh={() => fetchStats(true)} />
+        {/* FEATURED & HOT LEADS SECTIONS - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* FEATURED LEADS SECTION */}
+          <FeaturedLeads leads={featuredLeads} onRefresh={() => fetchStats(true)} />
 
-        {/* HOT LEADS SECTION - Prominent & Interactive */}
-        <div id="hot-leads-section">
-          <HotLeadsSection
-            leads={hotLeads}
-            onArchive={() => fetchStats(true)}
-            expandedLeadId={expandedLeadFromActivity}
-          />
+          {/* HOT LEADS SECTION - Prominent & Interactive */}
+          <div id="hot-leads-section">
+            <HotLeadsSection
+              leads={hotLeads}
+              onArchive={() => fetchStats(true)}
+              expandedLeadId={expandedLeadFromActivity}
+            />
+          </div>
         </div>
 
         {/* ARCHIVED HOT LEADS SECTION - Collapsible */}
