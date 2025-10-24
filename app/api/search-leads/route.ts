@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       postcode
     }` as const
 
-    const leads = await sanityClient.fetch(groqQuery as any, { query })
+    const leads = await sanityClient.fetch(groqQuery as any, { query } as any)
 
     return NextResponse.json({ leads, count: leads.length })
   } catch (error) {
