@@ -35,8 +35,52 @@ export async function POST(request: Request) {
 
     console.log(`✅ Updated Sanity for lead ${leadId}`)
 
-    // TODO: Add Google Sheets sync for starred status (Column W) when column is added
-    // For now, starred status only syncs to Sanity to avoid errors
+    // Sync to Google Sheets (Column W - Featured)
+    try {
+      const lead = await sanityClient.fetch(
+        `*[_type == "dbrLead" && _id == $leadId][0] {
+          phoneNumber
+        }`,
+        { leadId }
+      )
+
+      if (lead?.phoneNumber) {
+        const sheets = getGoogleSheetsClient()
+
+        // Get all phone numbers from the sheet to find the row
+        const response = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'A2:A',
+        })
+
+        const phoneNumbers = response.data.values || []
+        const normalizedPhone = lead.phoneNumber.replace(/\D/g, '')
+
+        const rowIndex = phoneNumbers.findIndex(
+          row => row[0] && row[0].toString().replace(/\D/g, '') === normalizedPhone
+        )
+
+        if (rowIndex !== -1) {
+          const sheetRow = rowIndex + 2 // +2 because array is 0-indexed and sheet starts at row 2
+
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `W${sheetRow}`,
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: [[starred ? 'TRUE' : 'FALSE']]
+            }
+          })
+
+          console.log(`✅ Updated Google Sheets row ${sheetRow}, Column W (Featured) = ${starred}`)
+        } else {
+          console.warn(`⚠️ Phone number ${normalizedPhone} not found in Google Sheet`)
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing starred to Google Sheets:', error)
+      // Don't fail the request if Google Sheets sync fails
+    }
 
     return NextResponse.json({
       success: true,
