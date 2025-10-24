@@ -46,11 +46,33 @@ function getDateRanges(timeRange: string) {
 function calculateStats(leads: any[]) {
   const totalLeads = leads.length
 
+  // Calculate AI vs Manual messages
+  const manualLeads = leads.filter((l) => l.manualMode === true)
+  const aiLeads = leads.filter((l) => l.manualMode !== true)
+
+  const manualMessages = {
+    m1: manualLeads.filter((l) => l.m1Sent).length,
+    m2: manualLeads.filter((l) => l.m2Sent).length,
+    m3: manualLeads.filter((l) => l.m3Sent).length,
+    total: 0,
+  }
+  manualMessages.total = manualMessages.m1 + manualMessages.m2 + manualMessages.m3
+
+  const aiMessages = {
+    m1: aiLeads.filter((l) => l.m1Sent).length,
+    m2: aiLeads.filter((l) => l.m2Sent).length,
+    m3: aiLeads.filter((l) => l.m3Sent).length,
+    total: 0,
+  }
+  aiMessages.total = aiMessages.m1 + aiMessages.m2 + aiMessages.m3
+
   const messagesSent = {
     m1: leads.filter((l) => l.m1Sent).length,
     m2: leads.filter((l) => l.m2Sent).length,
     m3: leads.filter((l) => l.m3Sent).length,
     total: 0,
+    manual: manualMessages.total,
+    ai: aiMessages.total,
   }
   messagesSent.total = messagesSent.m1 + messagesSent.m2 + messagesSent.m3
 

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
 
 const sanityClient = createClient({
@@ -8,8 +8,12 @@ const sanityClient = createClient({
   useCdn: false,
 })
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const limit = parseInt(searchParams.get('limit') || '5')
+
     // Fetch all leads with replies, sorted by most recent reply
     const query = `*[_type == "dbrLead" && replyReceived != null] | order(replyReceived desc) {
       _id,
@@ -24,37 +28,12 @@ export async function GET() {
 
     const allLeadsWithReplies = await sanityClient.fetch(query)
 
-    // If we have lots of replies (>10), favor hot/warm leads
-    let activities
-    if (allLeadsWithReplies.length > 10) {
-      // Split into hot/warm and other statuses
-      const hotWarmLeads = allLeadsWithReplies.filter(
-        (lead: any) => lead.contactStatus === 'HOT' || lead.contactStatus === 'WARM'
-      )
-      const otherLeads = allLeadsWithReplies.filter(
-        (lead: any) => lead.contactStatus !== 'HOT' && lead.contactStatus !== 'WARM'
-      )
-
-      // Take 3 hot/warm (if available) and 2 other, all sorted by most recent
-      const selectedHotWarm = hotWarmLeads.slice(0, 3)
-      const selectedOthers = otherLeads.slice(0, 2)
-
-      // Merge and re-sort by timestamp to maintain chronological order
-      const combined = [...selectedHotWarm, ...selectedOthers]
-      combined.sort((a, b) => {
-        const dateA = new Date(a.replyReceived).getTime()
-        const dateB = new Date(b.replyReceived).getTime()
-        return dateB - dateA
-      })
-
-      activities = combined.slice(0, 5)
-    } else {
-      // If fewer replies, just show the 5 most recent
-      activities = allLeadsWithReplies.slice(0, 5)
-    }
+    // Apply pagination
+    const paginatedLeads = allLeadsWithReplies.slice(offset, offset + limit)
+    const hasMore = offset + limit < allLeadsWithReplies.length
 
     // Format for the RecentActivity component
-    const formattedActivities = activities.map((lead: any) => ({
+    const formattedActivities = paginatedLeads.map((lead: any) => ({
       id: lead._id,
       type: 'reply' as const,
       leadName: `${lead.firstName} ${lead.secondName}`,
@@ -63,7 +42,7 @@ export async function GET() {
       contactStatus: lead.contactStatus,
     }))
 
-    return NextResponse.json({ activities: formattedActivities })
+    return NextResponse.json({ activities: formattedActivities, hasMore })
   } catch (error) {
     console.error('Error fetching recent activity:', error)
     return NextResponse.json(

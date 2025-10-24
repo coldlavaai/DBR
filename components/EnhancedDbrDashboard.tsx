@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { Users, MessageSquare, TrendingUp, Flame, Clock, Target } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
-import ConversionFunnel from './ConversionFunnel'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
@@ -15,7 +14,7 @@ import LeadDetailModal from './LeadDetailModal'
 
 interface EnhancedStats {
   totalLeads: number
-  messagesSent: { m1: number; m2: number; m3: number; total: number }
+  messagesSent: { m1: number; m2: number; m3: number; total: number; manual: number; ai: number }
   sentiment: { positive: number; negative: number; neutral: number; negativeRemoved: number; unclear: number }
   statusBreakdown: { sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
   replyRate: number
@@ -210,7 +209,7 @@ export default function EnhancedDbrDashboard() {
             title="Messages Sent"
             value={stats.messagesSent.total}
             trend={stats.trends?.messagesSent}
-            subtitle={`M1: ${stats.messagesSent.m1} | M2: ${stats.messagesSent.m2} | M3: ${stats.messagesSent.m3}`}
+            subtitle={`AI: ${stats.messagesSent.ai} | Manual: ${stats.messagesSent.manual}`}
             icon={MessageSquare}
             color="purple"
           />
@@ -233,6 +232,24 @@ export default function EnhancedDbrDashboard() {
             color="orange"
             onClick={() => openModal('hot', '🔥 Hot Leads')}
           />
+
+          <MetricCard
+            title="Avg Response Time"
+            value={`${stats.avgResponseTime || 0}h`}
+            subtitle="Time to first reply"
+            icon={Clock}
+            color="purple"
+          />
+
+          <MetricCard
+            title="Converted"
+            value={stats.statusBreakdown.converted}
+            trend={stats.trends?.converted}
+            subtitle="Successful conversions"
+            icon={Target}
+            color="green"
+            onClick={() => openModal('converted', '✨ Converted Leads')}
+          />
         </div>
 
         {/* HOT LEADS SECTION - Prominent & Interactive */}
@@ -244,38 +261,14 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
-        {/* ARCHIVED HOT LEADS SECTION - Collapsible */}
-        <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
+        {/* Recent Activity - Full Width */}
+        <RecentActivity
+          activities={recentActivity}
+          onActivityClick={handleActivityClick}
+        />
 
-        {/* Recent Activity & Additional Metrics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RecentActivity
-              activities={recentActivity}
-              onActivityClick={handleActivityClick}
-            />
-          </div>
-
-          <div className="space-y-6">
-            <MetricCard
-              title="Avg Response Time"
-              value={`${stats.avgResponseTime || 0}h`}
-              subtitle="Time to first reply"
-              icon={Clock}
-              color="purple"
-            />
-
-            <MetricCard
-              title="Converted"
-              value={stats.statusBreakdown.converted}
-              trend={stats.trends?.converted}
-              subtitle="Successful conversions"
-              icon={Target}
-              color="green"
-              onClick={() => openModal('converted', '✨ Converted Leads')}
-            />
-          </div>
-        </div>
+        {/* LEAD STATUS BUCKETS */}
+        <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
 
         {/* Sentiment Analysis */}
         <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
@@ -365,11 +358,8 @@ export default function EnhancedDbrDashboard() {
           </div>
         </div>
 
-        {/* Conversion Funnel - Moved to Bottom */}
-        {stats.funnelData && <ConversionFunnel data={stats.funnelData} />}
-
-        {/* LEAD STATUS BUCKETS - Below Conversion Funnel */}
-        <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
+        {/* ARCHIVED HOT LEADS SECTION - Moved to Bottom */}
+        <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
       </div>
 
       {/* Leads Modal */}

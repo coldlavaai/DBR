@@ -1,6 +1,7 @@
 'use client'
 
-import { MessageSquare, Phone, Calendar, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
+import { MessageSquare, Phone, Calendar, TrendingUp, ChevronDown, Loader2 } from 'lucide-react'
 
 interface ActivityItem {
   id: string
@@ -16,7 +17,31 @@ interface RecentActivityProps {
   onActivityClick?: (leadId: string, leadName: string) => void
 }
 
-export default function RecentActivity({ activities, onActivityClick }: RecentActivityProps) {
+export default function RecentActivity({ activities: initialActivities, onActivityClick }: RecentActivityProps) {
+  const [activities, setActivities] = useState<ActivityItem[]>(initialActivities)
+  const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+
+  const loadMore = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/recent-activity?offset=${activities.length}&limit=5`)
+      if (!response.ok) throw new Error('Failed to load more activities')
+
+      const data = await response.json()
+      if (data.activities && data.activities.length > 0) {
+        setActivities(prev => [...prev, ...data.activities])
+        setHasMore(data.hasMore)
+      } else {
+        setHasMore(false)
+      }
+    } catch (error) {
+      console.error('Error loading more activities:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'reply':
@@ -160,6 +185,27 @@ export default function RecentActivity({ activities, onActivityClick }: RecentAc
           </button>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <button
+          onClick={loadMore}
+          disabled={loading}
+          className="w-full mt-4 py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-4 h-4" />
+              Load More
+            </>
+          )}
+        </button>
+      )}
     </div>
   )
 }
