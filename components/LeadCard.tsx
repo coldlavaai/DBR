@@ -22,6 +22,7 @@ export interface Lead {
   m3Sent?: string
   installDate?: string
   manualMode?: boolean
+  notes?: string
 }
 
 interface LeadCardProps {
@@ -49,6 +50,8 @@ export default function LeadCard({
   const [togglingManual, setTogglingManual] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [manualModeOverride, setManualModeOverride] = useState<boolean | null>(null)
+  const [newNote, setNewNote] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
 
   const LEAD_STATUSES = [
     'Ready',
@@ -243,6 +246,54 @@ export default function LeadCard({
       alert('Failed to update lead status. Please try again.')
     } finally {
       setUpdatingStatus(false)
+    }
+  }
+
+  const saveNote = async () => {
+    if (!newNote.trim()) {
+      alert('Please enter a note')
+      return
+    }
+
+    setSavingNote(true)
+
+    try {
+      // Create timestamp in UK format: DD/MM/YYYY HH:MM
+      const now = new Date()
+      const timestamp = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+
+      // Format: [DD/MM/YYYY HH:MM] Note text
+      const timestampedNote = `[${timestamp}] ${newNote.trim()}`
+
+      // Append to existing notes (or create new)
+      const updatedNotes = lead.notes
+        ? `${lead.notes}\n${timestampedNote}`
+        : timestampedNote
+
+      const response = await fetch('/api/update-lead-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: lead._id,
+          notes: updatedNotes,
+          phoneNumber: lead.phoneNumber
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save note')
+      }
+
+      // Clear input and refresh
+      setNewNote('')
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error('Error saving note:', error)
+      alert('Failed to save note. Please try again.')
+    } finally {
+      setSavingNote(false)
     }
   }
 
@@ -569,6 +620,48 @@ export default function LeadCard({
                 </div>
               </div>
             )}
+
+            {/* Notes Section */}
+            <div className="space-y-2 mt-4">
+              <h5 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Notes</h5>
+
+              {/* Existing Notes Display */}
+              {lead.notes && (
+                <div className="p-4 bg-black/30 rounded-xl border border-white/10 max-h-48 overflow-y-auto custom-scrollbar mb-3">
+                  <pre className="text-sm text-gray-300 whitespace-pre-wrap font-inter leading-relaxed">
+                    {lead.notes}
+                  </pre>
+                </div>
+              )}
+
+              {/* Add New Note */}
+              <div className="space-y-2">
+                <textarea
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  placeholder="Add a new note..."
+                  className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-coldlava-cyan resize-none"
+                  rows={3}
+                />
+                <button
+                  onClick={saveNote}
+                  disabled={savingNote || !newNote.trim()}
+                  className="w-full px-4 py-2 bg-coldlava-cyan hover:bg-coldlava-cyan/80 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {savingNote ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Save Note
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

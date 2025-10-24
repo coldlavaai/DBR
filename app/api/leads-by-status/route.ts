@@ -44,7 +44,8 @@ export async function GET(request: Request) {
       m3Sent,
       installDate,
       manualMode,
-      starred
+      starred,
+      notes
     }`
 
     const leads = await sanityClient.fetch(query)

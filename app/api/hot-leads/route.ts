@@ -33,7 +33,9 @@ export async function GET() {
         m1Sent,
         m2Sent,
         m3Sent,
-        installDate
+        installDate,
+        notes,
+        manualMode
       }`
     )
 
