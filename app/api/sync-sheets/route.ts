@@ -115,6 +115,20 @@ function normalizePhoneNumber(phoneNumber: string): string {
   return '+44' + cleaned
 }
 
+function normalizeContactStatus(status: string | undefined): string {
+  if (!status) return 'Sent_1'
+
+  const normalized = status.trim().toLowerCase()
+
+  // Map various status values to canonical ones
+  if (normalized === 'scheduled' || normalized === 'call booked' || normalized === 'call_booked') {
+    return 'CALL_BOOKED'
+  }
+
+  // Return original status if no mapping needed
+  return status
+}
+
 export async function GET() {
   try {
     console.log('🔄 Starting Google Sheets → Sanity sync...')
@@ -202,7 +216,7 @@ export async function GET() {
           phoneNumber: normalizedPhone,
           firstName,
           secondName,
-          contactStatus: contactStatus || 'Sent_1',
+          contactStatus: normalizeContactStatus(contactStatus),
           lastSyncedAt: new Date().toISOString(),
         }
 
