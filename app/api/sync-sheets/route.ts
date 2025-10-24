@@ -6,6 +6,8 @@ import { getGoogleSheetsClient } from '@/lib/google-auth'
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 export const revalidate = 0
+export const runtime = 'nodejs'
+export const maxDuration = 300 // 5 minutes max execution time
 
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
