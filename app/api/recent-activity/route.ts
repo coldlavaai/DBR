@@ -24,23 +24,23 @@ export async function GET() {
 
     const allLeadsWithReplies = await sanityClient.fetch(query)
 
-    // If we have lots of replies (>10), favor positive sentiment
+    // If we have lots of replies (>10), favor hot/warm leads
     let activities
     if (allLeadsWithReplies.length > 10) {
-      // Split into positive and other sentiments
-      const positiveLeads = allLeadsWithReplies.filter(
-        (lead: any) => lead.leadSentiment === 'POSITIVE'
+      // Split into hot/warm and other statuses
+      const hotWarmLeads = allLeadsWithReplies.filter(
+        (lead: any) => lead.contactStatus === 'HOT' || lead.contactStatus === 'WARM'
       )
       const otherLeads = allLeadsWithReplies.filter(
-        (lead: any) => lead.leadSentiment !== 'POSITIVE'
+        (lead: any) => lead.contactStatus !== 'HOT' && lead.contactStatus !== 'WARM'
       )
 
-      // Take 3 positive (if available) and 2 other, all sorted by most recent
-      const selectedPositive = positiveLeads.slice(0, 3)
+      // Take 3 hot/warm (if available) and 2 other, all sorted by most recent
+      const selectedHotWarm = hotWarmLeads.slice(0, 3)
       const selectedOthers = otherLeads.slice(0, 2)
 
       // Merge and re-sort by timestamp to maintain chronological order
-      const combined = [...selectedPositive, ...selectedOthers]
+      const combined = [...selectedHotWarm, ...selectedOthers]
       combined.sort((a, b) => {
         const dateA = new Date(a.replyReceived).getTime()
         const dateB = new Date(b.replyReceived).getTime()
@@ -60,7 +60,6 @@ export async function GET() {
       leadName: `${lead.firstName} ${lead.secondName}`,
       message: lead.latestLeadReply || 'No message preview',
       timestamp: lead.replyReceived,
-      sentiment: lead.leadSentiment,
       contactStatus: lead.contactStatus,
     }))
 

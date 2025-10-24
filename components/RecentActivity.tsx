@@ -8,7 +8,7 @@ interface ActivityItem {
   leadName: string
   message: string
   timestamp: string
-  sentiment?: string
+  contactStatus?: string
 }
 
 interface RecentActivityProps {
@@ -56,6 +56,62 @@ export default function RecentActivity({ activities, onActivityClick }: RecentAc
     return date.toLocaleDateString()
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SENT_1':
+        return 'from-blue-400 to-cyan-500'
+      case 'SENT_2':
+        return 'from-blue-500 to-indigo-500'
+      case 'SENT_3':
+        return 'from-indigo-500 to-purple-500'
+      case 'COLD':
+        return 'from-blue-600 to-cyan-700'
+      case 'NEUTRAL':
+        return 'from-gray-400 to-slate-500'
+      case 'WARM':
+        return 'from-yellow-400 to-orange-400'
+      case 'HOT':
+        return 'from-orange-400 to-red-500'
+      case 'CALL_BOOKED':
+        return 'from-purple-400 to-pink-500'
+      case 'CONVERTED':
+        return 'from-emerald-400 to-teal-500'
+      case 'INSTALLED':
+        return 'from-green-500 to-emerald-600'
+      case 'REMOVED':
+        return 'from-red-400 to-rose-500'
+      default:
+        return 'from-gray-400 to-slate-500'
+    }
+  }
+
+  const getStatusEmoji = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SENT_1':
+      case 'SENT_2':
+      case 'SENT_3':
+        return '📨'
+      case 'COLD':
+        return '❄️'
+      case 'NEUTRAL':
+        return '🤔'
+      case 'WARM':
+        return '🌡️'
+      case 'HOT':
+        return '🔥'
+      case 'CALL_BOOKED':
+        return '📞'
+      case 'CONVERTED':
+        return '✨'
+      case 'INSTALLED':
+        return '✅'
+      case 'REMOVED':
+        return '🚫'
+      default:
+        return '❓'
+    }
+  }
+
   if (activities.length === 0) {
     return (
       <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-8 shadow-xl text-center">
@@ -94,9 +150,9 @@ export default function RecentActivity({ activities, onActivityClick }: RecentAc
 
                 <p className="text-sm text-gray-300 line-clamp-2">{activity.message}</p>
 
-                {activity.sentiment && (
-                  <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-gradient-to-r from-green-400/20 to-emerald-500/20 text-green-300 border border-green-400/30">
-                    {activity.sentiment}
+                {activity.contactStatus && (
+                  <span className={`inline-block mt-2 px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r ${getStatusColor(activity.contactStatus)} text-white`}>
+                    {getStatusEmoji(activity.contactStatus)} {activity.contactStatus}
                   </span>
                 )}
               </div>

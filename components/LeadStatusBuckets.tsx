@@ -235,7 +235,7 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
 
               {/* Bucket Content */}
               {isExpanded && (
-                <div className="p-5 pt-0 animate-fade-in">
+                <div className="p-5 pt-0 space-y-3 animate-fade-in">
                   {bucket.loading && bucket.leads.length === 0 ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-8 h-8 text-coldlava-cyan animate-spin" />
@@ -247,17 +247,14 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
                     </div>
                   ) : (
                     <>
-                      {/* 2-column grid for lead cards */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
-                        {bucket.leads.map(lead => (
-                          <LeadCard
-                            key={lead._id}
-                            lead={lead}
-                            onRefresh={handleLeadUpdate}
-                            showArchiveButton={false}
-                          />
-                        ))}
-                      </div>
+                      {bucket.leads.map(lead => (
+                        <LeadCard
+                          key={lead._id}
+                          lead={lead}
+                          onRefresh={handleLeadUpdate}
+                          showArchiveButton={false}
+                        />
+                      ))}
 
                       {/* Load More Button */}
                       {bucket.hasMore && (
