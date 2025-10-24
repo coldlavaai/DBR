@@ -17,7 +17,7 @@ interface EnhancedStats {
   totalLeads: number
   messagesSent: { m1: number; m2: number; m3: number; total: number }
   sentiment: { positive: number; negative: number; neutral: number; negativeRemoved: number; unclear: number }
-  statusBreakdown: { hot: number; positive: number; negative: number; removed: number; sent1: number; sent2: number; sent3: number; converted: number; scheduled: number }
+  statusBreakdown: { sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
   replyRate: number
   repliedLeads: number
   trends?: { totalLeads: number; messagesSent: number; replyRate: number; hotLeads: number; converted: number }
