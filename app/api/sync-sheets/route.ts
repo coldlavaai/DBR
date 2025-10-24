@@ -19,7 +19,7 @@ const sanityClient = createClient({
 
 // Your actual Google Sheet ID
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
-const RANGE = 'A2:V' // First sheet, starting from row 2 (includes Manual_Mode column V)
+const RANGE = 'A2:X' // First sheet, starting from row 2 (includes Manual_Mode column V and call_booked column X)
 
 function parseDateTime(dateStr: string | undefined): string | null {
   if (!dateStr || dateStr.trim() === '') return null
@@ -168,7 +168,7 @@ export async function GET() {
         // 9: Reply_received, 10: Notes, 11: M_1_sent, 12: M_2_sent, 13: M_3_sent,
         // 14: Conversation History, 15: Latest_lead_reply, 16: Reply_processed,
         // 17: Lead_sentiment, 18: AI_reply_sent, 19: Install_Date, 20: Final_status,
-        // 21: Manual_Mode
+        // 21: Manual_Mode, 22: (column W), 23: call_booked (column X)
         const emailAddress = row[4]
         const postcode = row[5]
         const address = row[6]
@@ -187,6 +187,7 @@ export async function GET() {
         const installDate = row[19]
         const finalStatus = row[20]
         const manualModeStr = row[21]
+        const callBookedTime = row[23] // Column X
 
         if (!phoneNumber || !firstName || !secondName) {
           continue // Skip rows without required fields
@@ -228,6 +229,7 @@ export async function GET() {
         if (m3Sent) leadData.m3Sent = parseDateTime(m3Sent)
         if (replyReceived) leadData.replyReceived = parseDateTime(replyReceived)
         if (aiReplySent) leadData.aiReplySent = parseDateTime(aiReplySent)
+        if (callBookedTime) leadData.callBookedTime = parseDateTime(callBookedTime)
 
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)

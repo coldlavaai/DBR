@@ -14,7 +14,7 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
     return (
       <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-8 shadow-xl text-center">
         <Calendar className="w-16 h-16 mx-auto text-gray-500 mb-4" />
-        <p className="text-gray-400 text-lg">No calls booked yet</p>
+        <p className="text-gray-400 text-lg">No upcoming calls</p>
       </div>
     )
   }
@@ -26,7 +26,7 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
         <h3 className="text-2xl font-bold text-white flex items-center gap-3">
           <div className="w-1 h-8 bg-gradient-to-b from-purple-400 to-pink-500 rounded-full" />
           <Calendar className="w-7 h-7 text-purple-400" />
-          Calls Booked ({leads.length})
+          Upcoming Calls ({leads.length})
         </h3>
         <p className="text-sm text-gray-400">Scheduled via Cal.com</p>
       </div>

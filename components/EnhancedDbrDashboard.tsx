@@ -314,7 +314,7 @@ export default function EnhancedDbrDashboard() {
                 <ChevronDown className="w-5 h-5" />
               )}
               <span className="text-sm font-medium">
-                {sectionsExpanded.callBooked ? 'Collapse' : 'Expand'} Calls Booked Section
+                {sectionsExpanded.callBooked ? 'Collapse' : 'Expand'} Upcoming Calls Section
               </span>
             </button>
           </div>

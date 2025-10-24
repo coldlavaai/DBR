@@ -15,8 +15,11 @@ const sanityClient = createClient({
 
 export async function GET() {
   try {
-    // Fetch all CALL_BOOKED leads
-    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && !archived] | order(_createdAt desc) {
+    // Get current date/time for filtering
+    const now = new Date().toISOString()
+
+    // Fetch CALL_BOOKED leads with upcoming call times only
+    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && !archived && (callBookedTime > "${now}" || !defined(callBookedTime))] | order(callBookedTime asc) {
       _id,
       firstName,
       secondName,
@@ -34,6 +37,7 @@ export async function GET() {
       replyReceived,
       notes,
       installDate,
+      callBookedTime,
       manualMode,
       archived,
       archivedAt
