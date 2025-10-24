@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
       contactStatus,
       leadSentiment,
       postcode
-    }`
+    }` as const
 
-    const leads = await sanityClient.fetch(groqQuery, { query })
+    const leads = await sanityClient.fetch(groqQuery as any, { query })
 
     return NextResponse.json({ leads, count: leads.length })
   } catch (error) {
