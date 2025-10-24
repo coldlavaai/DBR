@@ -17,42 +17,98 @@ interface BucketState {
 
 export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps) {
   const [buckets, setBuckets] = useState<Record<string, BucketState>>({
-    POSITIVE: { leads: [], loading: false, hasMore: true, limit: 5 },
-    NEGATIVE: { leads: [], loading: false, hasMore: true, limit: 5 },
+    SENT_1: { leads: [], loading: false, hasMore: true, limit: 5 },
+    SENT_2: { leads: [], loading: false, hasMore: true, limit: 5 },
+    SENT_3: { leads: [], loading: false, hasMore: true, limit: 5 },
+    COLD: { leads: [], loading: false, hasMore: true, limit: 5 },
+    NEUTRAL: { leads: [], loading: false, hasMore: true, limit: 5 },
+    WARM: { leads: [], loading: false, hasMore: true, limit: 5 },
+    HOT: { leads: [], loading: false, hasMore: true, limit: 5 },
+    CALL_BOOKED: { leads: [], loading: false, hasMore: true, limit: 5 },
     CONVERTED: { leads: [], loading: false, hasMore: true, limit: 5 },
+    INSTALLED: { leads: [], loading: false, hasMore: true, limit: 5 },
     REMOVED: { leads: [], loading: false, hasMore: true, limit: 5 },
   })
 
   const [expandedBuckets, setExpandedBuckets] = useState<Record<string, boolean>>({
-    POSITIVE: false,
-    NEGATIVE: false,
+    SENT_1: false,
+    SENT_2: false,
+    SENT_3: false,
+    COLD: false,
+    NEUTRAL: false,
+    WARM: false,
+    HOT: false,
+    CALL_BOOKED: false,
     CONVERTED: false,
+    INSTALLED: false,
     REMOVED: false,
   })
 
   const bucketConfig = {
-    POSITIVE: {
-      title: '🔥 Positive Leads',
-      description: 'Engaged and interested contacts',
-      gradient: 'from-green-400 to-emerald-500',
-      statuses: ['POSITIVE']
+    SENT_1: {
+      title: '📨 Sent Message 1',
+      description: 'First message sent, awaiting response',
+      gradient: 'from-blue-400 to-cyan-500',
+      statuses: ['Sent_1']
     },
-    NEGATIVE: {
-      title: '❌ Negative Leads',
-      description: 'Not interested or declined',
-      gradient: 'from-red-400 to-rose-500',
-      statuses: ['NEGATIVE']
+    SENT_2: {
+      title: '📨 Sent Message 2',
+      description: 'Second follow-up sent',
+      gradient: 'from-blue-500 to-indigo-500',
+      statuses: ['Sent_2']
+    },
+    SENT_3: {
+      title: '📨 Sent Message 3',
+      description: 'Third follow-up sent',
+      gradient: 'from-indigo-500 to-purple-500',
+      statuses: ['Sent_3']
+    },
+    COLD: {
+      title: '❄️ Cold Leads',
+      description: 'Not interested or negative response',
+      gradient: 'from-blue-600 to-cyan-700',
+      statuses: ['COLD']
+    },
+    NEUTRAL: {
+      title: '🤔 Neutral Leads',
+      description: 'Unsure or need more information',
+      gradient: 'from-gray-400 to-slate-500',
+      statuses: ['NEUTRAL']
+    },
+    WARM: {
+      title: '🌡️ Warm Leads',
+      description: 'Showing interest and engagement',
+      gradient: 'from-yellow-400 to-orange-400',
+      statuses: ['WARM']
+    },
+    HOT: {
+      title: '🔥 Hot Leads',
+      description: 'Highly engaged, ready to move forward',
+      gradient: 'from-orange-400 to-red-500',
+      statuses: ['HOT']
+    },
+    CALL_BOOKED: {
+      title: '📞 Call Booked',
+      description: 'Call or consultation scheduled',
+      gradient: 'from-purple-400 to-pink-500',
+      statuses: ['CALL_BOOKED']
     },
     CONVERTED: {
-      title: '✨ Converted / Won',
-      description: 'Successfully converted and installed',
+      title: '✨ Converted',
+      description: 'Successfully converted to customer',
       gradient: 'from-emerald-400 to-teal-500',
-      statuses: ['CONVERTED', 'WON']
+      statuses: ['CONVERTED']
+    },
+    INSTALLED: {
+      title: '✅ Already Installed',
+      description: 'Already have solar panels installed',
+      gradient: 'from-green-500 to-emerald-600',
+      statuses: ['INSTALLED']
     },
     REMOVED: {
-      title: '🚫 Removed Leads',
-      description: 'Archived or removed from campaign',
-      gradient: 'from-gray-400 to-slate-500',
+      title: '🚫 Removed',
+      description: 'Removed from campaign',
+      gradient: 'from-red-400 to-rose-500',
       statuses: ['REMOVED']
     },
   }
@@ -139,7 +195,7 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {(Object.keys(bucketConfig) as Array<keyof typeof bucketConfig>).map((bucketKey) => {
           const config = bucketConfig[bucketKey]
           const bucket = buckets[bucketKey]

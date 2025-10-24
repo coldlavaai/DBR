@@ -46,7 +46,12 @@ export default function LeadDetailModal({ leadId, isOpen, onClose, onRefresh }: 
   }
 
   const handleRefresh = () => {
-    fetchLead()
+    // Add delay to allow Sanity to index the update before re-fetching
+    setTimeout(() => {
+      fetchLead()
+    }, 500)
+
+    // Immediately refresh parent dashboard
     if (onRefresh) {
       onRefresh()
     }
