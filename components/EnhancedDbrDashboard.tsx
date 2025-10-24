@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Users, MessageSquare, TrendingUp, Flame, Clock, Target } from 'lucide-react'
+import { Users, MessageSquare, TrendingUp, Flame, Clock, Target, ChevronDown, ChevronUp } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
 import SearchAndExport from './SearchAndExport'
@@ -40,6 +40,20 @@ export default function EnhancedDbrDashboard() {
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
   const [leadDetailModalOpen, setLeadDetailModalOpen] = useState(false)
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
+
+  // Collapsible section states
+  const [sectionsExpanded, setSectionsExpanded] = useState({
+    hotLeads: true,
+    recentActivity: true,
+    leadStatusBuckets: true,
+    sentimentAnalysis: true,
+    statusBreakdown: true,
+    archivedLeads: true,
+  })
+
+  const toggleSection = (section: keyof typeof sectionsExpanded) => {
+    setSectionsExpanded(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
   const fetchStats = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -195,7 +209,7 @@ export default function EnhancedDbrDashboard() {
         />
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <MetricCard
             title="Total Leads"
             value={stats.totalLeads}
@@ -209,7 +223,7 @@ export default function EnhancedDbrDashboard() {
             title="Messages Sent"
             value={stats.messagesSent.total}
             trend={stats.trends?.messagesSent}
-            subtitle={`AI: ${stats.messagesSent.ai} | Manual: ${stats.messagesSent.manual}`}
+            subtitle={`M1: ${stats.messagesSent.m1} M2: ${stats.messagesSent.m2} M3: ${stats.messagesSent.m3}\nAI: ${stats.messagesSent.ai} | Manual: ${stats.messagesSent.manual}`}
             icon={MessageSquare}
             color="purple"
           />
@@ -218,7 +232,7 @@ export default function EnhancedDbrDashboard() {
             title="Reply Rate"
             value={`${stats.replyRate.toFixed(1)}%`}
             trend={stats.trends?.replyRate}
-            subtitle={`${stats.repliedLeads} replies received`}
+            subtitle={`${stats.repliedLeads} replies`}
             icon={TrendingUp}
             color="green"
           />
@@ -234,48 +248,120 @@ export default function EnhancedDbrDashboard() {
           />
 
           <MetricCard
-            title="Avg Response Time"
+            title="Avg Response"
             value={`${stats.avgResponseTime || 0}h`}
-            subtitle="Time to first reply"
+            subtitle="Time to reply"
             icon={Clock}
             color="purple"
           />
 
           <MetricCard
-            title="Converted"
-            value={stats.statusBreakdown.converted}
-            trend={stats.trends?.converted}
-            subtitle="Successful conversions"
+            title="Calls Booked"
+            value={stats.statusBreakdown.callBooked}
+            trend={stats.trends?.callBooked}
+            subtitle="Via Cal.com"
             icon={Target}
             color="green"
-            onClick={() => openModal('converted', '✨ Converted Leads')}
+            onClick={() => openModal('callBooked', '📞 Calls Booked')}
           />
         </div>
 
         {/* HOT LEADS SECTION - Prominent & Interactive */}
         <div id="hot-leads-section">
-          <HotLeadsSection
-            leads={hotLeads}
-            onArchive={() => fetchStats(true)}
-            expandedLeadId={expandedLeadFromActivity}
-          />
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('hotLeads')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.hotLeads ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.hotLeads ? 'Collapse' : 'Expand'} Hot Leads Section
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.hotLeads && (
+            <HotLeadsSection
+              leads={hotLeads}
+              onArchive={() => fetchStats(true)}
+              expandedLeadId={expandedLeadFromActivity}
+            />
+          )}
         </div>
 
         {/* Recent Activity - Full Width */}
-        <RecentActivity
-          activities={recentActivity}
-          onActivityClick={handleActivityClick}
-        />
+        <div>
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('recentActivity')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.recentActivity ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.recentActivity ? 'Collapse' : 'Expand'} Recent Activity
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.recentActivity && (
+            <RecentActivity
+              activities={recentActivity}
+              onActivityClick={handleActivityClick}
+            />
+          )}
+        </div>
 
         {/* LEAD STATUS BUCKETS */}
-        <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
+        <div>
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('leadStatusBuckets')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.leadStatusBuckets ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.leadStatusBuckets ? 'Collapse' : 'Expand'} Lead Status Buckets
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.leadStatusBuckets && (
+            <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
+          )}
+        </div>
 
         {/* Sentiment Analysis */}
-        <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-gradient-to-b from-coldlava-cyan to-coldlava-purple rounded-full" />
-            Sentiment Analysis
-          </h3>
+        <div>
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('sentimentAnalysis')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.sentimentAnalysis ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.sentimentAnalysis ? 'Collapse' : 'Expand'} Sentiment Analysis
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.sentimentAnalysis && (
+            <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-coldlava-cyan to-coldlava-purple rounded-full" />
+                Sentiment Analysis
+              </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             {[
@@ -321,11 +407,30 @@ export default function EnhancedDbrDashboard() {
               )
             })}
           </div>
+            </div>
+          )}
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+        <div>
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('statusBreakdown')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.statusBreakdown ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.statusBreakdown ? 'Collapse' : 'Expand'} Status Breakdown
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.statusBreakdown && (
+            <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <div className="w-1 h-6 bg-gradient-to-b from-coldlava-pink to-coldlava-gold rounded-full" />
             Contact Status Breakdown
           </h3>
@@ -356,10 +461,31 @@ export default function EnhancedDbrDashboard() {
               </button>
             ))}
           </div>
+            </div>
+          )}
         </div>
 
         {/* ARCHIVED HOT LEADS SECTION - Moved to Bottom */}
-        <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
+        <div>
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('archivedLeads')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.archivedLeads ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.archivedLeads ? 'Collapse' : 'Expand'} Archived Hot Leads
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.archivedLeads && (
+            <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
+          )}
+        </div>
       </div>
 
       {/* Leads Modal */}
