@@ -134,13 +134,18 @@ export async function GET() {
     let processed = 0
     let errors = 0
 
-    // Fetch all existing documents to preserve archived status
-    console.log('🔍 Fetching existing documents to preserve archived status...')
+    // Fetch all existing documents to preserve archived status and manual mode
+    console.log('🔍 Fetching existing documents to preserve archived status and manual mode...')
     const existingDocs = await sanityClient.fetch(
-      `*[_type == "dbrLead"] { _id, archived, archivedAt }`
+      `*[_type == "dbrLead"] { _id, archived, archivedAt, manualMode, manualModeActivatedAt }`
     )
     const existingDocsMap = new Map(
-      existingDocs.map((doc: any) => [doc._id, { archived: doc.archived, archivedAt: doc.archivedAt }])
+      existingDocs.map((doc: any) => [doc._id, {
+        archived: doc.archived,
+        archivedAt: doc.archivedAt,
+        manualMode: doc.manualMode,
+        manualModeActivatedAt: doc.manualModeActivatedAt
+      }])
     )
     console.log(`📋 Found ${existingDocs.length} existing documents`)
 
@@ -227,11 +232,8 @@ export async function GET() {
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
 
-        // Manual mode field
-        leadData.manualMode = manualModeStr === 'YES'
-
-        // Preserve archived status if document exists
-        const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string } | undefined
+        // Preserve archived status and manual mode if document exists
+        const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string; manualMode?: boolean; manualModeActivatedAt?: string } | undefined
         if (existingDoc) {
           // Preserve archived fields from existing document
           if (existingDoc.archived !== undefined) {
@@ -240,6 +242,22 @@ export async function GET() {
           if (existingDoc.archivedAt) {
             leadData.archivedAt = existingDoc.archivedAt
           }
+
+          // Preserve manual mode - if it exists in Sanity, use that value instead of sheet
+          // This prevents the sync from overwriting manual mode changes that haven't fully propagated to the sheet yet
+          if (existingDoc.manualMode !== undefined) {
+            leadData.manualMode = existingDoc.manualMode
+          } else {
+            // Only read from sheet if not set in Sanity yet
+            leadData.manualMode = manualModeStr === 'YES'
+          }
+
+          if (existingDoc.manualModeActivatedAt) {
+            leadData.manualModeActivatedAt = existingDoc.manualModeActivatedAt
+          }
+        } else {
+          // New lead - read manual mode from sheet
+          leadData.manualMode = manualModeStr === 'YES'
         }
 
         // Add to mutations array for batch processing
