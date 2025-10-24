@@ -88,11 +88,26 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Lead updated in Sanity:', lead._id)
 
-      // Update Google Sheet
-      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
-        try {
-          const sheets = getGoogleSheetsClient()
-          const rowIndex = lead.rowNumber + 2
+      // Update Google Sheet - search by phone number
+      try {
+        const sheets = getGoogleSheetsClient()
+
+        // Get all phone numbers from column D
+        const phoneColumnData = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'D2:D',
+        })
+
+        const rows = phoneColumnData.data.values || []
+        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+
+        // Find the row index by matching phone number (without +)
+        const rowIndex = rows.findIndex((row: any[]) =>
+          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+        )
+
+        if (rowIndex >= 0) {
+          const sheetRow = rowIndex + 2 // +2 because row 1 is headers, array is 0-indexed
 
           const callDate = new Date(startTime)
           const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
@@ -102,11 +117,11 @@ export async function POST(request: NextRequest) {
             requestBody: {
               data: [
                 {
-                  range: `A${rowIndex}`,
+                  range: `A${sheetRow}`,
                   values: [['CALL_BOOKED']]
                 },
                 {
-                  range: `X${rowIndex}`,
+                  range: `X${sheetRow}`,
                   values: [[formattedTime]]
                 }
               ],
@@ -114,10 +129,12 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          console.log('✅ Google Sheet updated: row', rowIndex)
-        } catch (sheetsError) {
-          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+          console.log('✅ Google Sheet updated: row', sheetRow, 'phone:', phoneWithoutPlus)
+        } else {
+          console.log('⚠️  Could not find phone', phoneWithoutPlus, 'in Google Sheet')
         }
+      } catch (sheetsError) {
+        console.error('⚠️  Failed to update Google Sheet:', sheetsError)
       }
 
       return NextResponse.json({
@@ -171,28 +188,41 @@ export async function POST(request: NextRequest) {
         })
         .commit()
 
-      // Update Google Sheet
-      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
-        try {
-          const sheets = getGoogleSheetsClient()
-          const rowIndex = lead.rowNumber + 2
+      // Update Google Sheet - search by phone number
+      try {
+        const sheets = getGoogleSheetsClient()
+
+        const phoneColumnData = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'D2:D',
+        })
+
+        const rows = phoneColumnData.data.values || []
+        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+
+        const rowIndex = rows.findIndex((row: any[]) =>
+          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+        )
+
+        if (rowIndex >= 0) {
+          const sheetRow = rowIndex + 2
 
           const callDate = new Date(startTime)
           const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
 
           await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
-            range: `X${rowIndex}`,
+            range: `X${sheetRow}`,
             valueInputOption: 'RAW',
             requestBody: {
               values: [[formattedTime]]
             }
           })
 
-          console.log('✅ Google Sheet updated with rescheduled time: row', rowIndex)
-        } catch (sheetsError) {
-          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+          console.log('✅ Google Sheet updated with rescheduled time: row', sheetRow)
         }
+      } catch (sheetsError) {
+        console.error('⚠️  Failed to update Google Sheet:', sheetsError)
       }
 
       return NextResponse.json({ success: true, leadId: lead._id, rescheduled: true })
@@ -242,22 +272,35 @@ export async function POST(request: NextRequest) {
         })
         .commit()
 
-      // Update Google Sheet
-      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
-        try {
-          const sheets = getGoogleSheetsClient()
-          const rowIndex = lead.rowNumber + 2
+      // Update Google Sheet - search by phone number
+      try {
+        const sheets = getGoogleSheetsClient()
+
+        const phoneColumnData = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'D2:D',
+        })
+
+        const rows = phoneColumnData.data.values || []
+        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+
+        const rowIndex = rows.findIndex((row: any[]) =>
+          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+        )
+
+        if (rowIndex >= 0) {
+          const sheetRow = rowIndex + 2
 
           await sheets.spreadsheets.values.batchUpdate({
             spreadsheetId: SPREADSHEET_ID,
             requestBody: {
               data: [
                 {
-                  range: `A${rowIndex}`,
+                  range: `A${sheetRow}`,
                   values: [['WARM']]
                 },
                 {
-                  range: `X${rowIndex}`,
+                  range: `X${sheetRow}`,
                   values: [['']]
                 }
               ],
@@ -265,10 +308,10 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          console.log('✅ Google Sheet updated for cancellation: row', rowIndex)
-        } catch (sheetsError) {
-          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+          console.log('✅ Google Sheet updated for cancellation: row', sheetRow)
         }
+      } catch (sheetsError) {
+        console.error('⚠️  Failed to update Google Sheet:', sheetsError)
       }
 
       return NextResponse.json({ success: true, leadId: lead._id, cancelled: true })
