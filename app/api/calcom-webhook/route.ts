@@ -19,116 +19,275 @@ const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = await request.json()
+    const body = await request.json()
+    console.log('📅 Cal.com webhook received:', JSON.stringify(body, null, 2))
 
-    console.log('📅 Cal.com webhook received:', JSON.stringify(payload, null, 2))
+    const { triggerEvent, payload } = body
 
-    // Cal.com sends booking data with attendees
-    const { triggerEvent, payload: bookingData } = payload
+    // Handle BOOKING_CREATED event
+    if (triggerEvent === 'BOOKING_CREATED') {
+      const {
+        startTime,
+        attendees,
+        responses,
+      } = payload
 
-    // Only process booking.created events
-    if (triggerEvent !== 'BOOKING_CREATED') {
-      return NextResponse.json({ message: 'Event type not processed' })
-    }
+      const attendee = attendees?.[0]
+      const email = attendee?.email || responses?.email
+      const phone = responses?.attendeePhoneNumber || responses?.phone || responses?.['Phone Number']
+      const name = attendee?.name || responses?.name
 
-    // Extract attendee information
-    const attendees = bookingData?.responses?.email || bookingData?.attendees || []
-    const attendeeEmail = Array.isArray(attendees) ? attendees[0]?.email : attendees?.email
-    const attendeeName = Array.isArray(attendees) ? attendees[0]?.name : attendees?.name
-    const attendeePhone = bookingData?.responses?.phone || bookingData?.responses?.['Phone Number']
-    const bookingStartTime = bookingData?.startTime || bookingData?.start || new Date().toISOString()
+      console.log('🔍 Looking for lead with email:', email, 'or phone:', phone)
 
-    console.log(`📞 New booking from: ${attendeeName} (${attendeeEmail}, ${attendeePhone})`)
-    console.log(`🕐 Booking time: ${bookingStartTime}`)
+      if (!email && !phone) {
+        console.log('⚠️  No email or phone in webhook')
+        return NextResponse.json({ received: true, skipped: 'no contact info' })
+      }
 
-    if (!attendeeEmail && !attendeePhone) {
-      console.warn('⚠️ No email or phone in booking')
-      return NextResponse.json({ message: 'No contact info in booking' })
-    }
+      // Search for lead by phone or email
+      let leadQuery = `*[_type == "dbrLead" && (`
+      const params: any = {}
 
-    // Search for lead in Sanity by email or phone
-    let lead = null
+      if (phone) {
+        const normalizedPhone = phone.replace(/[^\d+]/g, '')
+        leadQuery += `phoneNumber == $phone`
+        params.phone = normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}`
+      }
 
-    if (attendeeEmail) {
-      const emailQuery = `*[_type == "dbrLead" && emailAddress == $email][0]`
-      lead = await sanityClient.fetch(emailQuery, { email: attendeeEmail })
-    }
+      if (email) {
+        if (phone) leadQuery += ` || `
+        leadQuery += `emailAddress == $email`
+        params.email = email
+      }
 
-    if (!lead && attendeePhone) {
-      // Normalize phone numbers for comparison
-      const normalizedPhone = attendeePhone.replace(/\D/g, '')
-      const phoneQuery = `*[_type == "dbrLead" && phoneNumber match "*${normalizedPhone}*"][0]`
-      lead = await sanityClient.fetch(phoneQuery)
-    }
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
 
-    if (lead) {
-      console.log(`✅ Found lead in database: ${lead.firstName} ${lead.secondName}`)
+      const lead = await sanityClient.fetch(leadQuery, params)
 
-      // Update lead status to CALL_BOOKED
+      if (!lead) {
+        console.log('⚠️  No lead found for email:', email, 'phone:', phone)
+        return NextResponse.json({
+          received: true,
+          skipped: 'lead not found',
+          searched: { email, phone }
+        })
+      }
+
+      console.log('✅ Found lead:', lead._id, lead.firstName, lead.secondName)
+
+      // Update lead in Sanity
       await sanityClient
         .patch(lead._id)
         .set({
           contactStatus: 'CALL_BOOKED',
+          callBookedTime: startTime,
+          notes: `Call booked via Cal.com${name ? ` with ${name}` : ''} on ${new Date(startTime).toLocaleDateString()}`,
           lastUpdatedAt: new Date().toISOString(),
         })
         .commit()
 
-      console.log(`✅ Updated lead ${lead._id} status to CALL_BOOKED`)
+      console.log('✅ Lead updated in Sanity:', lead._id)
 
-      // Update Google Sheets
-      if (lead.phoneNumber) {
-        const sheets = getGoogleSheetsClient()
-        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
-        const allRows = await sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
-          range: 'D2:D',
-        })
+      // Update Google Sheet
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2
 
-        const rows = allRows.data.values || []
-        const rowIndex = rows.findIndex((row: any[]) =>
-          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
-        )
+          const callDate = new Date(startTime)
+          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
 
-        if (rowIndex >= 0) {
-          const sheetRow = rowIndex + 2
-
-          // Update both Contact_Status (column A) and call_booked (column X)
           await sheets.spreadsheets.values.batchUpdate({
             spreadsheetId: SPREADSHEET_ID,
             requestBody: {
-              valueInputOption: 'USER_ENTERED',
               data: [
                 {
-                  range: `A${sheetRow}`,
-                  values: [['CALL_BOOKED']],
+                  range: `A${rowIndex}`,
+                  values: [['CALL_BOOKED']]
                 },
                 {
-                  range: `X${sheetRow}`,
-                  values: [[bookingStartTime]],
-                },
+                  range: `X${rowIndex}`,
+                  values: [[formattedTime]]
+                }
               ],
-            },
+              valueInputOption: 'RAW'
+            }
           })
 
-          console.log(`✅ Updated Google Sheets row ${sheetRow}: Status=CALL_BOOKED, Time=${bookingStartTime}`)
+          console.log('✅ Google Sheet updated: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
         }
       }
 
       return NextResponse.json({
         success: true,
-        message: `Lead ${lead.firstName} ${lead.secondName} marked as CALL_BOOKED`,
-      })
-    } else {
-      console.warn(`⚠️ No matching lead found for ${attendeeEmail || attendeePhone}`)
-      return NextResponse.json({
-        success: false,
-        message: 'No matching lead found in database',
+        leadId: lead._id,
+        leadName: `${lead.firstName} ${lead.secondName}`,
+        callTime: startTime
       })
     }
+
+    // Handle BOOKING_RESCHEDULED event
+    if (triggerEvent === 'BOOKING_RESCHEDULED') {
+      const { startTime, attendees, responses } = payload
+
+      const email = attendees?.[0]?.email || responses?.email
+      const phone = responses?.attendeePhoneNumber || responses?.phone || responses?.['Phone Number']
+
+      if (!email && !phone) {
+        return NextResponse.json({ received: true, skipped: 'no contact info' })
+      }
+
+      let leadQuery = `*[_type == "dbrLead" && (`
+      const params: any = {}
+
+      if (phone) {
+        const normalizedPhone = phone.replace(/[^\d+]/g, '')
+        leadQuery += `phoneNumber == $phone`
+        params.phone = normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}`
+      }
+
+      if (email) {
+        if (phone) leadQuery += ` || `
+        leadQuery += `emailAddress == $email`
+        params.email = email
+      }
+
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
+
+      const lead = await sanityClient.fetch(leadQuery, params)
+
+      if (!lead) {
+        return NextResponse.json({ received: true, skipped: 'lead not found' })
+      }
+
+      await sanityClient
+        .patch(lead._id)
+        .set({
+          callBookedTime: startTime,
+          notes: `Call rescheduled via Cal.com to ${new Date(startTime).toLocaleDateString()} ${new Date(startTime).toLocaleTimeString()}`,
+          lastUpdatedAt: new Date().toISOString(),
+        })
+        .commit()
+
+      // Update Google Sheet
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2
+
+          const callDate = new Date(startTime)
+          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `X${rowIndex}`,
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: [[formattedTime]]
+            }
+          })
+
+          console.log('✅ Google Sheet updated with rescheduled time: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+        }
+      }
+
+      return NextResponse.json({ success: true, leadId: lead._id, rescheduled: true })
+    }
+
+    // Handle BOOKING_CANCELLED event
+    if (triggerEvent === 'BOOKING_CANCELLED') {
+      const { attendees, responses } = payload
+
+      const email = attendees?.[0]?.email || responses?.email
+      const phone = responses?.attendeePhoneNumber || responses?.phone || responses?.['Phone Number']
+
+      if (!email && !phone) {
+        return NextResponse.json({ received: true, skipped: 'no contact info' })
+      }
+
+      let leadQuery = `*[_type == "dbrLead" && (`
+      const params: any = {}
+
+      if (phone) {
+        const normalizedPhone = phone.replace(/[^\d+]/g, '')
+        leadQuery += `phoneNumber == $phone`
+        params.phone = normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}`
+      }
+
+      if (email) {
+        if (phone) leadQuery += ` || `
+        leadQuery += `emailAddress == $email`
+        params.email = email
+      }
+
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
+
+      const lead = await sanityClient.fetch(leadQuery, params)
+
+      if (!lead) {
+        return NextResponse.json({ received: true, skipped: 'lead not found' })
+      }
+
+      await sanityClient
+        .patch(lead._id)
+        .set({
+          contactStatus: 'WARM',
+          callBookedTime: null,
+          notes: `Call cancelled via Cal.com on ${new Date().toLocaleDateString()}`,
+          lastUpdatedAt: new Date().toISOString(),
+        })
+        .commit()
+
+      // Update Google Sheet
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2
+
+          await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: {
+              data: [
+                {
+                  range: `A${rowIndex}`,
+                  values: [['WARM']]
+                },
+                {
+                  range: `X${rowIndex}`,
+                  values: [['']]
+                }
+              ],
+              valueInputOption: 'RAW'
+            }
+          })
+
+          console.log('✅ Google Sheet updated for cancellation: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+        }
+      }
+
+      return NextResponse.json({ success: true, leadId: lead._id, cancelled: true })
+    }
+
+    // Unknown event type
+    return NextResponse.json({
+      received: true,
+      event: triggerEvent,
+      message: 'Event type not handled'
+    })
+
   } catch (error) {
-    console.error('Error processing Cal.com webhook:', error)
+    console.error('❌ Cal.com webhook error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Webhook processing failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
