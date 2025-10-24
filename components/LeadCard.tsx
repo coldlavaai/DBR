@@ -513,7 +513,10 @@ export default function LeadCard({
                   </div>
                 </div>
                 <button
-                  onClick={toggleManualMode}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleManualMode()
+                  }}
                   disabled={togglingManual}
                   className={`relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
                     isManualMode
@@ -537,6 +540,7 @@ export default function LeadCard({
               <select
                 value={lead.contactStatus || 'Sent_1'}
                 onChange={(e) => updateLeadStatus(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
                 disabled={updatingStatus}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-coldlava-cyan focus:ring-2 focus:ring-coldlava-cyan/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -561,14 +565,20 @@ export default function LeadCard({
                 Call Now
               </a>
               <button
-                onClick={() => setBookingLead(lead)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setBookingLead(lead)
+                }}
                 className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-semibold hover:scale-105 transition-transform"
               >
                 <Calendar className="w-5 h-5" />
                 Book Call
               </button>
               <button
-                onClick={() => setSmsLead(lead)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSmsLead(lead)
+                }}
                 className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-pink to-coldlava-gold rounded-xl text-white font-semibold hover:scale-105 transition-transform"
               >
                 <MessageSquare className="w-5 h-5" />
@@ -585,7 +595,10 @@ export default function LeadCard({
               )}
               {showArchiveButton && (
                 <button
-                  onClick={handleArchive}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleArchive()
+                  }}
                   disabled={archiving}
                   className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     isArchived
@@ -601,7 +614,10 @@ export default function LeadCard({
                 </button>
               )}
               <button
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDelete()
+                }}
                 disabled={deleting}
                 className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-red-600/50 rounded-xl text-white font-semibold hover:bg-red-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -690,12 +706,16 @@ export default function LeadCard({
                 <textarea
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
                   placeholder="Add a new note..."
                   className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-coldlava-cyan resize-none"
                   rows={3}
                 />
                 <button
-                  onClick={saveNote}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    saveNote()
+                  }}
                   disabled={savingNote || !newNote.trim()}
                   className="w-full px-4 py-2 bg-coldlava-cyan hover:bg-coldlava-cyan/80 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
