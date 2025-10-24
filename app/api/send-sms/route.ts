@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
+import { google } from 'googleapis'
 
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -13,6 +14,9 @@ const sanityClient = createClient({
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 const TWILIO_FROM_NUMBER = process.env.TWILIO_GREENSTAR_SMS
+
+// Google Sheets
+const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
 export async function POST(request: Request) {
   try {
@@ -63,26 +67,28 @@ export async function POST(request: Request) {
     const twilioData = await twilioResponse.json()
     console.log(`✅ SMS sent successfully, SID: ${twilioData.sid}`)
 
+    // Get lead data for row number
+    const lead = await sanityClient.fetch(
+      `*[_type == "dbrLead" && _id == $leadId][0]{ conversationHistory, rowNumber }`,
+      { leadId }
+    )
+
+    const timestamp = new Date().toISOString()
+    const formattedTimestamp = new Date(timestamp).toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+
+    // Format: [DD/MM/YYYY HH:MM] MANUAL: message
+    const newConversationEntry = `\n\n[${formattedTimestamp}] MANUAL: ${message}`
+    const updatedHistory = (lead?.conversationHistory || '') + newConversationEntry
+
     // Update conversation history in Sanity
     try {
-      const lead = await sanityClient.fetch(
-        `*[_type == "dbrLead" && _id == $leadId][0]{ conversationHistory }`,
-        { leadId }
-      )
-
-      const timestamp = new Date().toISOString()
-      const formattedTimestamp = new Date(timestamp).toLocaleString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
-
-      const newConversationEntry = `\n\n[${formattedTimestamp}] GREENSTAR (Manual): ${message}`
-      const updatedHistory = (lead?.conversationHistory || '') + newConversationEntry
-
       await sanityClient
         .patch(leadId)
         .set({
@@ -91,10 +97,52 @@ export async function POST(request: Request) {
         })
         .commit()
 
-      console.log(`✅ Updated conversation history for lead ${leadId}`)
+      console.log(`✅ Updated Sanity conversation history for lead ${leadId}`)
     } catch (sanityError) {
       console.error('Error updating Sanity:', sanityError)
       // Don't fail the request if Sanity update fails
+    }
+
+    // Update conversation history in Google Sheets
+    try {
+      if (lead?.rowNumber) {
+        const auth = new google.auth.GoogleAuth({
+          credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}'),
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        })
+
+        const sheets = google.sheets({ version: 'v4', auth })
+
+        // Column O (column 15, index 14) is Conversation History
+        const rowIndex = lead.rowNumber + 1 // +1 because row numbers are 1-indexed and we have a header
+        const range = `O${rowIndex}` // Column O = Conversation History
+
+        // Fetch current conversation history from Google Sheets
+        const currentData = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range,
+        })
+
+        const currentHistory = currentData.data.values?.[0]?.[0] || ''
+        const updatedGoogleHistory = currentHistory + newConversationEntry
+
+        // Update Google Sheets
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[updatedGoogleHistory]],
+          },
+        })
+
+        console.log(`✅ Updated Google Sheets conversation history for row ${rowIndex}`)
+      } else {
+        console.warn(`⚠️ No row number found for lead ${leadId}, skipping Google Sheets conversation update`)
+      }
+    } catch (sheetsError) {
+      console.error('Error updating Google Sheets conversation history:', sheetsError)
+      // Don't fail the request if sheets update fails
     }
 
     return NextResponse.json({
