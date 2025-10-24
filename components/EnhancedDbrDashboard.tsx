@@ -146,6 +146,48 @@ export default function EnhancedDbrDashboard() {
     setLeadDetailModalOpen(true)
   }
 
+  const handleSearchResultClick = (leadId: string, contactStatus: string) => {
+    // Determine which section to navigate to based on status
+    let sectionId = ''
+    let sectionKey: keyof typeof sectionsExpanded = 'hotLeads'
+
+    if (contactStatus === 'HOT') {
+      sectionId = 'hot-leads-section'
+      sectionKey = 'hotLeads'
+    } else if (contactStatus === 'CALL_BOOKED') {
+      // Check if it's upcoming or past - for now, go to all booked calls
+      sectionId = 'all-booked-calls-section'
+      sectionKey = 'allBookedCalls'
+    } else if (contactStatus === 'CONVERTED' || contactStatus === 'INSTALLED') {
+      // These might be in status buckets
+      sectionId = 'lead-status-buckets-section'
+      sectionKey = 'leadStatusBuckets'
+    } else {
+      // Default to status buckets for other statuses
+      sectionId = 'lead-status-buckets-section'
+      sectionKey = 'leadStatusBuckets'
+    }
+
+    // Expand the section if collapsed
+    setSectionsExpanded(prev => ({ ...prev, [sectionKey]: true }))
+
+    // Set the lead to be expanded
+    setExpandedLeadFromActivity(leadId)
+
+    // Scroll to the section after a brief delay to allow for section expansion
+    setTimeout(() => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
+
+    // Clear the expanded lead after 5 seconds
+    setTimeout(() => {
+      setExpandedLeadFromActivity(null)
+    }, 5000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen relative">
@@ -224,6 +266,7 @@ export default function EnhancedDbrDashboard() {
         <SearchAndExport
           totalRecords={stats.totalLeads}
           onExport={handleExport}
+          onResultClick={handleSearchResultClick}
         />
 
         {/* Key Metrics Grid */}
@@ -388,7 +431,7 @@ export default function EnhancedDbrDashboard() {
         </div>
 
         {/* LEAD STATUS BUCKETS */}
-        <div>
+        <div id="lead-status-buckets-section">
           <div className="mb-2">
             <button
               onClick={() => toggleSection('leadStatusBuckets')}
