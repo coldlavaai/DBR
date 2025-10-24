@@ -234,6 +234,22 @@ export const dbrLead = defineType({
       readOnly: true,
     },
 
+    // Manual Mode Control
+    {
+      name: 'manualMode',
+      title: 'Manual Communication Mode',
+      type: 'boolean',
+      description: 'When enabled, AI automation is paused and manual SMS control is activated',
+      initialValue: false,
+    },
+    {
+      name: 'manualModeActivatedAt',
+      title: 'Manual Mode Activated At',
+      type: 'datetime',
+      description: 'When manual mode was last activated',
+      readOnly: true,
+    },
+
     // Sync Metadata
     {
       name: 'lastSyncedAt',

@@ -17,7 +17,7 @@ const sanityClient = createClient({
 
 // Your actual Google Sheet ID
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
-const RANGE = 'A2:U' // First sheet, starting from row 2
+const RANGE = 'A2:V' // First sheet, starting from row 2 (now includes Manual_Mode column V)
 
 function parseDateTime(dateStr: string | undefined): string | null {
   if (!dateStr || dateStr.trim() === '') return null
@@ -165,7 +165,8 @@ export async function GET() {
         // 4: Email_address, 5: Postcode, 6: Address, 7: Enquiry_date, 8: row_number,
         // 9: Reply_received, 10: Notes, 11: M_1_sent, 12: M_2_sent, 13: M_3_sent,
         // 14: Conversation History, 15: Latest_lead_reply, 16: Reply_processed,
-        // 17: Lead_sentiment, 18: AI_reply_sent, 19: Install_Date, 20: Final_status
+        // 17: Lead_sentiment, 18: AI_reply_sent, 19: Install_Date, 20: Final_status,
+        // 21: Manual_Mode
         const emailAddress = row[4]
         const postcode = row[5]
         const address = row[6]
@@ -183,6 +184,7 @@ export async function GET() {
         const aiReplySent = row[18]
         const installDate = row[19]
         const finalStatus = row[20]
+        const manualModeStr = row[21]
 
         if (!phoneNumber || !firstName || !secondName) {
           continue // Skip rows without required fields
@@ -228,6 +230,9 @@ export async function GET() {
 
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
+
+        // Manual mode field
+        leadData.manualMode = manualModeStr === 'YES'
 
         // Preserve archived status if document exists
         const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string } | undefined

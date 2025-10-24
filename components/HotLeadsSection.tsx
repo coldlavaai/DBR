@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Flame, Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check } from 'lucide-react'
+import { Flame, Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check, Radio, Zap } from 'lucide-react'
 import BookCallModal from './BookCallModal'
+import SmsChatModal from './SmsChatModal'
 
 interface Lead {
   _id: string
@@ -20,6 +21,7 @@ interface Lead {
   m2Sent?: string
   m3Sent?: string
   installDate?: string
+  manualMode?: boolean
 }
 
 interface HotLeadsSectionProps {
@@ -32,6 +34,8 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
   const [archiving, setArchiving] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [bookingLead, setBookingLead] = useState<Lead | null>(null)
+  const [smsLead, setSmsLead] = useState<Lead | null>(null)
+  const [togglingManual, setTogglingManual] = useState<string | null>(null)
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A'
@@ -118,6 +122,32 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
     }
   }
 
+  const toggleManualMode = async (leadId: string, currentMode: boolean) => {
+    setTogglingManual(leadId)
+
+    try {
+      const response = await fetch('/api/toggle-manual-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, manualMode: !currentMode })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle manual mode')
+      }
+
+      // Refresh the leads
+      if (onArchive) {
+        onArchive()
+      }
+    } catch (error) {
+      console.error('Error toggling manual mode:', error)
+      alert('Failed to toggle manual mode. Please try again.')
+    } finally {
+      setTogglingManual(null)
+    }
+  }
+
   if (leads.length === 0) {
     return (
       <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-8 shadow-xl text-center">
@@ -185,6 +215,12 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                       <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white whitespace-nowrap`}>
                         {getSentimentEmoji(lead.leadSentiment)} {lead.leadSentiment || 'UNCLEAR'}
                       </span>
+                      {lead.manualMode && (
+                        <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-coldlava-pink to-coldlava-gold text-white whitespace-nowrap flex items-center gap-1">
+                          <Radio className="w-3 h-3" />
+                          MANUAL
+                        </span>
+                      )}
                     </div>
 
                     {/* Contact details - Now stacks on mobile, wraps on tablet */}
@@ -288,8 +324,45 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
               {/* Expanded Details */}
               {isExpanded && (
                 <div className="p-5 pt-0 space-y-4 animate-fade-in">
+                  {/* Manual Mode Toggle */}
+                  <div className="pt-4 border-t border-white/10">
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${lead.manualMode ? 'bg-gradient-to-br from-coldlava-pink to-coldlava-gold' : 'bg-white/10'}`}>
+                          {lead.manualMode ? <Radio className="w-5 h-5 text-white" /> : <Zap className="w-5 h-5 text-gray-400" />}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white">
+                            {lead.manualMode ? 'Manual Control Active' : 'AI Automation Active'}
+                          </h4>
+                          <p className="text-xs text-gray-400">
+                            {lead.manualMode
+                              ? 'You are in control of all messages. AI automation is paused.'
+                              : 'AI is handling automated follow-ups based on schedule.'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => toggleManualMode(lead._id, lead.manualMode || false)}
+                        disabled={togglingManual === lead._id}
+                        className={`relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
+                          lead.manualMode
+                            ? 'bg-gradient-to-r from-coldlava-pink to-coldlava-gold'
+                            : 'bg-gray-600'
+                        } ${togglingManual === lead._id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={lead.manualMode ? 'Switch to AI automation' : 'Take manual control'}
+                      >
+                        <div
+                          className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-lg ${
+                            lead.manualMode ? 'translate-x-7' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Quick Actions */}
-                  <div className="flex flex-wrap gap-3 pt-4 border-t border-white/10">
+                  <div className="flex flex-wrap gap-3">
                     <a
                       href={`tel:${lead.phoneNumber}`}
                       className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-cyan to-coldlava-purple rounded-xl text-white font-semibold hover:scale-105 transition-transform"
@@ -304,13 +377,13 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                       <Calendar className="w-5 h-5" />
                       Book Call
                     </button>
-                    <a
-                      href={`sms:${lead.phoneNumber}`}
-                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-white/10 rounded-xl text-white font-semibold hover:bg-white/20 transition-colors"
+                    <button
+                      onClick={() => setSmsLead(lead)}
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-pink to-coldlava-gold rounded-xl text-white font-semibold hover:scale-105 transition-transform"
                     >
                       <MessageSquare className="w-5 h-5" />
-                      SMS
-                    </a>
+                      {lead.manualMode ? 'SMS Chat' : 'View Chat'}
+                    </button>
                     {lead.emailAddress && (
                       <a
                         href={`mailto:${lead.emailAddress}`}
@@ -410,6 +483,15 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
               onArchive() // Refresh the leads
             }
           }}
+        />
+      )}
+
+      {/* SMS Chat Modal */}
+      {smsLead && (
+        <SmsChatModal
+          lead={smsLead}
+          isOpen={!!smsLead}
+          onClose={() => setSmsLead(null)}
         />
       )}
     </div>
