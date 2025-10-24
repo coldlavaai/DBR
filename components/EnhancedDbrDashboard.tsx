@@ -17,7 +17,7 @@ import LeadDetailModal from './LeadDetailModal'
 interface EnhancedStats {
   totalLeads: number
   messagesSent: { m1: number; m2: number; m3: number; total: number; manual: number; ai: number }
-  sentiment: { positive: number; negative: number; neutral: number; negativeRemoved: number; unclear: number }
+  sentiment: { positive: number; negative: number; neutral: number; negativeRemoved: number; unclear: number; unsure: number }
   statusBreakdown: { ready: number; sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
   replyRate: number
   repliedLeads: number
@@ -476,13 +476,14 @@ export default function EnhancedDbrDashboard() {
                 Sentiment Analysis
               </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
             {[
               { label: 'Positive', value: stats.sentiment.positive, color: 'from-green-400 to-emerald-500', filter: 'sentiment-positive' },
               { label: 'Negative', value: stats.sentiment.negative, color: 'from-red-400 to-rose-500', filter: 'sentiment-negative' },
               { label: 'Neutral', value: stats.sentiment.neutral, color: 'from-gray-400 to-slate-500', filter: 'sentiment-neutral' },
+              { label: 'Unsure', value: stats.sentiment.unsure, color: 'from-yellow-400 to-amber-500', filter: 'sentiment-unsure' },
+              { label: 'Unclear', value: stats.sentiment.unclear, color: 'from-orange-400 to-red-400', filter: 'sentiment-unclear' },
               { label: 'Removed', value: stats.sentiment.negativeRemoved, color: 'from-gray-600 to-gray-700', filter: 'sentiment-removed' },
-              { label: 'Unclear', value: stats.sentiment.unclear, color: 'from-yellow-400 to-orange-500', filter: 'sentiment-unclear' },
             ].map((item) => (
               <button
                 key={item.label}

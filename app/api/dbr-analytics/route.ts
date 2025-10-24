@@ -82,6 +82,7 @@ function calculateStats(leads: any[]) {
     neutral: leads.filter((l) => l.leadSentiment === 'NEUTRAL').length,
     negativeRemoved: leads.filter((l) => l.leadSentiment === 'NEGATIVE_REMOVED').length,
     unclear: leads.filter((l) => l.leadSentiment === 'UNCLEAR').length,
+    unsure: leads.filter((l) => l.leadSentiment === 'UNSURE').length,
   }
 
   const statusBreakdown = {
