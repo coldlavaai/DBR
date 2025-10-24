@@ -68,11 +68,11 @@ export async function POST(request: Request) {
             range: `W${sheetRow}`,
             valueInputOption: 'RAW',
             requestBody: {
-              values: [[starred ? 'TRUE' : 'FALSE']]
+              values: [[starred ? 'YES' : '']]
             }
           })
 
-          console.log(`✅ Updated Google Sheets row ${sheetRow}, Column W (Featured) = ${starred}`)
+          console.log(`✅ Updated Google Sheets row ${sheetRow}, Column W (Featured) = ${starred ? 'YES' : 'empty'}`)
         } else {
           console.warn(`⚠️ Phone number ${normalizedPhone} not found in Google Sheet`)
         }

@@ -298,25 +298,12 @@ export default function LeadCard({
                     MANUAL
                   </span>
                 )}
-                {/* Star Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleStarred()
-                  }}
-                  disabled={togglingStarred}
-                  className={`p-2 hover:bg-white/10 rounded-lg transition-all flex-shrink-0 ${togglingStarred ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title={getStarred() ? 'Remove from featured' : 'Add to featured'}
-                  aria-label="Toggle featured status"
-                >
-                  <Star
-                    className={`w-4 h-4 transition-all ${
-                      getStarred()
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-400 hover:text-yellow-400'
-                    }`}
-                  />
-                </button>
+                {getStarred() && (
+                  <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white whitespace-nowrap flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-white" />
+                    FEATURED
+                  </span>
+                )}
               </div>
 
               {/* Contact details */}
@@ -455,6 +442,41 @@ export default function LeadCard({
                   />
                 </button>
               </div>
+            </div>
+
+            {/* Star Toggle */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStarred() ? 'bg-gradient-to-br from-yellow-400 to-orange-500' : 'bg-white/10'}`}>
+                  <Star className={`w-5 h-5 ${getStarred() ? 'text-white fill-white' : 'text-gray-400'}`} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-white">
+                    {getStarred() ? 'Featured Lead' : 'Not Featured'}
+                  </h4>
+                  <p className="text-xs text-gray-400">
+                    {getStarred()
+                      ? 'This lead is featured for quick access in the dashboard.'
+                      : 'Feature this lead to keep it visible in the Featured section.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={toggleStarred}
+                disabled={togglingStarred}
+                className={`relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
+                  getStarred()
+                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                    : 'bg-gray-600'
+                } ${togglingStarred ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={getStarred() ? 'Remove from featured' : 'Add to featured'}
+              >
+                <div
+                  className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-lg ${
+                    getStarred() ? 'translate-x-7' : ''
+                  }`}
+                />
+              </button>
             </div>
 
             {/* Lead Status Dropdown */}

@@ -230,7 +230,7 @@ export async function GET() {
         leadData.manualMode = manualModeStr === 'YES'
 
         // Featured/starred field
-        leadData.starred = featuredStr === 'TRUE'
+        leadData.starred = featuredStr === 'YES'
 
         // Preserve archived status if document exists
         const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string } | undefined
