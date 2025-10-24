@@ -35,53 +35,8 @@ export async function POST(request: Request) {
 
     console.log(`✅ Updated Sanity for lead ${leadId}`)
 
-    // Update Google Sheets by searching for phone number
-    try {
-      // Get the lead's phone number
-      const lead = await sanityClient.fetch(
-        `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber }`,
-        { leadId }
-      )
-
-      if (lead?.phoneNumber) {
-        const sheets = getGoogleSheetsClient()
-
-        // Search for the phone number in column D (index 3)
-        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
-        const allRows = await sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
-          range: 'D2:D', // Column D (Phone_number) from row 2 onwards
-        })
-
-        const rows = allRows.data.values || []
-        const rowIndex = rows.findIndex((row: any[]) =>
-          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
-        )
-
-        if (rowIndex >= 0) {
-          const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
-          const range = `W${sheetRow}` // Column W = Starred
-
-          await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range,
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-              values: [[starred ? 'YES' : '']],
-            },
-          })
-
-          console.log(`✅ Updated Google Sheet row ${sheetRow} with starred: ${starred ? 'YES' : 'empty'}`)
-        } else {
-          console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
-        }
-      } else {
-        console.warn(`⚠️ No phone number found for lead ${leadId}`)
-      }
-    } catch (sheetsError) {
-      console.error('Error updating Google Sheets:', sheetsError)
-      // Don't fail the entire request if sheets update fails
-    }
+    // TODO: Add Google Sheets sync for starred status (Column W) when column is added
+    // For now, starred status only syncs to Sanity to avoid errors
 
     return NextResponse.json({
       success: true,
