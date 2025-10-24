@@ -8,6 +8,7 @@ import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
 import CallBookedSection from './CallBookedSection'
+import BookedCallsSection from './BookedCallsSection'
 import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
 import LeadStatusBuckets from './LeadStatusBuckets'
@@ -37,6 +38,7 @@ export default function EnhancedDbrDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
   const [callBookedLeads, setCallBookedLeads] = useState<any[]>([])
+  const [allBookedCalls, setAllBookedCalls] = useState<any[]>([])
   const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
@@ -46,7 +48,8 @@ export default function EnhancedDbrDashboard() {
   // Collapsible section states
   const [sectionsExpanded, setSectionsExpanded] = useState({
     hotLeads: true,
-    callBooked: true,
+    upcomingCalls: true,
+    allBookedCalls: true,
     recentActivity: true,
     leadStatusBuckets: true,
     sentimentAnalysis: true,
@@ -66,10 +69,11 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse, callBookedLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, callBookedLeadsResponse, allBookedCallsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
         fetch('/api/hot-leads'),
         fetch('/api/call-booked-leads'),
+        fetch('/api/all-booked-calls'),
         fetch('/api/archived-hot-leads'),
         fetch('/api/recent-activity')
       ])
@@ -86,6 +90,11 @@ export default function EnhancedDbrDashboard() {
       if (callBookedLeadsResponse.ok) {
         const callBookedData = await callBookedLeadsResponse.json()
         setCallBookedLeads(callBookedData.leads || [])
+      }
+
+      if (allBookedCallsResponse.ok) {
+        const allCallsData = await allBookedCallsResponse.json()
+        setAllBookedCalls(allCallsData.leads || [])
       }
 
       if (archivedLeadsResponse.ok) {
@@ -301,26 +310,52 @@ export default function EnhancedDbrDashboard() {
           )}
         </div>
 
-        {/* CALL BOOKED SECTION */}
-        <div id="call-booked-section">
+        {/* UPCOMING CALLS SECTION */}
+        <div id="upcoming-calls-section">
           <div className="mb-2">
             <button
-              onClick={() => toggleSection('callBooked')}
+              onClick={() => toggleSection('upcomingCalls')}
               className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
             >
-              {sectionsExpanded.callBooked ? (
+              {sectionsExpanded.upcomingCalls ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (
                 <ChevronDown className="w-5 h-5" />
               )}
               <span className="text-sm font-medium">
-                {sectionsExpanded.callBooked ? 'Collapse' : 'Expand'} Upcoming Calls Section
+                {sectionsExpanded.upcomingCalls ? 'Collapse' : 'Expand'} Upcoming Calls Section
               </span>
             </button>
           </div>
-          {sectionsExpanded.callBooked && (
+          {sectionsExpanded.upcomingCalls && (
             <CallBookedSection
               leads={callBookedLeads}
+              onRefresh={() => fetchStats(true)}
+              expandedLeadId={expandedLeadFromActivity}
+            />
+          )}
+        </div>
+
+        {/* ALL BOOKED CALLS SECTION */}
+        <div id="all-booked-calls-section">
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('allBookedCalls')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.allBookedCalls ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.allBookedCalls ? 'Collapse' : 'Expand'} All Booked Calls Section
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.allBookedCalls && (
+            <BookedCallsSection
+              leads={allBookedCalls}
               onRefresh={() => fetchStats(true)}
               expandedLeadId={expandedLeadFromActivity}
             />

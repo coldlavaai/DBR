@@ -15,12 +15,8 @@ const sanityClient = createClient({
 
 export async function GET() {
   try {
-    // Get current date/time for filtering
-    const now = new Date().toISOString()
-
-    // Fetch CALL_BOOKED leads with upcoming call times only
-    // Use archived != true to handle undefined archived fields
-    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && archived != true && (callBookedTime > $now || !defined(callBookedTime))] | order(callBookedTime asc) {
+    // Fetch ALL CALL_BOOKED leads, most recent first (by booking time or creation time)
+    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && archived != true] | order(callBookedTime desc, _createdAt desc) {
       _id,
       firstName,
       secondName,
@@ -41,16 +37,17 @@ export async function GET() {
       callBookedTime,
       manualMode,
       archived,
-      archivedAt
+      archivedAt,
+      _createdAt
     }`
 
-    const leads = await sanityClient.fetch(query, { now })
+    const leads = await sanityClient.fetch(query)
 
     return NextResponse.json({ leads, count: leads.length })
   } catch (error) {
-    console.error('Error fetching call booked leads:', error)
+    console.error('Error fetching all booked calls:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch call booked leads' },
+      { error: 'Failed to fetch all booked calls' },
       { status: 500 }
     )
   }
