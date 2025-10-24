@@ -63,15 +63,17 @@ function calculateStats(leads: any[]) {
   }
 
   const statusBreakdown = {
-    hot: leads.filter((l) => l.contactStatus === 'HOT').length,
-    positive: leads.filter((l) => l.contactStatus === 'POSITIVE').length,
-    negative: leads.filter((l) => l.contactStatus === 'NEGATIVE').length,
-    removed: leads.filter((l) => l.contactStatus === 'REMOVED').length,
     sent1: leads.filter((l) => l.contactStatus === 'Sent_1').length,
     sent2: leads.filter((l) => l.contactStatus === 'Sent_2').length,
     sent3: leads.filter((l) => l.contactStatus === 'Sent_3').length,
+    cold: leads.filter((l) => l.contactStatus === 'COLD').length,
+    neutral: leads.filter((l) => l.contactStatus === 'NEUTRAL').length,
+    warm: leads.filter((l) => l.contactStatus === 'WARM').length,
+    hot: leads.filter((l) => l.contactStatus === 'HOT').length,
+    callBooked: leads.filter((l) => l.contactStatus === 'CALL_BOOKED').length,
     converted: leads.filter((l) => l.contactStatus === 'CONVERTED').length,
-    scheduled: leads.filter((l) => l.contactStatus === 'SCHEDULED').length,
+    installed: leads.filter((l) => l.contactStatus === 'INSTALLED').length,
+    removed: leads.filter((l) => l.contactStatus === 'REMOVED').length,
   }
 
   const repliedLeads = leads.filter((l) => l.replyReceived).length
@@ -159,8 +161,8 @@ export async function GET(request: NextRequest) {
     const funnelData = {
       totalSent: currentStats.messagesSent.total,
       replied: currentStats.repliedLeads,
-      positive: currentStats.statusBreakdown.hot + currentStats.statusBreakdown.positive,
-      scheduled: currentStats.statusBreakdown.scheduled,
+      positive: currentStats.statusBreakdown.hot + currentStats.statusBreakdown.warm,
+      scheduled: currentStats.statusBreakdown.callBooked,
       converted: currentStats.statusBreakdown.converted,
     }
 

@@ -49,15 +49,17 @@ export default function LeadCard({
   const [manualModeOverride, setManualModeOverride] = useState<boolean | null>(null)
 
   const LEAD_STATUSES = [
+    'Sent_1',
+    'Sent_2',
+    'Sent_3',
+    'COLD',
+    'NEUTRAL',
+    'WARM',
     'HOT',
-    'POSITIVE',
-    'NEGATIVE',
-    'REMOVED',
+    'CALL_BOOKED',
     'CONVERTED',
-    'SCHEDULED',
-    'IN_PROGRESS',
-    'WON',
-    'LOST',
+    'INSTALLED',
+    'REMOVED',
   ]
 
   const formatDate = (dateStr?: string) => {

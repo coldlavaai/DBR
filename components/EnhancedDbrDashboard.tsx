@@ -339,15 +339,17 @@ export default function EnhancedDbrDashboard() {
 
           <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {[
-              { label: 'HOT', value: stats.statusBreakdown.hot, gradient: 'from-orange-400 to-red-500', filter: 'hot' },
-              { label: 'Positive', value: stats.statusBreakdown.positive, gradient: 'from-green-400 to-emerald-500', filter: 'positive' },
               { label: 'Sent 1', value: stats.statusBreakdown.sent1, gradient: 'from-blue-400 to-cyan-500', filter: 'sent1' },
               { label: 'Sent 2', value: stats.statusBreakdown.sent2, gradient: 'from-blue-500 to-indigo-500', filter: 'sent2' },
               { label: 'Sent 3', value: stats.statusBreakdown.sent3, gradient: 'from-indigo-500 to-purple-500', filter: 'sent3' },
-              { label: 'Scheduled', value: stats.statusBreakdown.scheduled, gradient: 'from-purple-400 to-pink-500', filter: 'scheduled' },
+              { label: 'COLD', value: stats.statusBreakdown.cold, gradient: 'from-blue-600 to-cyan-700', filter: 'cold' },
+              { label: 'NEUTRAL', value: stats.statusBreakdown.neutral, gradient: 'from-gray-400 to-slate-500', filter: 'neutral' },
+              { label: 'WARM', value: stats.statusBreakdown.warm, gradient: 'from-yellow-400 to-orange-400', filter: 'warm' },
+              { label: 'HOT', value: stats.statusBreakdown.hot, gradient: 'from-orange-400 to-red-500', filter: 'hot' },
+              { label: 'Call Booked', value: stats.statusBreakdown.callBooked, gradient: 'from-purple-400 to-pink-500', filter: 'callBooked' },
               { label: 'Converted', value: stats.statusBreakdown.converted, gradient: 'from-emerald-400 to-teal-500', filter: 'converted' },
-              { label: 'Negative', value: stats.statusBreakdown.negative, gradient: 'from-red-400 to-rose-500', filter: 'negative' },
-              { label: 'Removed', value: stats.statusBreakdown.removed, gradient: 'from-gray-400 to-slate-500', filter: 'removed' },
+              { label: 'Installed', value: stats.statusBreakdown.installed, gradient: 'from-green-500 to-emerald-600', filter: 'installed' },
+              { label: 'Removed', value: stats.statusBreakdown.removed, gradient: 'from-red-400 to-rose-500', filter: 'removed' },
             ].map((item) => (
               <button
                 key={item.label}

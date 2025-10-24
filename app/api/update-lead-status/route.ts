@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
       if (rowIndex >= 0) {
         const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
-        const range = `K${sheetRow}` // Column K = Final_status
+        const range = `A${sheetRow}` // Column A = Contact_Status
 
         await sheets.spreadsheets.values.update({
           spreadsheetId: SPREADSHEET_ID,
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
           },
         })
 
-        console.log(`✅ Updated Google Sheets Final_status for row ${sheetRow} to ${contactStatus}`)
+        console.log(`✅ Updated Google Sheets Contact_Status for row ${sheetRow} to ${contactStatus}`)
       } else {
         console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
       }
