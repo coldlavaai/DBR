@@ -27,15 +27,36 @@ interface Lead {
 interface HotLeadsSectionProps {
   leads: Lead[]
   onArchive?: () => void
+  expandedLeadId?: string | null
 }
 
-export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionProps) {
+export default function HotLeadsSection({ leads, onArchive, expandedLeadId }: HotLeadsSectionProps) {
   const [expandedLead, setExpandedLead] = useState<string | null>(null)
+
+  // Auto-expand lead from external trigger (e.g., Recent Activity click)
+  if (expandedLeadId && expandedLead !== expandedLeadId) {
+    setExpandedLead(expandedLeadId)
+  }
   const [archiving, setArchiving] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [bookingLead, setBookingLead] = useState<Lead | null>(null)
   const [smsLead, setSmsLead] = useState<Lead | null>(null)
   const [togglingManual, setTogglingManual] = useState<string | null>(null)
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  // Local state to track manual mode changes immediately
+  const [manualModeOverrides, setManualModeOverrides] = useState<Record<string, boolean>>({})
+
+  const LEAD_STATUSES = [
+    'HOT',
+    'POSITIVE',
+    'NEGATIVE',
+    'REMOVED',
+    'CONVERTED',
+    'SCHEDULED',
+    'IN_PROGRESS',
+    'WON',
+    'LOST',
+  ]
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A'
@@ -122,21 +143,33 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
     }
   }
 
+  // Helper to get current manual mode state (with local override)
+  const getManualMode = (lead: Lead) => {
+    return manualModeOverrides[lead._id] !== undefined
+      ? manualModeOverrides[lead._id]
+      : (lead.manualMode || false)
+  }
+
   const toggleManualMode = async (leadId: string, currentMode: boolean) => {
+    // Optimistically update UI immediately
+    const newMode = !currentMode
+    setManualModeOverrides(prev => ({ ...prev, [leadId]: newMode }))
     setTogglingManual(leadId)
 
     try {
       const response = await fetch('/api/toggle-manual-mode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId, manualMode: !currentMode })
+        body: JSON.stringify({ leadId, manualMode: newMode })
       })
 
       if (!response.ok) {
+        // Revert on error
+        setManualModeOverrides(prev => ({ ...prev, [leadId]: currentMode }))
         throw new Error('Failed to toggle manual mode')
       }
 
-      // Refresh the leads
+      // Refresh the leads in background
       if (onArchive) {
         onArchive()
       }
@@ -145,6 +178,32 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
       alert('Failed to toggle manual mode. Please try again.')
     } finally {
       setTogglingManual(null)
+    }
+  }
+
+  const updateLeadStatus = async (leadId: string, newStatus: string) => {
+    setUpdatingStatus(leadId)
+
+    try {
+      const response = await fetch('/api/update-lead-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, contactStatus: newStatus })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update lead status')
+      }
+
+      // Refresh the leads
+      if (onArchive) {
+        onArchive()
+      }
+    } catch (error) {
+      console.error('Error updating lead status:', error)
+      alert('Failed to update lead status. Please try again.')
+    } finally {
+      setUpdatingStatus(null)
     }
   }
 
@@ -173,12 +232,15 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
       <div className="space-y-4">
         {leads.map((lead) => {
           const isExpanded = expandedLead === lead._id
+          const isManualMode = getManualMode(lead)
 
           return (
             <div
               key={lead._id}
               className={`bg-white/5 backdrop-blur-sm border-2 rounded-xl overflow-hidden transition-all duration-300 ${
-                isExpanded
+                isManualMode
+                  ? 'border-coldlava-pink animate-pulse shadow-lg shadow-coldlava-pink/30'
+                  : isExpanded
                   ? 'border-coldlava-cyan shadow-lg shadow-coldlava-cyan/20'
                   : 'border-white/10 hover:border-coldlava-purple/50'
               }`}
@@ -215,8 +277,8 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                       <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white whitespace-nowrap`}>
                         {getSentimentEmoji(lead.leadSentiment)} {lead.leadSentiment || 'UNCLEAR'}
                       </span>
-                      {lead.manualMode && (
-                        <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-coldlava-pink to-coldlava-gold text-white whitespace-nowrap flex items-center gap-1">
+                      {isManualMode && (
+                        <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-coldlava-pink to-coldlava-gold text-white whitespace-nowrap flex items-center gap-1 animate-pulse">
                           <Radio className="w-3 h-3" />
                           MANUAL
                         </span>
@@ -328,37 +390,57 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                   <div className="pt-4 border-t border-white/10">
                     <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${lead.manualMode ? 'bg-gradient-to-br from-coldlava-pink to-coldlava-gold' : 'bg-white/10'}`}>
-                          {lead.manualMode ? <Radio className="w-5 h-5 text-white" /> : <Zap className="w-5 h-5 text-gray-400" />}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isManualMode ? 'bg-gradient-to-br from-coldlava-pink to-coldlava-gold' : 'bg-white/10'}`}>
+                          {isManualMode ? <Radio className="w-5 h-5 text-white" /> : <Zap className="w-5 h-5 text-gray-400" />}
                         </div>
                         <div>
                           <h4 className="font-semibold text-white">
-                            {lead.manualMode ? 'Manual Control Active' : 'AI Automation Active'}
+                            {isManualMode ? 'Manual Control Active' : 'AI Automation Active'}
                           </h4>
                           <p className="text-xs text-gray-400">
-                            {lead.manualMode
+                            {isManualMode
                               ? 'You are in control of all messages. AI automation is paused.'
                               : 'AI is handling automated follow-ups based on schedule.'}
                           </p>
                         </div>
                       </div>
                       <button
-                        onClick={() => toggleManualMode(lead._id, lead.manualMode || false)}
+                        onClick={() => toggleManualMode(lead._id, isManualMode || false)}
                         disabled={togglingManual === lead._id}
                         className={`relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
-                          lead.manualMode
+                          isManualMode
                             ? 'bg-gradient-to-r from-coldlava-pink to-coldlava-gold'
                             : 'bg-gray-600'
                         } ${togglingManual === lead._id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={lead.manualMode ? 'Switch to AI automation' : 'Take manual control'}
+                        title={isManualMode ? 'Switch to AI automation' : 'Take manual control'}
                       >
                         <div
                           className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-lg ${
-                            lead.manualMode ? 'translate-x-7' : ''
+                            isManualMode ? 'translate-x-7' : ''
                           }`}
                         />
                       </button>
                     </div>
+                  </div>
+
+                  {/* Lead Status Dropdown */}
+                  <div className="space-y-2">
+                    <h5 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Lead Status</h5>
+                    <select
+                      value={lead.contactStatus || 'Sent_1'}
+                      onChange={(e) => updateLeadStatus(lead._id, e.target.value)}
+                      disabled={updatingStatus === lead._id}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-coldlava-cyan focus:ring-2 focus:ring-coldlava-cyan/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {LEAD_STATUSES.map((status) => (
+                        <option key={status} value={status} className="bg-gray-800 text-white">
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                    {updatingStatus === lead._id && (
+                      <p className="text-xs text-coldlava-cyan">Updating status...</p>
+                    )}
                   </div>
 
                   {/* Quick Actions */}
@@ -382,7 +464,7 @@ export default function HotLeadsSection({ leads, onArchive }: HotLeadsSectionPro
                       className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coldlava-pink to-coldlava-gold rounded-xl text-white font-semibold hover:scale-105 transition-transform"
                     >
                       <MessageSquare className="w-5 h-5" />
-                      {lead.manualMode ? 'SMS Chat' : 'View Chat'}
+                      {isManualMode ? 'SMS Chat' : 'View Chat'}
                     </button>
                     {lead.emailAddress && (
                       <a
