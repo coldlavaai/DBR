@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, ArchiveRestore, Copy, Check, Radio, Zap } from 'lucide-react'
+import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, ArchiveRestore, Copy, Check, Radio, Zap, Trash2 } from 'lucide-react'
 import BookCallModal from './BookCallModal'
 import SmsChatModal from './SmsChatModal'
 
@@ -52,6 +52,7 @@ export default function LeadCard({
   const [manualModeOverride, setManualModeOverride] = useState<boolean | null>(null)
   const [newNote, setNewNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const LEAD_STATUSES = [
     'Ready',
@@ -294,6 +295,48 @@ export default function LeadCard({
       alert('Failed to save note. Please try again.')
     } finally {
       setSavingNote(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    const confirmMessage = `⚠️ PERMANENT DELETE ⚠️\n\nAre you sure you want to PERMANENTLY DELETE ${lead.firstName} ${lead.secondName}?\n\nThis will:\n• Remove from Dashboard\n• Delete from Sanity Database\n• Delete from Google Sheets\n\nThis action CANNOT be undone!\n\nType 'DELETE' to confirm:`
+
+    const userInput = prompt(confirmMessage)
+
+    if (userInput !== 'DELETE') {
+      if (userInput !== null) {
+        alert('Deletion cancelled. You must type "DELETE" exactly to confirm.')
+      }
+      return
+    }
+
+    setDeleting(true)
+
+    try {
+      const response = await fetch('/api/delete-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: lead._id,
+          phoneNumber: lead.phoneNumber
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete lead')
+      }
+
+      alert(`✅ ${lead.firstName} ${lead.secondName} has been permanently deleted from all systems.`)
+
+      // Refresh the dashboard
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error('Error deleting lead:', error)
+      alert('Failed to delete lead. Please try again.')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -557,6 +600,14 @@ export default function LeadCard({
                   }
                 </button>
               )}
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-red-600/50 rounded-xl text-white font-semibold hover:bg-red-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-5 h-5" />
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
             </div>
 
             {/* Message Timeline */}
