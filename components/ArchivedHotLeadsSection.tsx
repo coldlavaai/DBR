@@ -72,7 +72,8 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
               lead={lead}
               onRefresh={onUnarchive}
               onArchive={handleUnarchive}
-              showArchiveButton={false}
+              showArchiveButton={true}
+              isArchived={true}
             />
           ))}
         </div>

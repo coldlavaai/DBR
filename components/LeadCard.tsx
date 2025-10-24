@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check, Radio, Zap } from 'lucide-react'
+import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, ArchiveRestore, Copy, Check, Radio, Zap } from 'lucide-react'
 import BookCallModal from './BookCallModal'
 import SmsChatModal from './SmsChatModal'
 
@@ -30,6 +30,7 @@ interface LeadCardProps {
   onArchive?: (leadId: string, leadName: string) => void
   expandedByDefault?: boolean
   showArchiveButton?: boolean
+  isArchived?: boolean
 }
 
 export default function LeadCard({
@@ -37,7 +38,8 @@ export default function LeadCard({
   onRefresh,
   onArchive,
   expandedByDefault = false,
-  showArchiveButton = true
+  showArchiveButton = true,
+  isArchived = false
 }: LeadCardProps) {
   const [isExpanded, setIsExpanded] = useState(expandedByDefault)
   const [archiving, setArchiving] = useState(false)
@@ -136,7 +138,10 @@ export default function LeadCard({
   const handleArchive = async () => {
     if (!onArchive) return
 
-    if (!confirm(`Archive ${lead.firstName} ${lead.secondName}? This will remove them from this view.`)) {
+    const action = isArchived ? 'Unarchive' : 'Archive'
+    const actionLower = isArchived ? 'unarchive' : 'archive'
+
+    if (!confirm(`${action} ${lead.firstName} ${lead.secondName}? This will ${isArchived ? 'move them back to active leads' : 'remove them from this view'}.`)) {
       return
     }
 
@@ -146,17 +151,17 @@ export default function LeadCard({
       const response = await fetch('/api/archive-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId: lead._id, archived: true })
+        body: JSON.stringify({ leadId: lead._id, archived: !isArchived })
       })
 
       if (!response.ok) {
-        throw new Error('Failed to archive lead')
+        throw new Error(`Failed to ${actionLower} lead`)
       }
 
       onArchive(lead._id, `${lead.firstName} ${lead.secondName}`)
     } catch (error) {
-      console.error('Error archiving lead:', error)
-      alert('Failed to archive lead. Please try again.')
+      console.error(`Error ${actionLower}ing lead:`, error)
+      alert(`Failed to ${actionLower} lead. Please try again.`)
     } finally {
       setArchiving(false)
     }
@@ -483,10 +488,17 @@ export default function LeadCard({
                 <button
                   onClick={handleArchive}
                   disabled={archiving}
-                  className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-gray-700/50 rounded-xl text-white font-semibold hover:bg-gray-600/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isArchived
+                      ? 'bg-emerald-600/50 text-white hover:bg-emerald-500/50'
+                      : 'bg-gray-700/50 text-white hover:bg-gray-600/50'
+                  }`}
                 >
-                  <Archive className="w-5 h-5" />
-                  {archiving ? 'Archiving...' : 'Archive'}
+                  {isArchived ? <ArchiveRestore className="w-5 h-5" /> : <Archive className="w-5 h-5" />}
+                  {archiving
+                    ? (isArchived ? 'Unarchiving...' : 'Archiving...')
+                    : (isArchived ? 'Unarchive' : 'Archive')
+                  }
                 </button>
               )}
             </div>
