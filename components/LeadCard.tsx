@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check, Radio, Zap, Star } from 'lucide-react'
+import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Clock, Calendar, Archive, Copy, Check, Radio, Zap } from 'lucide-react'
 import BookCallModal from './BookCallModal'
 import SmsChatModal from './SmsChatModal'
 
@@ -22,7 +22,6 @@ export interface Lead {
   m3Sent?: string
   installDate?: string
   manualMode?: boolean
-  starred?: boolean
 }
 
 interface LeadCardProps {
@@ -48,8 +47,6 @@ export default function LeadCard({
   const [togglingManual, setTogglingManual] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [manualModeOverride, setManualModeOverride] = useState<boolean | null>(null)
-  const [starredOverride, setStarredOverride] = useState<boolean | null>(null)
-  const [togglingStarred, setTogglingStarred] = useState(false)
 
   const LEAD_STATUSES = [
     'HOT',
@@ -151,10 +148,6 @@ export default function LeadCard({
     return manualModeOverride !== null ? manualModeOverride : (lead.manualMode || false)
   }
 
-  const getStarred = () => {
-    return starredOverride !== null ? starredOverride : (lead.starred || false)
-  }
-
   const toggleManualMode = async () => {
     const currentMode = getManualMode()
     const newMode = !currentMode
@@ -185,43 +178,6 @@ export default function LeadCard({
       alert('Failed to toggle manual mode. Please try again.')
     } finally {
       setTogglingManual(false)
-    }
-  }
-
-  const toggleStarred = async () => {
-    const currentStarred = getStarred()
-    const newStarred = !currentStarred
-
-    // Optimistic update
-    setStarredOverride(newStarred)
-    setTogglingStarred(true)
-
-    try {
-      const response = await fetch('/api/toggle-starred', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId: lead._id, starred: newStarred })
-      })
-
-      if (!response.ok) {
-        // Revert on error
-        setStarredOverride(currentStarred)
-        throw new Error('Failed to toggle starred')
-      }
-
-      // Wait a moment for database to update, then refresh
-      setTimeout(() => {
-        if (onRefresh) {
-          onRefresh()
-        }
-      }, 500)
-    } catch (error) {
-      console.error('Error toggling starred:', error)
-      alert('Failed to toggle starred. Please try again.')
-      // Revert on error
-      setStarredOverride(currentStarred)
-    } finally {
-      setTogglingStarred(false)
     }
   }
 
@@ -300,12 +256,6 @@ export default function LeadCard({
                   <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-coldlava-pink to-coldlava-gold text-white whitespace-nowrap flex items-center gap-1 animate-pulse">
                     <Radio className="w-3 h-3" />
                     MANUAL
-                  </span>
-                )}
-                {getStarred() && (
-                  <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white whitespace-nowrap flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-white" />
-                    FEATURED
                   </span>
                 )}
               </div>
@@ -446,41 +396,6 @@ export default function LeadCard({
                   />
                 </button>
               </div>
-            </div>
-
-            {/* Star Toggle */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStarred() ? 'bg-gradient-to-br from-yellow-400 to-orange-500' : 'bg-white/10'}`}>
-                  <Star className={`w-5 h-5 ${getStarred() ? 'text-white fill-white' : 'text-gray-400'}`} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white">
-                    {getStarred() ? 'Featured Lead' : 'Not Featured'}
-                  </h4>
-                  <p className="text-xs text-gray-400">
-                    {getStarred()
-                      ? 'This lead is featured for quick access in the dashboard.'
-                      : 'Feature this lead to keep it visible in the Featured section.'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={toggleStarred}
-                disabled={togglingStarred}
-                className={`relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
-                  getStarred()
-                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
-                    : 'bg-gray-600'
-                } ${togglingStarred ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={getStarred() ? 'Remove from featured' : 'Add to featured'}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-lg ${
-                    getStarred() ? 'translate-x-7' : ''
-                  }`}
-                />
-              </button>
             </div>
 
             {/* Lead Status Dropdown */}

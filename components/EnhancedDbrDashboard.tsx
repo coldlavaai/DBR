@@ -10,7 +10,6 @@ import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
 import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
-import FeaturedLeads from './FeaturedLeads'
 import LeadStatusBuckets from './LeadStatusBuckets'
 import LeadDetailModal from './LeadDetailModal'
 
@@ -38,7 +37,6 @@ export default function EnhancedDbrDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
   const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
-  const [featuredLeads, setFeaturedLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
   const [leadDetailModalOpen, setLeadDetailModalOpen] = useState(false)
@@ -52,11 +50,10 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, featuredLeadsResponse, recentActivityResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
         fetch('/api/hot-leads'),
         fetch('/api/archived-hot-leads'),
-        fetch('/api/featured-leads'),
         fetch('/api/recent-activity')
       ])
 
@@ -72,11 +69,6 @@ export default function EnhancedDbrDashboard() {
       if (archivedLeadsResponse.ok) {
         const archivedData = await archivedLeadsResponse.json()
         setArchivedHotLeads(archivedData.leads || [])
-      }
-
-      if (featuredLeadsResponse.ok) {
-        const featuredData = await featuredLeadsResponse.json()
-        setFeaturedLeads(featuredData.leads || [])
       }
 
       if (recentActivityResponse.ok) {
@@ -243,19 +235,13 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
-        {/* FEATURED & HOT LEADS SECTIONS - Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* FEATURED LEADS SECTION */}
-          <FeaturedLeads leads={featuredLeads} onRefresh={() => fetchStats(true)} />
-
-          {/* HOT LEADS SECTION - Prominent & Interactive */}
-          <div id="hot-leads-section">
-            <HotLeadsSection
-              leads={hotLeads}
-              onArchive={() => fetchStats(true)}
-              expandedLeadId={expandedLeadFromActivity}
-            />
-          </div>
+        {/* HOT LEADS SECTION - Prominent & Interactive */}
+        <div id="hot-leads-section">
+          <HotLeadsSection
+            leads={hotLeads}
+            onArchive={() => fetchStats(true)}
+            expandedLeadId={expandedLeadFromActivity}
+          />
         </div>
 
         {/* ARCHIVED HOT LEADS SECTION - Collapsible */}
