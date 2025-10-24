@@ -121,24 +121,26 @@ export default function MetricCard({
           )}
         </div>
 
-        {/* Value and trend */}
-        <div className="flex items-baseline gap-2 mb-2">
+        {/* Value */}
+        <div className="mb-2">
           <p className={`text-3xl sm:text-4xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent tracking-tight`}>
             {value}
           </p>
-          {trend !== undefined && trend !== null && (
-            <div className={`flex items-center gap-1 text-xs font-semibold ${getTrendColor()}`}>
-              {getTrendIcon()}
-              <span>{Math.abs(trend).toFixed(1)}%</span>
-            </div>
-          )}
         </div>
 
         {/* Subtitle - with better multi-line handling */}
         {subtitle && (
-          <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
+          <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-line mb-2">
             {subtitle}
           </p>
+        )}
+
+        {/* Trend indicator - moved below subtitle */}
+        {trend !== undefined && trend !== null && (
+          <div className={`flex items-center gap-1 text-xs font-semibold ${getTrendColor()}`}>
+            {getTrendIcon()}
+            <span>{Math.abs(trend).toFixed(1)}%</span>
+          </div>
         )}
 
         {/* Click indicator */}
