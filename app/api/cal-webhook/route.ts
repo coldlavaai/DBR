@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
+import { getGoogleSheetsClient } from '@/lib/google-auth'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -13,6 +14,8 @@ const sanityClient = createClient({
   apiVersion: '2024-01-01',
   useCdn: false,
 })
+
+const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,7 +65,7 @@ export async function POST(request: NextRequest) {
         params.email = email
       }
 
-      leadQuery += `)][0]`
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
 
       console.log('🔍 Query:', leadQuery, 'Params:', params)
 
@@ -90,7 +93,42 @@ export async function POST(request: NextRequest) {
         })
         .commit()
 
-      console.log('✅ Lead updated:', lead._id)
+      console.log('✅ Lead updated in Sanity:', lead._id)
+
+      // Update Google Sheet with call booking time and status
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2 // +2 because row 1 is headers, rowNumber is 0-indexed
+
+          // Format call time for sheet (DD/MM/YYYY HH:MM format)
+          const callDate = new Date(startTime)
+          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+
+          // Update column A (status) and column X (call_booked time)
+          await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: {
+              data: [
+                {
+                  range: `A${rowIndex}`,
+                  values: [['CALL_BOOKED']]
+                },
+                {
+                  range: `X${rowIndex}`,
+                  values: [[formattedTime]]
+                }
+              ],
+              valueInputOption: 'RAW'
+            }
+          })
+
+          console.log('✅ Google Sheet updated: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+          // Don't fail the webhook if sheet update fails
+        }
+      }
 
       return NextResponse.json({
         success: true,
@@ -126,7 +164,7 @@ export async function POST(request: NextRequest) {
         params.email = email
       }
 
-      leadQuery += `)][0]`
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
 
       const lead = await sanityClient.fetch(leadQuery, params)
 
@@ -142,6 +180,30 @@ export async function POST(request: NextRequest) {
           lastUpdatedAt: new Date().toISOString(),
         })
         .commit()
+
+      // Update Google Sheet with rescheduled time
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2
+
+          const callDate = new Date(startTime)
+          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `X${rowIndex}`,
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: [[formattedTime]]
+            }
+          })
+
+          console.log('✅ Google Sheet updated with rescheduled time: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+        }
+      }
 
       return NextResponse.json({ success: true, leadId: lead._id, rescheduled: true })
     }
@@ -172,7 +234,7 @@ export async function POST(request: NextRequest) {
         params.email = email
       }
 
-      leadQuery += `)][0]`
+      leadQuery += `)][0] { _id, firstName, secondName, phoneNumber, emailAddress, rowNumber }`
 
       const lead = await sanityClient.fetch(leadQuery, params)
 
@@ -189,6 +251,35 @@ export async function POST(request: NextRequest) {
           lastUpdatedAt: new Date().toISOString(),
         })
         .commit()
+
+      // Update Google Sheet to clear call time and change status
+      if (lead.rowNumber !== undefined && lead.rowNumber !== null) {
+        try {
+          const sheets = getGoogleSheetsClient()
+          const rowIndex = lead.rowNumber + 2
+
+          await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: {
+              data: [
+                {
+                  range: `A${rowIndex}`,
+                  values: [['WARM']]
+                },
+                {
+                  range: `X${rowIndex}`,
+                  values: [['']] // Clear the call time
+                }
+              ],
+              valueInputOption: 'RAW'
+            }
+          })
+
+          console.log('✅ Google Sheet updated for cancellation: row', rowIndex)
+        } catch (sheetsError) {
+          console.error('⚠️  Failed to update Google Sheet:', sheetsError)
+        }
+      }
 
       return NextResponse.json({ success: true, leadId: lead._id, cancelled: true })
     }
