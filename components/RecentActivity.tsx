@@ -13,9 +13,10 @@ interface ActivityItem {
 
 interface RecentActivityProps {
   activities: ActivityItem[]
+  onActivityClick?: (leadId: string, leadName: string) => void
 }
 
-export default function RecentActivity({ activities }: RecentActivityProps) {
+export default function RecentActivity({ activities, onActivityClick }: RecentActivityProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'reply':
@@ -73,9 +74,10 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
 
       <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
         {activities.map((activity) => (
-          <div
+          <button
             key={activity.id}
-            className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-coldlava-cyan/50 transition-all duration-300 group"
+            onClick={() => onActivityClick?.(activity.id, activity.leadName)}
+            className="w-full text-left p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-coldlava-cyan/50 transition-all duration-300 group cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
             <div className="flex items-start gap-3">
               <div className="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition-transform">
@@ -99,7 +101,7 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
                 )}
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

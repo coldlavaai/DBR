@@ -14,22 +14,18 @@ const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
 export async function POST(request: Request) {
   try {
-    const { leadId, manualMode } = await request.json()
+    const { leadId, starred } = await request.json()
 
     if (!leadId) {
       return NextResponse.json({ error: 'Lead ID is required' }, { status: 400 })
     }
 
-    console.log(`🔄 Toggling manual mode for lead ${leadId} to ${manualMode}`)
+    console.log(`⭐ Toggling starred for lead ${leadId} to ${starred}`)
 
     // Update Sanity
     const updateData: any = {
-      manualMode: manualMode === true,
+      starred: starred === true,
       lastUpdatedAt: new Date().toISOString(),
-    }
-
-    if (manualMode === true) {
-      updateData.manualModeActivatedAt = new Date().toISOString()
     }
 
     const updatedLead = await sanityClient
@@ -64,18 +60,18 @@ export async function POST(request: Request) {
 
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
-          const range = `V${sheetRow}` // Column V = Manual_Mode
+          const range = `W${sheetRow}` // Column W = Starred
 
           await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
             range,
             valueInputOption: 'USER_ENTERED',
             requestBody: {
-              values: [[manualMode ? 'YES' : '']],
+              values: [[starred ? 'YES' : '']],
             },
           })
 
-          console.log(`✅ Updated Google Sheet row ${sheetRow} with manual mode: ${manualMode ? 'YES' : 'empty'}`)
+          console.log(`✅ Updated Google Sheet row ${sheetRow} with starred: ${starred ? 'YES' : 'empty'}`)
         } else {
           console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
         }
@@ -90,10 +86,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       lead: updatedLead,
-      manualMode: manualMode === true,
+      starred: starred === true,
     })
   } catch (error) {
-    console.error('Error toggling manual mode:', error)
+    console.error('Error toggling starred:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

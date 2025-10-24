@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
-import { google } from 'googleapis'
+import { getGoogleSheetsClient } from '@/lib/google-auth'
 
 // Force this route to be dynamic (don't pre-render at build time)
 export const dynamic = 'force-dynamic'
@@ -118,12 +118,7 @@ export async function GET() {
     console.log('🔄 Starting Google Sheets → Sanity sync...')
 
     // Initialize Google Sheets API with service account
-    const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}'),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    })
-
-    const sheets = google.sheets({ version: 'v4', auth })
+    const sheets = getGoogleSheetsClient()
 
     // Fetch data from Google Sheets
     const response = await sheets.spreadsheets.values.get({
@@ -216,10 +211,9 @@ export async function GET() {
         if (finalStatus) leadData.finalStatus = finalStatus
 
         // Number fields
-        if (rowNumber) {
-          const num = parseInt(rowNumber)
-          if (!isNaN(num)) leadData.rowNumber = num
-        }
+        // Always use the array index as rowNumber (not the row_number column)
+        // This ensures every lead has the correct row number for Google Sheets updates
+        leadData.rowNumber = rowIndex
 
         // DateTime fields
         if (m1Sent) leadData.m1Sent = parseDateTime(m1Sent)

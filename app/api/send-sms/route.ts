@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
-import { google } from 'googleapis'
+import { getGoogleSheetsClient } from '@/lib/google-auth'
 
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -67,9 +67,9 @@ export async function POST(request: Request) {
     const twilioData = await twilioResponse.json()
     console.log(`✅ SMS sent successfully, SID: ${twilioData.sid}`)
 
-    // Get lead data for row number
+    // Get lead data
     const lead = await sanityClient.fetch(
-      `*[_type == "dbrLead" && _id == $leadId][0]{ conversationHistory, rowNumber }`,
+      `*[_type == "dbrLead" && _id == $leadId][0]{ conversationHistory, phoneNumber }`,
       { leadId }
     )
 
@@ -103,42 +103,52 @@ export async function POST(request: Request) {
       // Don't fail the request if Sanity update fails
     }
 
-    // Update conversation history in Google Sheets
+    // Update conversation history in Google Sheets by searching for phone number
     try {
-      if (lead?.rowNumber) {
-        const auth = new google.auth.GoogleAuth({
-          credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}'),
-          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        })
+      if (lead?.phoneNumber) {
+        const sheets = getGoogleSheetsClient()
 
-        const sheets = google.sheets({ version: 'v4', auth })
-
-        // Column O (column 15, index 14) is Conversation History
-        const rowIndex = lead.rowNumber + 1 // +1 because row numbers are 1-indexed and we have a header
-        const range = `O${rowIndex}` // Column O = Conversation History
-
-        // Fetch current conversation history from Google Sheets
-        const currentData = await sheets.spreadsheets.values.get({
+        // Search for the phone number in column D (index 3)
+        const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+        const allRows = await sheets.spreadsheets.values.get({
           spreadsheetId: SPREADSHEET_ID,
-          range,
+          range: 'D2:D', // Column D (Phone_number) from row 2 onwards
         })
 
-        const currentHistory = currentData.data.values?.[0]?.[0] || ''
-        const updatedGoogleHistory = currentHistory + newConversationEntry
+        const rows = allRows.data.values || []
+        const rowIndex = rows.findIndex((row: any[]) =>
+          row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+        )
 
-        // Update Google Sheets
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range,
-          valueInputOption: 'USER_ENTERED',
-          requestBody: {
-            values: [[updatedGoogleHistory]],
-          },
-        })
+        if (rowIndex >= 0) {
+          const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
+          const range = `O${sheetRow}` // Column O = Conversation History
 
-        console.log(`✅ Updated Google Sheets conversation history for row ${rowIndex}`)
+          // Fetch current conversation history from Google Sheets
+          const currentData = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range,
+          })
+
+          const currentHistory = currentData.data.values?.[0]?.[0] || ''
+          const updatedGoogleHistory = currentHistory + newConversationEntry
+
+          // Update Google Sheets
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range,
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+              values: [[updatedGoogleHistory]],
+            },
+          })
+
+          console.log(`✅ Updated Google Sheets conversation history for row ${sheetRow}`)
+        } else {
+          console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
+        }
       } else {
-        console.warn(`⚠️ No row number found for lead ${leadId}, skipping Google Sheets conversation update`)
+        console.warn(`⚠️ No phone number found for lead ${leadId}`)
       }
     } catch (sheetsError) {
       console.error('Error updating Google Sheets conversation history:', sheetsError)

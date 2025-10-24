@@ -10,6 +10,8 @@ import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
 import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
+import FeaturedLeads from './FeaturedLeads'
+import LeadStatusBuckets from './LeadStatusBuckets'
 
 interface EnhancedStats {
   totalLeads: number
@@ -35,7 +37,9 @@ export default function EnhancedDbrDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
   const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
+  const [featuredLeads, setFeaturedLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
 
   const fetchStats = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -45,10 +49,11 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, featuredLeadsResponse, recentActivityResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
         fetch('/api/hot-leads'),
         fetch('/api/archived-hot-leads'),
+        fetch('/api/featured-leads'),
         fetch('/api/recent-activity')
       ])
 
@@ -64,6 +69,11 @@ export default function EnhancedDbrDashboard() {
       if (archivedLeadsResponse.ok) {
         const archivedData = await archivedLeadsResponse.json()
         setArchivedHotLeads(archivedData.leads || [])
+      }
+
+      if (featuredLeadsResponse.ok) {
+        const featuredData = await featuredLeadsResponse.json()
+        setFeaturedLeads(featuredData.leads || [])
       }
 
       if (recentActivityResponse.ok) {
@@ -103,6 +113,24 @@ export default function EnhancedDbrDashboard() {
     // Export logic will be implemented
     console.log('Exporting data...')
     alert('Export feature coming soon!')
+  }
+
+  const handleActivityClick = (leadId: string, leadName: string) => {
+    // Set the lead to be expanded
+    setExpandedLeadFromActivity(leadId)
+
+    // Scroll to hot leads section
+    setTimeout(() => {
+      const hotLeadsElement = document.getElementById('hot-leads-section')
+      if (hotLeadsElement) {
+        hotLeadsElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
+
+    // Reset after animation
+    setTimeout(() => {
+      setExpandedLeadFromActivity(null)
+    }, 5000)
   }
 
   if (loading) {
@@ -225,8 +253,17 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
+        {/* FEATURED LEADS SECTION */}
+        <FeaturedLeads leads={featuredLeads} onRefresh={() => fetchStats(true)} />
+
         {/* HOT LEADS SECTION - Prominent & Interactive */}
-        <HotLeadsSection leads={hotLeads} onArchive={() => fetchStats(true)} />
+        <div id="hot-leads-section">
+          <HotLeadsSection
+            leads={hotLeads}
+            onArchive={() => fetchStats(true)}
+            expandedLeadId={expandedLeadFromActivity}
+          />
+        </div>
 
         {/* ARCHIVED HOT LEADS SECTION - Collapsible */}
         <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
@@ -234,7 +271,10 @@ export default function EnhancedDbrDashboard() {
         {/* Recent Activity & Additional Metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <RecentActivity activities={recentActivity} />
+            <RecentActivity
+              activities={recentActivity}
+              onActivityClick={handleActivityClick}
+            />
           </div>
 
           <div className="space-y-6">
@@ -346,6 +386,9 @@ export default function EnhancedDbrDashboard() {
 
         {/* Conversion Funnel - Moved to Bottom */}
         {stats.funnelData && <ConversionFunnel data={stats.funnelData} />}
+
+        {/* LEAD STATUS BUCKETS - Below Conversion Funnel */}
+        <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
       </div>
 
       {/* Leads Modal */}
