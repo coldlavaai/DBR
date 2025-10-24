@@ -15,46 +15,52 @@ interface MetricCardProps {
 
 const colorClasses = {
   blue: {
-    bg: 'from-blue-50 to-blue-100/50',
-    text: 'text-blue-600',
-    border: 'border-blue-200',
-    hover: 'hover:border-blue-400 hover:shadow-blue-100',
-    trend: 'text-blue-600',
+    gradient: 'from-blue-400 to-cyan-500',
+    glow: 'shadow-blue-500/20',
+    hoverGlow: 'hover:shadow-blue-500/40',
+    border: 'border-blue-400/30',
+    hoverBorder: 'hover:border-blue-400/60',
+    icon: 'bg-blue-500/20',
   },
   green: {
-    bg: 'from-green-50 to-emerald-100/50',
-    text: 'text-green-600',
-    border: 'border-green-200',
-    hover: 'hover:border-green-400 hover:shadow-green-100',
-    trend: 'text-green-600',
+    gradient: 'from-emerald-400 to-teal-500',
+    glow: 'shadow-emerald-500/20',
+    hoverGlow: 'hover:shadow-emerald-500/40',
+    border: 'border-emerald-400/30',
+    hoverBorder: 'hover:border-emerald-400/60',
+    icon: 'bg-emerald-500/20',
   },
   orange: {
-    bg: 'from-orange-50 to-amber-100/50',
-    text: 'text-orange-600',
-    border: 'border-orange-200',
-    hover: 'hover:border-orange-400 hover:shadow-orange-100',
-    trend: 'text-orange-600',
+    gradient: 'from-orange-400 to-red-500',
+    glow: 'shadow-orange-500/20',
+    hoverGlow: 'hover:shadow-orange-500/40',
+    border: 'border-orange-400/30',
+    hoverBorder: 'hover:border-orange-400/60',
+    icon: 'bg-orange-500/20',
   },
   purple: {
-    bg: 'from-purple-50 to-violet-100/50',
-    text: 'text-purple-600',
-    border: 'border-purple-200',
-    hover: 'hover:border-purple-400 hover:shadow-purple-100',
-    trend: 'text-purple-600',
+    gradient: 'from-purple-400 to-pink-500',
+    glow: 'shadow-purple-500/20',
+    hoverGlow: 'hover:shadow-purple-500/40',
+    border: 'border-purple-400/30',
+    hoverBorder: 'hover:border-purple-400/60',
+    icon: 'bg-purple-500/20',
   },
   red: {
-    bg: 'from-red-50 to-rose-100/50',
-    text: 'text-red-600',
-    border: 'border-red-200',
-    hover: 'hover:border-red-400 hover:shadow-red-100',
-    trend: 'text-red-600',
+    gradient: 'from-red-400 to-rose-500',
+    glow: 'shadow-red-500/20',
+    hoverGlow: 'hover:shadow-red-500/40',
+    border: 'border-red-400/30',
+    hoverBorder: 'hover:border-red-400/60',
+    icon: 'bg-red-500/20',
   },
   gray: {
-    bg: 'from-gray-50 to-slate-100/50',
-    text: 'text-gray-700',
-    border: 'border-gray-200',
-    hover: 'hover:border-gray-400 hover:shadow-gray-100',
-    trend: 'text-gray-600',
+    gradient: 'from-gray-400 to-slate-500',
+    glow: 'shadow-gray-500/20',
+    hoverGlow: 'hover:shadow-gray-500/40',
+    border: 'border-gray-400/30',
+    hoverBorder: 'hover:border-gray-400/60',
+    icon: 'bg-gray-500/20',
   },
 }
 
@@ -89,52 +95,59 @@ export default function MetricCard({
     <div
       onClick={onClick}
       className={`
-        relative overflow-hidden
-        bg-gradient-to-br ${colors.bg} backdrop-blur-sm
-        border-2 ${colors.border}
-        rounded-2xl p-6
-        shadow-lg hover:shadow-xl
+        group relative overflow-hidden
+        bg-white/5 backdrop-blur-sm
+        border-2 ${colors.border} ${isClickable ? colors.hoverBorder : ''}
+        rounded-2xl p-4 sm:p-5
+        shadow-xl ${colors.glow} ${isClickable ? colors.hoverGlow : ''}
         transition-all duration-300 ease-out
-        ${isClickable ? `cursor-pointer ${colors.hover} hover:scale-[1.02] active:scale-[0.98]` : ''}
+        ${isClickable ? 'cursor-pointer hover:scale-[1.02] hover:bg-white/10 active:scale-[0.98]' : ''}
         ${className}
       `}
     >
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full blur-2xl -mr-16 -mt-16" />
+      {/* Background gradient decoration */}
+      <div className={`absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br ${colors.gradient} opacity-10 group-hover:opacity-20 blur-2xl rounded-full transition-opacity duration-300`} />
 
-      <div className="relative z-10">
-        {/* Header with icon */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <div className="flex items-baseline gap-2">
-              <p className={`text-3xl font-bold ${colors.text} tracking-tight`}>
-                {value}
-              </p>
-              {trend !== undefined && trend !== null && (
-                <div className={`flex items-center gap-1 text-sm font-semibold ${getTrendColor()}`}>
-                  {getTrendIcon()}
-                  <span>{Math.abs(trend).toFixed(1)}%</span>
-                </div>
-              )}
-            </div>
-          </div>
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Icon and title */}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider">
+            {title}
+          </h3>
           {Icon && (
-            <div className={`p-3 rounded-xl ${colors.bg} ${colors.text}`}>
-              <Icon className="w-6 h-6" />
+            <div className={`p-2 rounded-lg ${colors.icon} transition-transform duration-300 ${isClickable ? 'group-hover:scale-110' : ''}`}>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
           )}
         </div>
 
-        {/* Subtitle/footer */}
+        {/* Value and trend */}
+        <div className="flex items-baseline gap-2 mb-2">
+          <p className={`text-3xl sm:text-4xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent tracking-tight`}>
+            {value}
+          </p>
+          {trend !== undefined && trend !== null && (
+            <div className={`flex items-center gap-1 text-xs font-semibold ${getTrendColor()}`}>
+              {getTrendIcon()}
+              <span>{Math.abs(trend).toFixed(1)}%</span>
+            </div>
+          )}
+        </div>
+
+        {/* Subtitle - with better multi-line handling */}
         {subtitle && (
-          <p className="text-xs text-gray-500 mt-2">{subtitle}</p>
+          <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
+            {subtitle}
+          </p>
         )}
 
+        {/* Click indicator */}
         {isClickable && (
-          <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
-            Click to view details →
-          </p>
+          <div className="mt-auto pt-3">
+            <p className="text-xs text-gray-500 group-hover:text-gray-400 flex items-center gap-1 transition-colors">
+              Click to view <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </p>
+          </div>
         )}
       </div>
     </div>

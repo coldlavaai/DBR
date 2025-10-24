@@ -7,6 +7,7 @@ import MetricCard from './MetricCard'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
 import HotLeadsSection from './HotLeadsSection'
+import CallBookedSection from './CallBookedSection'
 import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
 import LeadStatusBuckets from './LeadStatusBuckets'
@@ -35,6 +36,7 @@ export default function EnhancedDbrDashboard() {
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
+  const [callBookedLeads, setCallBookedLeads] = useState<any[]>([])
   const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
@@ -44,6 +46,7 @@ export default function EnhancedDbrDashboard() {
   // Collapsible section states
   const [sectionsExpanded, setSectionsExpanded] = useState({
     hotLeads: true,
+    callBooked: true,
     recentActivity: true,
     leadStatusBuckets: true,
     sentimentAnalysis: true,
@@ -63,9 +66,10 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      const [statsResponse, hotLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
+      const [statsResponse, hotLeadsResponse, callBookedLeadsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
         fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
         fetch('/api/hot-leads'),
+        fetch('/api/call-booked-leads'),
         fetch('/api/archived-hot-leads'),
         fetch('/api/recent-activity')
       ])
@@ -77,6 +81,11 @@ export default function EnhancedDbrDashboard() {
       if (hotLeadsResponse.ok) {
         const hotData = await hotLeadsResponse.json()
         setHotLeads(hotData.leads || [])
+      }
+
+      if (callBookedLeadsResponse.ok) {
+        const callBookedData = await callBookedLeadsResponse.json()
+        setCallBookedLeads(callBookedData.leads || [])
       }
 
       if (archivedLeadsResponse.ok) {
@@ -287,6 +296,32 @@ export default function EnhancedDbrDashboard() {
             <HotLeadsSection
               leads={hotLeads}
               onArchive={() => fetchStats(true)}
+              expandedLeadId={expandedLeadFromActivity}
+            />
+          )}
+        </div>
+
+        {/* CALL BOOKED SECTION */}
+        <div id="call-booked-section">
+          <div className="mb-2">
+            <button
+              onClick={() => toggleSection('callBooked')}
+              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
+            >
+              {sectionsExpanded.callBooked ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
+                {sectionsExpanded.callBooked ? 'Collapse' : 'Expand'} Calls Booked Section
+              </span>
+            </button>
+          </div>
+          {sectionsExpanded.callBooked && (
+            <CallBookedSection
+              leads={callBookedLeads}
+              onRefresh={() => fetchStats(true)}
               expandedLeadId={expandedLeadFromActivity}
             />
           )}

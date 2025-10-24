@@ -52,6 +52,8 @@ export async function GET(request: NextRequest) {
       typeFilter = ' && contactStatus == "Sent_3"'
     } else if (filterType === 'converted') {
       typeFilter = ' && contactStatus == "CONVERTED"'
+    } else if (filterType === 'callBooked') {
+      typeFilter = ' && contactStatus == "CALL_BOOKED"'
     } else if (filterType === 'scheduled') {
       typeFilter = ' && contactStatus == "SCHEDULED"'
     } else if (filterType === 'sentiment-positive') {
