@@ -19,7 +19,7 @@ interface EnhancedStats {
   statusBreakdown: { sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
   replyRate: number
   repliedLeads: number
-  trends?: { totalLeads: number; messagesSent: number; replyRate: number; hotLeads: number; converted: number }
+  trends?: { totalLeads: number; messagesSent: number; replyRate: number; hotLeads: number; converted: number; callBooked: number }
   dailyData?: any[]
   funnelData?: any
   avgResponseTime?: number

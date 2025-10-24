@@ -152,6 +152,7 @@ export async function GET(request: NextRequest) {
       replyRate: calculateChange(currentStats.replyRate, previousStats.replyRate),
       hotLeads: calculateChange(currentStats.statusBreakdown.hot, previousStats.statusBreakdown.hot),
       converted: calculateChange(currentStats.statusBreakdown.converted, previousStats.statusBreakdown.converted),
+      callBooked: calculateChange(currentStats.statusBreakdown.callBooked, previousStats.statusBreakdown.callBooked),
     }
 
     // Generate daily trend data for charts (last 30 days)
