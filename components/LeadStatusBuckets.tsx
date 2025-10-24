@@ -17,6 +17,7 @@ interface BucketState {
 
 export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps) {
   const [buckets, setBuckets] = useState<Record<string, BucketState>>({
+    READY: { leads: [], loading: false, hasMore: true, limit: 5 },
     SENT_1: { leads: [], loading: false, hasMore: true, limit: 5 },
     SENT_2: { leads: [], loading: false, hasMore: true, limit: 5 },
     SENT_3: { leads: [], loading: false, hasMore: true, limit: 5 },
@@ -31,6 +32,7 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
   })
 
   const [expandedBuckets, setExpandedBuckets] = useState<Record<string, boolean>>({
+    READY: false,
     SENT_1: false,
     SENT_2: false,
     SENT_3: false,
@@ -45,6 +47,12 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
   })
 
   const bucketConfig = {
+    READY: {
+      title: '⏳ Ready',
+      description: 'Ready to send first message',
+      gradient: 'from-slate-400 to-gray-500',
+      statuses: ['Ready']
+    },
     SENT_1: {
       title: '📨 Sent Message 1',
       description: 'First message sent, awaiting response',

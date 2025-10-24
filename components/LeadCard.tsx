@@ -51,6 +51,7 @@ export default function LeadCard({
   const [manualModeOverride, setManualModeOverride] = useState<boolean | null>(null)
 
   const LEAD_STATUSES = [
+    'Ready',
     'Sent_1',
     'Sent_2',
     'Sent_3',
@@ -81,6 +82,8 @@ export default function LeadCard({
 
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
+      case 'READY':
+        return 'from-slate-400 to-gray-500'
       case 'SENT_1':
         return 'from-blue-400 to-cyan-500'
       case 'SENT_2':
@@ -110,6 +113,8 @@ export default function LeadCard({
 
   const getStatusEmoji = (status: string) => {
     switch (status?.toUpperCase()) {
+      case 'READY':
+        return '⏳'
       case 'SENT_1':
       case 'SENT_2':
       case 'SENT_3':

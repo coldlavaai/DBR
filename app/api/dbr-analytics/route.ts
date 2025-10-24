@@ -85,6 +85,7 @@ function calculateStats(leads: any[]) {
   }
 
   const statusBreakdown = {
+    ready: leads.filter((l) => l.contactStatus === 'Ready').length,
     sent1: leads.filter((l) => l.contactStatus === 'Sent_1').length,
     sent2: leads.filter((l) => l.contactStatus === 'Sent_2').length,
     sent3: leads.filter((l) => l.contactStatus === 'Sent_3').length,

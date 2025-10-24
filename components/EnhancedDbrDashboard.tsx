@@ -18,7 +18,7 @@ interface EnhancedStats {
   totalLeads: number
   messagesSent: { m1: number; m2: number; m3: number; total: number; manual: number; ai: number }
   sentiment: { positive: number; negative: number; neutral: number; negativeRemoved: number; unclear: number }
-  statusBreakdown: { sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
+  statusBreakdown: { ready: number; sent1: number; sent2: number; sent3: number; cold: number; neutral: number; warm: number; hot: number; callBooked: number; converted: number; installed: number; removed: number }
   replyRate: number
   repliedLeads: number
   trends?: { totalLeads: number; messagesSent: number; replyRate: number; hotLeads: number; converted: number; callBooked: number }
@@ -550,6 +550,7 @@ export default function EnhancedDbrDashboard() {
 
           <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {[
+              { label: 'Ready', value: stats.statusBreakdown.ready, gradient: 'from-slate-400 to-gray-500', filter: 'ready' },
               { label: 'Sent 1', value: stats.statusBreakdown.sent1, gradient: 'from-blue-400 to-cyan-500', filter: 'sent1' },
               { label: 'Sent 2', value: stats.statusBreakdown.sent2, gradient: 'from-blue-500 to-indigo-500', filter: 'sent2' },
               { label: 'Sent 3', value: stats.statusBreakdown.sent3, gradient: 'from-indigo-500 to-purple-500', filter: 'sent3' },
