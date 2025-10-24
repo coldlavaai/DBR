@@ -36,8 +36,10 @@ export async function POST(request: NextRequest) {
     const attendeeEmail = Array.isArray(attendees) ? attendees[0]?.email : attendees?.email
     const attendeeName = Array.isArray(attendees) ? attendees[0]?.name : attendees?.name
     const attendeePhone = bookingData?.responses?.phone || bookingData?.responses?.['Phone Number']
+    const bookingStartTime = bookingData?.startTime || bookingData?.start || new Date().toISOString()
 
     console.log(`📞 New booking from: ${attendeeName} (${attendeeEmail}, ${attendeePhone})`)
+    console.log(`🕐 Booking time: ${bookingStartTime}`)
 
     if (!attendeeEmail && !attendeePhone) {
       console.warn('⚠️ No email or phone in booking')
@@ -89,18 +91,26 @@ export async function POST(request: NextRequest) {
 
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2
-          const range = `A${sheetRow}`
 
-          await sheets.spreadsheets.values.update({
+          // Update both Contact_Status (column A) and call_booked (column X)
+          await sheets.spreadsheets.values.batchUpdate({
             spreadsheetId: SPREADSHEET_ID,
-            range,
-            valueInputOption: 'USER_ENTERED',
             requestBody: {
-              values: [['CALL_BOOKED']],
+              valueInputOption: 'USER_ENTERED',
+              data: [
+                {
+                  range: `A${sheetRow}`,
+                  values: [['CALL_BOOKED']],
+                },
+                {
+                  range: `X${sheetRow}`,
+                  values: [[bookingStartTime]],
+                },
+              ],
             },
           })
 
-          console.log(`✅ Updated Google Sheets row ${sheetRow} to CALL_BOOKED`)
+          console.log(`✅ Updated Google Sheets row ${sheetRow}: Status=CALL_BOOKED, Time=${bookingStartTime}`)
         }
       }
 
