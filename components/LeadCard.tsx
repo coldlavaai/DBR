@@ -209,13 +209,17 @@ export default function LeadCard({
         throw new Error('Failed to toggle starred')
       }
 
-      // Refresh in background
-      if (onRefresh) {
-        onRefresh()
-      }
+      // Wait a moment for database to update, then refresh
+      setTimeout(() => {
+        if (onRefresh) {
+          onRefresh()
+        }
+      }, 500)
     } catch (error) {
       console.error('Error toggling starred:', error)
       alert('Failed to toggle starred. Please try again.')
+      // Revert on error
+      setStarredOverride(currentStarred)
     } finally {
       setTogglingStarred(false)
     }
