@@ -12,6 +12,7 @@ import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
 import RecentActivity from './RecentActivity'
 import FeaturedLeads from './FeaturedLeads'
 import LeadStatusBuckets from './LeadStatusBuckets'
+import LeadDetailModal from './LeadDetailModal'
 
 interface EnhancedStats {
   totalLeads: number
@@ -40,6 +41,8 @@ export default function EnhancedDbrDashboard() {
   const [featuredLeads, setFeaturedLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
+  const [leadDetailModalOpen, setLeadDetailModalOpen] = useState(false)
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
 
   const fetchStats = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -116,21 +119,8 @@ export default function EnhancedDbrDashboard() {
   }
 
   const handleActivityClick = (leadId: string, leadName: string) => {
-    // Set the lead to be expanded
-    setExpandedLeadFromActivity(leadId)
-
-    // Scroll to hot leads section
-    setTimeout(() => {
-      const hotLeadsElement = document.getElementById('hot-leads-section')
-      if (hotLeadsElement) {
-        hotLeadsElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 100)
-
-    // Reset after animation
-    setTimeout(() => {
-      setExpandedLeadFromActivity(null)
-    }, 5000)
+    setSelectedLeadId(leadId)
+    setLeadDetailModalOpen(true)
   }
 
   if (loading) {
@@ -398,6 +388,17 @@ export default function EnhancedDbrDashboard() {
         filterType={modalFilter.type}
         filterLabel={modalFilter.label}
         timeRange={timeRange}
+      />
+
+      {/* Lead Detail Modal */}
+      <LeadDetailModal
+        leadId={selectedLeadId}
+        isOpen={leadDetailModalOpen}
+        onClose={() => {
+          setLeadDetailModalOpen(false)
+          setSelectedLeadId(null)
+        }}
+        onRefresh={() => fetchStats(true)}
       />
 
       {/* Footer */}
