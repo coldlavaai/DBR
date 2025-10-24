@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar } from 'lucide-react'
+import { Calendar, Clock } from 'lucide-react'
 import LeadCard, { Lead } from './LeadCard'
 
 interface CallBookedSectionProps {
@@ -10,6 +10,32 @@ interface CallBookedSectionProps {
 }
 
 export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: CallBookedSectionProps) {
+  const formatCallTime = (callTime?: string) => {
+    if (!callTime) return null
+    try {
+      const date = new Date(callTime)
+      const now = new Date()
+      const isPast = date < now
+
+      // Format as "Wed, Oct 24 at 1:30 PM"
+      const formatted = date.toLocaleString('en-GB', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      })
+
+      return {
+        formatted,
+        isPast
+      }
+    } catch {
+      return null
+    }
+  }
+
   if (leads.length === 0) {
     return (
       <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-8 shadow-xl text-center">
@@ -31,17 +57,34 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
         <p className="text-sm text-gray-400">Scheduled via Cal.com</p>
       </div>
 
-      {/* Leads Grid - Using LeadCard component */}
+      {/* Leads Grid - Using LeadCard component with call time badges */}
       <div className="space-y-4">
-        {leads.map((lead) => (
-          <LeadCard
-            key={lead._id}
-            lead={lead}
-            onRefresh={onRefresh}
-            expandedByDefault={lead._id === expandedLeadId}
-            showArchiveButton={false}
-          />
-        ))}
+        {leads.map((lead) => {
+          const callTime = formatCallTime((lead as any).callBookedTime)
+
+          return (
+            <div key={lead._id} className="relative">
+              {/* Call Time Badge */}
+              {callTime && (
+                <div className={`absolute -top-2 right-4 z-10 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
+                  callTime.isPast
+                    ? 'bg-gray-600/80 text-gray-300'
+                    : 'bg-emerald-500/80 text-white'
+                }`}>
+                  <Clock className="w-3 h-3" />
+                  {callTime.formatted}
+                  {callTime.isPast && ' (Past)'}
+                </div>
+              )}
+              <LeadCard
+                lead={lead}
+                onRefresh={onRefresh}
+                expandedByDefault={lead._id === expandedLeadId}
+                showArchiveButton={false}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
