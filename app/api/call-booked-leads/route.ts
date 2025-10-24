@@ -18,9 +18,10 @@ export async function GET() {
     // Get current date/time for filtering
     const now = new Date().toISOString()
 
-    // Fetch CALL_BOOKED leads with upcoming call times only
+    // Fetch CALL_BOOKED leads with upcoming call times only (future calls)
     // Use archived != true to handle undefined archived fields
-    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && archived != true && (callBookedTime > $now || !defined(callBookedTime))] | order(callBookedTime asc) {
+    // Only include leads with callBookedTime in the future
+    const query = `*[_type == "dbrLead" && contactStatus == "CALL_BOOKED" && archived != true && defined(callBookedTime) && callBookedTime > $now] | order(callBookedTime asc) {
       _id,
       firstName,
       secondName,
