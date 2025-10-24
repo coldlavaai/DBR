@@ -77,30 +77,57 @@ export default function LeadCard({
     return date.toLocaleDateString()
   }
 
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment?.toUpperCase()) {
-      case 'POSITIVE':
-        return 'from-green-400 to-emerald-500'
-      case 'NEGATIVE':
-      case 'NEGATIVE_REMOVED':
-        return 'from-red-400 to-rose-500'
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SENT_1':
+        return 'from-blue-400 to-cyan-500'
+      case 'SENT_2':
+        return 'from-blue-500 to-indigo-500'
+      case 'SENT_3':
+        return 'from-indigo-500 to-purple-500'
+      case 'COLD':
+        return 'from-blue-600 to-cyan-700'
       case 'NEUTRAL':
         return 'from-gray-400 to-slate-500'
+      case 'WARM':
+        return 'from-yellow-400 to-orange-400'
+      case 'HOT':
+        return 'from-orange-400 to-red-500'
+      case 'CALL_BOOKED':
+        return 'from-purple-400 to-pink-500'
+      case 'CONVERTED':
+        return 'from-emerald-400 to-teal-500'
+      case 'INSTALLED':
+        return 'from-green-500 to-emerald-600'
+      case 'REMOVED':
+        return 'from-red-400 to-rose-500'
       default:
-        return 'from-yellow-400 to-orange-500'
+        return 'from-gray-400 to-slate-500'
     }
   }
 
-  const getSentimentEmoji = (sentiment: string) => {
-    switch (sentiment?.toUpperCase()) {
-      case 'POSITIVE':
-        return '🔥'
-      case 'NEGATIVE':
-        return '❌'
-      case 'NEGATIVE_REMOVED':
-        return '🚫'
+  const getStatusEmoji = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SENT_1':
+      case 'SENT_2':
+      case 'SENT_3':
+        return '📨'
+      case 'COLD':
+        return '❄️'
       case 'NEUTRAL':
         return '🤔'
+      case 'WARM':
+        return '🌡️'
+      case 'HOT':
+        return '🔥'
+      case 'CALL_BOOKED':
+        return '📞'
+      case 'CONVERTED':
+        return '✨'
+      case 'INSTALLED':
+        return '✅'
+      case 'REMOVED':
+        return '🚫'
       default:
         return '❓'
     }
@@ -251,8 +278,8 @@ export default function LeadCard({
                     )}
                   </button>
                 </div>
-                <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r ${getSentimentColor(lead.leadSentiment)} text-white whitespace-nowrap`}>
-                  {getSentimentEmoji(lead.leadSentiment)} {lead.leadSentiment || 'UNCLEAR'}
+                <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r ${getStatusColor(lead.contactStatus)} text-white whitespace-nowrap`}>
+                  {getStatusEmoji(lead.contactStatus)} {lead.contactStatus || 'SENT_1'}
                 </span>
                 {isManualMode && (
                   <span className="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-coldlava-pink to-coldlava-gold text-white whitespace-nowrap flex items-center gap-1 animate-pulse">
