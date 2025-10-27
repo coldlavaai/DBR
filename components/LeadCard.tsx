@@ -649,6 +649,19 @@ export default function LeadCard({
                     <span>M3 sent {formatDate(lead.m3Sent)}</span>
                   </div>
                 )}
+                {lead.callBookedTime && (
+                  <div className="flex items-center gap-2 text-purple-400 font-semibold">
+                    <Phone className="w-4 h-4" />
+                    <span>Call booked: {new Date(lead.callBookedTime).toLocaleString('en-GB', {
+                      weekday: 'short',
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</span>
+                  </div>
+                )}
                 {lead.installDate && (
                   <div className="flex items-center gap-2 text-coldlava-cyan font-semibold">
                     <Calendar className="w-4 h-4" />

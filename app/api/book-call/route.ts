@@ -100,29 +100,36 @@ export async function POST(request: Request) {
 
     // Update Google Sheets directly (same pattern as update-lead-status)
     try {
+      console.log(`📊 Attempting to update Google Sheets for phone: ${phone}`)
       const sheets = getGoogleSheetsClient()
 
       // Search for the phone number in column D (index 3)
       const phoneWithoutPlus = phone.replace(/\+/g, '')
+      console.log(`🔍 Searching for phone: ${phoneWithoutPlus} (original: ${phone})`)
+
       const allRows = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
         range: 'D2:D', // Column D (Phone_number) from row 2 onwards
       })
 
       const rows = allRows.data.values || []
+      console.log(`📋 Found ${rows.length} phone numbers in Google Sheets`)
+
       const rowIndex = rows.findIndex((row: any[]) =>
         row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
       )
 
       if (rowIndex >= 0) {
         const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
+        console.log(`✅ Found phone match at row ${sheetRow}`)
 
         // Format the date/time for Google Sheets (DD/MM/YYYY HH:MM)
         const callDate = start
         const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+        console.log(`📅 Formatted time: ${formattedTime}`)
 
         // Update both column A (Contact_Status) and column X (call_booked)
-        await sheets.spreadsheets.values.batchUpdate({
+        const updateResult = await sheets.spreadsheets.values.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
           requestBody: {
             data: [
@@ -139,12 +146,19 @@ export async function POST(request: Request) {
           }
         })
 
-        console.log(`✅ Updated Google Sheets for row ${sheetRow}: status=CALL_BOOKED, time=${formattedTime}`)
+        console.log(`✅ Google Sheets update successful:`, JSON.stringify(updateResult.data))
+        console.log(`✅ Updated row ${sheetRow}: status=CALL_BOOKED, time=${formattedTime}`)
       } else {
-        console.warn(`⚠️ Phone number ${phone} not found in Google Sheets (searched ${rows.length} rows)`)
+        console.error(`❌ Phone number ${phone} NOT FOUND in Google Sheets!`)
+        console.error(`❌ Searched ${rows.length} rows. First 5 phone numbers in sheet:`, rows.slice(0, 5).map(r => r[0]))
       }
     } catch (sheetsError) {
-      console.error('⚠️ Failed to update Google Sheets:', sheetsError)
+      console.error('❌ FAILED to update Google Sheets - FULL ERROR:', sheetsError)
+      console.error('❌ Error details:', {
+        message: sheetsError instanceof Error ? sheetsError.message : 'Unknown',
+        stack: sheetsError instanceof Error ? sheetsError.stack : 'No stack',
+        name: sheetsError instanceof Error ? sheetsError.name : 'Unknown'
+      })
       // Don't fail the request if Sheets update fails - booking is still created
     }
 
