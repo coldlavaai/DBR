@@ -34,6 +34,7 @@ export async function GET() {
         m2Sent,
         m3Sent,
         installDate,
+        callBookedTime,
         notes,
         manualMode
       }`

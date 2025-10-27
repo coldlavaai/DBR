@@ -74,14 +74,20 @@ export async function GET(request: NextRequest) {
       firstName,
       secondName,
       phoneNumber,
+      emailAddress,
+      postcode,
       contactStatus,
       leadSentiment,
       conversationHistory,
+      latestLeadReply,
       m1Sent,
       m2Sent,
       m3Sent,
       replyReceived,
-      installDate
+      installDate,
+      callBookedTime,
+      manualMode,
+      notes
     }`
 
     const leads = await sanityClient.fetch(query)
