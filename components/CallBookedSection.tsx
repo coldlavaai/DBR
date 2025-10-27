@@ -29,12 +29,37 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
 
       return {
         formatted,
-        isPast
+        isPast,
+        date
       }
     } catch {
       return null
     }
   }
+
+  // Sort leads: upcoming calls first (soonest to latest), then past calls (latest to earliest)
+  const sortedLeads = [...leads].sort((a, b) => {
+    const aTime = (a as any).callBookedTime
+    const bTime = (b as any).callBookedTime
+
+    if (!aTime && !bTime) return 0
+    if (!aTime) return 1
+    if (!bTime) return -1
+
+    const aDate = new Date(aTime)
+    const bDate = new Date(bTime)
+    const now = new Date()
+
+    const aIsPast = aDate < now
+    const bIsPast = bDate < now
+
+    // If one is past and one is future, future comes first
+    if (aIsPast && !bIsPast) return 1
+    if (!aIsPast && bIsPast) return -1
+
+    // Both future or both past: sort by date ascending (soonest first)
+    return aDate.getTime() - bDate.getTime()
+  })
 
   if (leads.length === 0) {
     return (
@@ -59,7 +84,7 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
 
       {/* Leads Grid - Using LeadCard component with call time badges */}
       <div className="space-y-4">
-        {leads.map((lead) => {
+        {sortedLeads.map((lead) => {
           const callTime = formatCallTime((lead as any).callBookedTime)
 
           return (

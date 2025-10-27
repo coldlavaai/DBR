@@ -123,10 +123,25 @@ export async function POST(request: Request) {
         const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
         console.log(`✅ Found phone match at row ${sheetRow}`)
 
-        // Format the date/time for Google Sheets (DD/MM/YYYY HH:MM)
+        // Format in UK timezone (Europe/London) for Google Sheets
         const callDate = start
-        const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
-        console.log(`📅 Formatted time: ${formattedTime}`)
+        const ukFormatter = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Europe/London',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        })
+        const parts = ukFormatter.formatToParts(callDate)
+        const day = parts.find(p => p.type === 'day')?.value
+        const month = parts.find(p => p.type === 'month')?.value
+        const year = parts.find(p => p.type === 'year')?.value
+        const hour = parts.find(p => p.type === 'hour')?.value
+        const minute = parts.find(p => p.type === 'minute')?.value
+        const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
+        console.log(`📅 Formatted time (UK): ${formattedTime}`)
 
         // Update both column A (Contact_Status) and column X (call_booked)
         const updateResult = await sheets.spreadsheets.values.batchUpdate({

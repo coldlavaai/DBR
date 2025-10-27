@@ -137,8 +137,24 @@ export async function POST(request: NextRequest) {
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2 // +2 because row 1 is headers, array is 0-indexed
 
+          // Format in UK timezone (Europe/London)
           const callDate = new Date(startTime)
-          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+          const ukFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/London',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })
+          const parts = ukFormatter.formatToParts(callDate)
+          const day = parts.find(p => p.type === 'day')?.value
+          const month = parts.find(p => p.type === 'month')?.value
+          const year = parts.find(p => p.type === 'year')?.value
+          const hour = parts.find(p => p.type === 'hour')?.value
+          const minute = parts.find(p => p.type === 'minute')?.value
+          const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
 
           await sheets.spreadsheets.values.batchUpdate({
             spreadsheetId: SPREADSHEET_ID,
@@ -237,8 +253,24 @@ export async function POST(request: NextRequest) {
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2
 
+          // Format in UK timezone (Europe/London)
           const callDate = new Date(startTime)
-          const formattedTime = `${callDate.getDate().toString().padStart(2, '0')}/${(callDate.getMonth() + 1).toString().padStart(2, '0')}/${callDate.getFullYear()} ${callDate.getHours().toString().padStart(2, '0')}:${callDate.getMinutes().toString().padStart(2, '0')}`
+          const ukFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/London',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })
+          const parts = ukFormatter.formatToParts(callDate)
+          const day = parts.find(p => p.type === 'day')?.value
+          const month = parts.find(p => p.type === 'month')?.value
+          const year = parts.find(p => p.type === 'year')?.value
+          const hour = parts.find(p => p.type === 'hour')?.value
+          const minute = parts.find(p => p.type === 'minute')?.value
+          const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
 
           await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
