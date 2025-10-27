@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
           const minute = parts.find(p => p.type === 'minute')?.value
           const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
 
-          await sheets.spreadsheets.values.batchUpdate({
+          const updateResult = await sheets.spreadsheets.values.batchUpdate({
             spreadsheetId: SPREADSHEET_ID,
             requestBody: {
               data: [
@@ -169,9 +169,12 @@ export async function POST(request: NextRequest) {
                   values: [[formattedTime]]
                 }
               ],
-              valueInputOption: 'RAW'
+              valueInputOption: 'USER_ENTERED'
             }
           })
+
+          console.log(`✅ Google Sheets updated via webhook: row ${sheetRow}, time=${formattedTime}`)
+          console.log(`📊 Sheets API response:`, JSON.stringify(updateResult.data))
 
           console.log('✅ Google Sheet updated: row', sheetRow, 'phone:', phoneWithoutPlus)
         } else {
@@ -272,14 +275,17 @@ export async function POST(request: NextRequest) {
           const minute = parts.find(p => p.type === 'minute')?.value
           const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
 
-          await sheets.spreadsheets.values.update({
+          const updateResult = await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
             range: `X${sheetRow}`,
-            valueInputOption: 'RAW',
+            valueInputOption: 'USER_ENTERED',
             requestBody: {
               values: [[formattedTime]]
             }
           })
+
+          console.log(`✅ Google Sheets updated (reschedule): row ${sheetRow}, time=${formattedTime}`)
+          console.log(`📊 Sheets API response:`, JSON.stringify(updateResult.data))
 
           console.log('✅ Google Sheet updated with rescheduled time: row', sheetRow)
         }
@@ -366,7 +372,7 @@ export async function POST(request: NextRequest) {
                   values: [['']]
                 }
               ],
-              valueInputOption: 'RAW'
+              valueInputOption: 'USER_ENTERED'
             }
           })
 
