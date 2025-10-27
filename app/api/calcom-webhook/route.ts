@@ -75,6 +75,19 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Found lead:', lead._id, lead.firstName, lead.secondName)
 
+      // Validate startTime
+      if (!startTime) {
+        console.error('❌ No startTime in Cal.com payload!')
+        console.error('❌ Full payload:', JSON.stringify(payload, null, 2))
+        return NextResponse.json({
+          received: true,
+          error: 'Missing startTime in payload',
+          leadId: lead._id
+        }, { status: 400 })
+      }
+
+      console.log('📅 Call start time:', startTime)
+
       // Update lead in Sanity
       await sanityClient
         .patch(lead._id)
@@ -86,7 +99,7 @@ export async function POST(request: NextRequest) {
         })
         .commit()
 
-      console.log('✅ Lead updated in Sanity:', lead._id)
+      console.log('✅ Lead updated in Sanity:', lead._id, 'with callBookedTime:', startTime)
 
       // Update Google Sheet - search by phone number
       try {
