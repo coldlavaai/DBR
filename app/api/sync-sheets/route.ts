@@ -21,6 +21,29 @@ const sanityClient = createClient({
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 const RANGE = 'A2:X' // First sheet, starting from row 2 (includes Manual_Mode column V and call_booked column X)
 
+// Calculate British timezone offset dynamically based on date
+// BST: Last Sunday in March (1am) to last Sunday in October (1am)
+// GMT: Rest of year
+function getBritishTimezoneOffset(year: number, month: number, day: number): string {
+  // Calculate last Sunday of March (BST starts at 1:00 AM UTC)
+  const marchLast = new Date(Date.UTC(year, 2, 31)) // March 31st in UTC
+  const marchLastSunday = 31 - marchLast.getUTCDay()
+  const bstStart = new Date(Date.UTC(year, 2, marchLastSunday, 1, 0, 0))
+
+  // Calculate last Sunday of October (BST ends at 1:00 AM UTC)
+  const octoberLast = new Date(Date.UTC(year, 9, 31)) // October 31st in UTC
+  const octoberLastSunday = 31 - octoberLast.getUTCDay()
+  const bstEnd = new Date(Date.UTC(year, 9, octoberLastSunday, 1, 0, 0))
+
+  // Create date to check (at noon to avoid edge cases)
+  const dateToCheck = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
+
+  // Check if date is within BST period
+  const isBST = dateToCheck >= bstStart && dateToCheck < bstEnd
+
+  return isBST ? '+01:00' : '+00:00'
+}
+
 function parseDateTime(dateStr: string | undefined): string | null {
   if (!dateStr || dateStr.trim() === '') return null
 
@@ -34,8 +57,9 @@ function parseDateTime(dateStr: string | undefined): string | null {
     const match1 = dateStr.match(/(\d{1,2}):(\d{2})\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/)
     if (match1) {
       const [, hours, minutes, day, month, year] = match1
-      // Create date string in ISO format with UK timezone
-      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+01:00`
+      // Create date string in ISO format with dynamic UK timezone (BST or GMT)
+      const offset = getBritishTimezoneOffset(parseInt(year), parseInt(month), parseInt(day))
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00${offset}`
       return new Date(isoStr).toISOString()
     }
 
@@ -43,8 +67,9 @@ function parseDateTime(dateStr: string | undefined): string | null {
     const match2 = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/)
     if (match2) {
       const [, day, month, year, hours, minutes] = match2
-      // Create date string in ISO format with UK timezone
-      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+01:00`
+      // Create date string in ISO format with dynamic UK timezone (BST or GMT)
+      const offset = getBritishTimezoneOffset(parseInt(year), parseInt(month), parseInt(day))
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00${offset}`
       return new Date(isoStr).toISOString()
     }
 
@@ -52,8 +77,9 @@ function parseDateTime(dateStr: string | undefined): string | null {
     const match3 = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
     if (match3) {
       const [, day, month, year] = match3
-      // Assume noon UK time
-      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00+01:00`
+      // Assume noon UK time with dynamic timezone (BST or GMT)
+      const offset = getBritishTimezoneOffset(parseInt(year), parseInt(month), parseInt(day))
+      const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00${offset}`
       return new Date(isoStr).toISOString()
     }
 
