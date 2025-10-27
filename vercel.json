@@ -1,6 +1,12 @@
 {
-  "crons": [{
-    "path": "/api/sync-sheets",
-    "schedule": "*/2 5-23 * * *"
-  }]
+  "crons": [
+    {
+      "path": "/api/sync-sheets",
+      "schedule": "*/2 5-23 * * *"
+    },
+    {
+      "path": "/api/sync-calcom-bookings",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
