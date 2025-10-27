@@ -36,6 +36,7 @@ export default function EnhancedDbrDashboard() {
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
+  const [autoRefresh, setAutoRefresh] = useState(true)
   const [hotLeads, setHotLeads] = useState<any[]>([])
   const [warmLeads, setWarmLeads] = useState<any[]>([])
   const [callBookedLeads, setCallBookedLeads] = useState<any[]>([])
@@ -126,6 +127,17 @@ export default function EnhancedDbrDashboard() {
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
+
+  // Auto-refresh every 30 seconds for near real-time updates
+  useEffect(() => {
+    if (!autoRefresh) return
+
+    const interval = setInterval(() => {
+      fetchStats(true)
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [autoRefresh, fetchStats])
 
   const openModal = (filterType: string, filterLabel: string) => {
     setModalFilter({ type: filterType, label: filterLabel })
@@ -241,6 +253,24 @@ export default function EnhancedDbrDashboard() {
                 {range.charAt(0).toUpperCase() + range.slice(1)}
               </button>
             ))}
+          </div>
+
+          {/* Auto-refresh toggle */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">Auto-refresh</span>
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 flex-shrink-0 ${
+                autoRefresh ? 'bg-coldlava-cyan' : 'bg-white/20'
+              }`}
+              aria-label="Toggle auto-refresh"
+            >
+              <div
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${
+                  autoRefresh ? 'translate-x-5' : ''
+                }`}
+              />
+            </button>
           </div>
         </div>
 
