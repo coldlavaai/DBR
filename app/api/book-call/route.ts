@@ -78,13 +78,15 @@ export async function POST(request: Request) {
     const calData = await calResponse.json()
     console.log('✅ Cal.com booking created:', calData.id)
 
-    // Update lead in Sanity with booking details
+    // Update lead in Sanity with booking details - automatically activate manual mode
     try {
       await sanityClient
         .patch(leadId)
         .set({
           callBookedTime: start.toISOString(), // Store call booking time
           contactStatus: 'CALL_BOOKED',
+          manualMode: true,
+          manualModeActivatedAt: new Date().toISOString(),
           notes: notes || `Call booked via DBR Dashboard on ${start.toLocaleDateString()}`,
           lastUpdatedAt: new Date().toISOString(),
           calBookingId: calData.id,
@@ -92,7 +94,7 @@ export async function POST(request: Request) {
         })
         .commit()
 
-      console.log('✅ Lead updated in Sanity:', leadId)
+      console.log('✅ Lead updated in Sanity:', leadId, '(manual mode activated)')
     } catch (sanityError) {
       console.error('Sanity update error:', sanityError)
       // Don't fail the request if Sanity update fails - booking is still created
@@ -143,7 +145,7 @@ export async function POST(request: Request) {
         const formattedTime = `${day}/${month}/${year} ${hour}:${minute}`
         console.log(`📅 Formatted time (UK): ${formattedTime}`)
 
-        // Update both column A (Contact_Status) and column X (call_booked)
+        // Update columns A (Contact_Status), V (Manual_Mode), and X (call_booked)
         const updateResult = await sheets.spreadsheets.values.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
           requestBody: {
@@ -151,6 +153,10 @@ export async function POST(request: Request) {
               {
                 range: `A${sheetRow}`,
                 values: [['CALL_BOOKED']]
+              },
+              {
+                range: `V${sheetRow}`,
+                values: [['YES']]
               },
               {
                 range: `X${sheetRow}`,
@@ -162,7 +168,7 @@ export async function POST(request: Request) {
         })
 
         console.log(`✅ Google Sheets update successful:`, JSON.stringify(updateResult.data))
-        console.log(`✅ Updated row ${sheetRow}: status=CALL_BOOKED, time=${formattedTime}`)
+        console.log(`✅ Updated row ${sheetRow}: status=CALL_BOOKED, manual mode=YES, time=${formattedTime}`)
       } else {
         console.error(`❌ Phone number ${phone} NOT FOUND in Google Sheets!`)
         console.error(`❌ Searched ${rows.length} rows. First 5 phone numbers in sheet:`, rows.slice(0, 5).map(r => r[0]))

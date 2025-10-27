@@ -88,18 +88,20 @@ export async function POST(request: NextRequest) {
 
       console.log('📅 Call start time:', startTime)
 
-      // Update lead in Sanity
+      // Update lead in Sanity - automatically activate manual mode
       await sanityClient
         .patch(lead._id)
         .set({
           contactStatus: 'CALL_BOOKED',
           callBookedTime: startTime,
+          manualMode: true,
+          manualModeActivatedAt: new Date().toISOString(),
           notes: `Call booked via Cal.com${name ? ` with ${name}` : ''} on ${new Date(startTime).toLocaleDateString()}`,
           lastUpdatedAt: new Date().toISOString(),
         })
         .commit()
 
-      console.log('✅ Lead updated in Sanity:', lead._id, 'with callBookedTime:', startTime)
+      console.log('✅ Lead updated in Sanity:', lead._id, 'with callBookedTime:', startTime, '(manual mode activated)')
 
       // Update Google Sheet - search by phone number
       try {
@@ -165,6 +167,10 @@ export async function POST(request: NextRequest) {
                   values: [['CALL_BOOKED']]
                 },
                 {
+                  range: `V${sheetRow}`,
+                  values: [['YES']]
+                },
+                {
                   range: `X${sheetRow}`,
                   values: [[formattedTime]]
                 }
@@ -173,7 +179,7 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          console.log(`✅ Google Sheets updated via webhook: row ${sheetRow}, time=${formattedTime}`)
+          console.log(`✅ Google Sheets updated via webhook: row ${sheetRow}, time=${formattedTime}, manual mode=YES`)
           console.log(`📊 Sheets API response:`, JSON.stringify(updateResult.data))
 
           console.log('✅ Google Sheet updated: row', sheetRow, 'phone:', phoneWithoutPlus)
