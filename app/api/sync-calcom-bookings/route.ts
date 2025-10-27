@@ -209,14 +209,19 @@ export async function GET() {
 
       try {
         // Call the existing sync-sheets route to update Sanity
-        const syncResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/sync-sheets`, {
+        const baseUrl = process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3001'
+
+        const syncResponse = await fetch(`${baseUrl}/api/sync-sheets`, {
           method: 'GET'
         })
 
         if (syncResponse.ok) {
-          console.log('✅ Sanity sync completed successfully')
+          const syncData = await syncResponse.json()
+          console.log(`✅ Sanity sync completed: ${syncData.processed} leads processed`)
         } else {
-          console.warn('⚠️  Sanity sync may have failed')
+          console.warn(`⚠️  Sanity sync failed: ${syncResponse.status}`)
         }
       } catch (error) {
         console.error('❌ Failed to trigger Sanity sync:', error)

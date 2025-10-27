@@ -170,6 +170,12 @@ export const dbrLead = defineType({
       description: 'Scheduled installation date if booked',
     },
     {
+      name: 'callBookedTime',
+      title: 'Call Booked Time',
+      type: 'datetime',
+      description: 'Date and time of booked call/appointment (from Cal.com or manual booking)',
+    },
+    {
       name: 'finalStatus',
       title: 'Final Outcome',
       type: 'string',

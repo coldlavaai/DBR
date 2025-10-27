@@ -21,6 +21,7 @@ export interface Lead {
   m2Sent?: string
   m3Sent?: string
   installDate?: string
+  callBookedTime?: string
   manualMode?: boolean
   notes?: string
 }
