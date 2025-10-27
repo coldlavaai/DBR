@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/sync-calcom-bookings",
-      "schedule": "0 * * * *"
+      "schedule": "*/30 * * * *"
     }
   ]
 }
