@@ -72,7 +72,7 @@ This will create:
 - `accounts` table - OAuth provider links
 - `sessions` table - User sessions
 - `verification_tokens` table - Email verification
-- Default admin user (oliver@otdm.net)
+- Default admin user (oliver@coldlava.ai)
 
 ### 4. Set Up OAuth Providers (Optional)
 
@@ -118,7 +118,7 @@ APPLE_CLIENT_SECRET=your_generated_secret
 A default admin account is created by the schema:
 
 ```
-Email: oliver@otdm.net
+Email: oliver@coldlava.ai
 Password: admin123
 Role: admin
 ```
@@ -140,7 +140,7 @@ Or manually update in database:
 node -e "console.log(require('bcryptjs').hashSync('your_new_password', 10))"
 
 # Update in database (via Vercel Dashboard or psql)
-UPDATE users SET password_hash = 'new_hash_here' WHERE email = 'oliver@otdm.net';
+UPDATE users SET password_hash = 'new_hash_here' WHERE email = 'oliver@coldlava.ai';
 ```
 
 ## User Roles
@@ -245,7 +245,7 @@ Users who are not logged in are automatically redirected to `/auth/login`.
 1. Navigate to `http://localhost:3000` (or production URL)
 2. You should be redirected to `/auth/login`
 3. Try logging in with:
-   - Email: `oliver@otdm.net`
+   - Email: `oliver@coldlava.ai`
    - Password: `admin123`
 4. You should be redirected to `/dbr-analytics`
 5. Click your profile icon in the header
@@ -327,7 +327,7 @@ DELETE FROM users WHERE email = 'user@example.com';
 ## Support
 
 For issues or questions:
-- Email: oliver@otdm.net
+- Email: oliver@coldlava.ai
 - GitHub: https://github.com/coldlavaai/DBR
 
 ---

@@ -650,7 +650,7 @@ Create test suite:
 - Check Vercel function logs first
 - Review this documentation
 - Test manually via `/api/sync-calcom-bookings`
-- Contact: oliver@otdm.net
+- Contact: oliver@coldlava.ai
 
 ---
 

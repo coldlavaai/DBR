@@ -911,7 +911,7 @@ You now have a **custom AI marketing automation platform** that would cost £14k
 
 **Developed by:** Cold Lava AI
 **Lead Developer:** Oliver Tatler
-**Email:** oliver@otdm.net
+**Email:** oliver@coldlava.ai
 **Phone:** +44 151 541 6933
 **Booking:** https://cal.com/coldlava/discovery-call
 **Website:** https://coldlavaai.github.io/home

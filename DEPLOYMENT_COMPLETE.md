@@ -164,7 +164,7 @@ For now, email/password login is fully functional!
 - Check Vercel Postgres has data: Run `SELECT * FROM users;`
 
 ### Need help?
-Email: oliver@otdm.net
+Email: oliver@coldlava.ai
 
 ---
 
