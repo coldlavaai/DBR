@@ -115,7 +115,7 @@ export default function DashboardHeader({
                   <div className="w-8 h-8 rounded-full bg-gradient-cyan flex items-center justify-center text-white font-semibold text-sm">
                     {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
-                  <div className="hidden sm:block text-left">
+                  <div className="text-left">
                     <p className="text-sm text-white font-medium leading-tight">
                       {session.user.name || 'User'}
                     </p>
@@ -130,7 +130,7 @@ export default function DashboardHeader({
 
                 {/* Dropdown Menu */}
                 {showUserMenu && (
-                  <div className="fixed right-4 top-20 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden z-[9999] animate-slide-up">
+                  <div className="fixed right-4 top-20 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden animate-slide-up" style={{ zIndex: 999999 }}>
                     {/* User Info Header */}
                     <div className="p-4 bg-white/5 border-b border-white/10">
                       <div className="flex items-center gap-3 mb-3">
