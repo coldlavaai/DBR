@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface DashboardHeaderProps {
   clientName?: string
@@ -26,11 +27,18 @@ export default function DashboardHeader({
   const { data: session } = useSession()
   const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setShowUserMenu(false)
       }
     }
@@ -107,8 +115,9 @@ export default function DashboardHeader({
 
             {/* User Menu */}
             {session?.user && (
-              <div className="relative" ref={menuRef}>
+              <div className="relative">
                 <button
+                  ref={buttonRef}
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm border border-white/20 transition-all"
                 >
@@ -129,8 +138,8 @@ export default function DashboardHeader({
                 </button>
 
                 {/* Dropdown Menu */}
-                {showUserMenu && (
-                  <div className="fixed right-4 top-20 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden animate-slide-up" style={{ zIndex: 999999 }}>
+                {showUserMenu && mounted && createPortal(
+                  <div ref={menuRef} className="fixed right-4 top-20 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden animate-slide-up" style={{ zIndex: 999999 }}>
                     {/* User Info Header */}
                     <div className="p-4 bg-white/5 border-b border-white/10">
                       <div className="flex items-center gap-3 mb-3">
@@ -226,7 +235,8 @@ export default function DashboardHeader({
                         Powered by <span className="text-coldlava-cyan font-semibold">Cold Lava</span>
                       </p>
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             )}
