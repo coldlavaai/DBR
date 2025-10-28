@@ -130,7 +130,7 @@ export default function DashboardHeader({
 
                 {/* Dropdown Menu */}
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden z-[100] animate-slide-up">
+                  <div className="fixed right-4 top-20 w-72 bg-gradient-to-br from-coldlava-primary to-coldlava-secondary backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-coldlava-cyan/30 overflow-hidden z-[9999] animate-slide-up">
                     {/* User Info Header */}
                     <div className="p-4 bg-white/5 border-b border-white/10">
                       <div className="flex items-center gap-3 mb-3">
