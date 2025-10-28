@@ -27,13 +27,10 @@ function LoginForm() {
         </div>
         <div className="relative text-center">
           <div className="mb-8 animate-pulse">
-            <Image
+            <img
               src="/logos/cold-lava-logo.png"
               alt="Cold Lava AI"
-              width={300}
-              height={90}
-              className="drop-shadow-2xl"
-              priority
+              className="h-24 w-auto mx-auto drop-shadow-2xl"
             />
           </div>
           <div className="flex justify-center items-center gap-3">
@@ -112,31 +109,28 @@ function LoginForm() {
           <div className="text-center mb-8">
             {/* Cold Lava Logo */}
             <div className="flex justify-center mb-6">
-              <Image
+              <img
                 src="/logos/cold-lava-logo.png"
                 alt="Cold Lava AI"
-                width={200}
-                height={60}
-                className="drop-shadow-2xl"
-                priority
+                className="h-16 w-auto drop-shadow-2xl"
               />
             </div>
 
             {/* DBR + Greenstar */}
-            <div className="flex items-center justify-center gap-4 mb-4 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 inline-flex">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
-                DBR
-              </h1>
-              <Image
-                src="/greenstar-logo.png"
-                alt="Greenstar Solar"
-                width={120}
-                height={40}
-                className="drop-shadow-lg"
-              />
+            <div className="flex flex-col items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
+                  DBR
+                </h1>
+                <img
+                  src="/greenstar-logo.png"
+                  alt="Greenstar Solar"
+                  className="h-10 w-auto drop-shadow-lg"
+                />
+              </div>
             </div>
 
-            <p className="text-gray-300 mt-4">Sign in to continue</p>
+            <p className="text-gray-300 mt-4 text-base">Sign in to continue</p>
           </div>
 
           {/* Error Message */}
