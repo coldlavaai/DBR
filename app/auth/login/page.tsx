@@ -81,33 +81,32 @@ function LoginForm() {
           {/* Logo/Header */}
           <div className="text-center mb-8">
             {/* Cold Lava Logo */}
-            <div className="flex justify-center mb-4">
-              <div className="relative w-48 h-16">
-                <Image
-                  src="/logos/cold-lava-logo.png"
-                  alt="Cold Lava AI"
-                  fill
-                  className="object-contain drop-shadow-2xl"
-                />
-              </div>
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/logos/cold-lava-logo.png"
+                alt="Cold Lava AI"
+                width={200}
+                height={60}
+                className="drop-shadow-2xl"
+                priority
+              />
             </div>
 
             {/* DBR + Greenstar */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
+            <div className="flex items-center justify-center gap-4 mb-4 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 inline-flex">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
                 DBR
               </h1>
-              <div className="relative w-32 h-10">
-                <Image
-                  src="/greenstar-logo.png"
-                  alt="Greenstar Solar"
-                  fill
-                  className="object-contain drop-shadow-lg"
-                />
-              </div>
+              <Image
+                src="/greenstar-logo.png"
+                alt="Greenstar Solar"
+                width={120}
+                height={40}
+                className="drop-shadow-lg"
+              />
             </div>
 
-            <p className="text-gray-300">Sign in to continue</p>
+            <p className="text-gray-300 mt-4">Sign in to continue</p>
           </div>
 
           {/* Error Message */}
