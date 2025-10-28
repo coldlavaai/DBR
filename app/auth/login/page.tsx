@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
+import { Mail, Lock, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 
 function LoginForm() {
@@ -80,10 +80,33 @@ function LoginForm() {
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8 animate-slide-up">
           {/* Logo/Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-cyan rounded-xl mb-4">
-              <LogIn className="w-8 h-8 text-white" />
+            {/* Cold Lava Logo */}
+            <div className="flex justify-center mb-4">
+              <div className="relative w-48 h-16">
+                <Image
+                  src="/logos/cold-lava-logo.png"
+                  alt="Cold Lava AI"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                />
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">DBR Dashboard</h1>
+
+            {/* DBR + Greenstar */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
+                DBR
+              </h1>
+              <div className="relative w-32 h-10">
+                <Image
+                  src="/greenstar-logo.png"
+                  alt="Greenstar Solar"
+                  fill
+                  className="object-contain drop-shadow-lg"
+                />
+              </div>
+            </div>
+
             <p className="text-gray-300">Sign in to continue</p>
           </div>
 
