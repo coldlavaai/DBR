@@ -1,7 +1,10 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, LogOut, User, Settings, Shield } from 'lucide-react'
 import Image from 'next/image'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
 
 interface DashboardHeaderProps {
   clientName?: string
@@ -20,6 +23,26 @@ export default function DashboardHeader({
   onRefresh,
   isRefreshing = false,
 }: DashboardHeaderProps) {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/auth/login' })
+  }
+
   return (
     <div className="relative overflow-hidden bg-gradient-coldlava border-b-4 border-coldlava-cyan shadow-2xl">
       {/* Enhanced animated background decorations */}
@@ -71,7 +94,7 @@ export default function DashboardHeader({
             </div>
           </div>
 
-          {/* Right: Last updated - Hide on very small screens */}
+          {/* Right: Last updated + User Menu */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {lastUpdated && (
               <div className="text-center md:text-right px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white/5 rounded-lg sm:rounded-xl backdrop-blur-sm border border-white/10">
@@ -79,6 +102,73 @@ export default function DashboardHeader({
                 <p className="text-xs sm:text-sm text-coldlava-cyan font-bold whitespace-nowrap">
                   {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
+              </div>
+            )}
+
+            {/* User Menu */}
+            {session?.user && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm border border-white/20 transition-all"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-cyan flex items-center justify-center text-white font-semibold text-sm">
+                    {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm text-white font-medium leading-tight">
+                      {session.user.name || 'User'}
+                    </p>
+                    {session.user.role === 'admin' && (
+                      <p className="text-xs text-coldlava-gold flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        Admin
+                      </p>
+                    )}
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-coldlava-secondary/95 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 overflow-hidden z-50 animate-slide-up">
+                    <div className="p-4 border-b border-white/10">
+                      <p className="text-white font-semibold">{session.user.name || 'User'}</p>
+                      <p className="text-sm text-gray-400 truncate">{session.user.email}</p>
+                      <div className="mt-2">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          session.user.role === 'admin'
+                            ? 'bg-coldlava-gold/20 text-coldlava-gold border border-coldlava-gold/50'
+                            : 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                        }`}>
+                          {session.user.role === 'admin' ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
+                          {session.user.role}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2">
+                      {session.user.role === 'admin' && (
+                        <button
+                          onClick={() => {
+                            router.push('/admin/users')
+                            setShowUserMenu(false)
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-all"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Manage Users
+                        </button>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
