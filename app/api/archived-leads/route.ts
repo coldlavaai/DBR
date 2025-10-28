@@ -16,9 +16,9 @@ const sanityClient = createClient({
 
 export async function GET() {
   try {
-    // Fetch WARM leads (excluding archived) sorted by most recent reply
-    const warmLeads = await sanityClient.fetch(
-      `*[_type == "dbrLead" && contactStatus == "WARM" && archived != true] | order(replyReceived desc) [0...20] {
+    // Fetch ALL archived leads (regardless of status) sorted by most recent archive date
+    const archivedLeads = await sanityClient.fetch(
+      `*[_type == "dbrLead" && archived == true] | order(archivedAt desc) {
         _id,
         firstName,
         secondName,
@@ -30,31 +30,32 @@ export async function GET() {
         conversationHistory,
         latestLeadReply,
         replyReceived,
+        archivedAt,
         m1Sent,
         m2Sent,
         m3Sent,
         installDate,
-        callBookedTime,
         notes,
-        manualMode
+        manualMode,
+        callBookedTime
       }`
     )
 
     return NextResponse.json({
       success: true,
-      leads: warmLeads,
-      count: warmLeads.length
+      leads: archivedLeads,
+      count: archivedLeads.length
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
       }
     })
   } catch (error) {
-    console.error('Error fetching warm leads:', error)
+    console.error('Error fetching archived leads:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch warm leads' },
+      { success: false, error: 'Failed to fetch archived leads' },
       { status: 500 }
     )
   }

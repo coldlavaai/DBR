@@ -28,10 +28,19 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate that the call time is in the future
+    const start = new Date(startTime)
+    const now = new Date()
+    if (start <= now) {
+      return NextResponse.json(
+        { error: 'Call time must be in the future' },
+        { status: 400 }
+      )
+    }
+
     console.log('📞 Booking call for:', name, 'at', startTime)
 
     // Calculate end time (15 minutes after start)
-    const start = new Date(startTime)
     const end = new Date(start.getTime() + 15 * 60 * 1000)
 
     // Create booking with Cal.com API

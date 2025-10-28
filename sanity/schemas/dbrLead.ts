@@ -14,7 +14,12 @@ export const dbrLead = defineType({
       options: {
         list: [
           { title: '🔥 HOT - Ready to Convert', value: 'HOT' },
+          { title: '🟠 WARM - Showing Interest', value: 'WARM' },
+          { title: '🔵 NEUTRAL - Undecided', value: 'NEUTRAL' },
+          { title: '🧊 COLD - Low Interest', value: 'COLD' },
           { title: '✅ POSITIVE - Interested', value: 'POSITIVE' },
+          { title: '✔️ Ready', value: 'Ready' },
+          { title: '📞 CALL_BOOKED - Call Scheduled', value: 'CALL_BOOKED' },
           { title: '📤 Sent_1 - First Message Sent', value: 'Sent_1' },
           { title: '📤 Sent_2 - Second Message Sent', value: 'Sent_2' },
           { title: '📤 Sent_3 - Third Message Sent', value: 'Sent_3' },
@@ -22,6 +27,7 @@ export const dbrLead = defineType({
           { title: '🚫 REMOVED - Opted Out', value: 'REMOVED' },
           { title: '⏸️ PAUSED - On Hold', value: 'PAUSED' },
           { title: '📅 SCHEDULED - Install Booked', value: 'SCHEDULED' },
+          { title: '✅ INSTALLED - Completed', value: 'INSTALLED' },
           { title: '✨ CONVERTED - Deal Won', value: 'CONVERTED' },
         ],
         layout: 'dropdown',
@@ -296,7 +302,12 @@ export const dbrLead = defineType({
       // Status emoji mapping
       const statusEmoji = {
         'HOT': '🔥',
+        'WARM': '🟠',
+        'NEUTRAL': '🔵',
+        'COLD': '🧊',
         'POSITIVE': '✅',
+        'Ready': '✔️',
+        'CALL_BOOKED': '📞',
         'NEGATIVE': '❌',
         'REMOVED': '🚫',
         'Sent_1': '📤',
@@ -304,6 +315,7 @@ export const dbrLead = defineType({
         'Sent_3': '📤',
         'PAUSED': '⏸️',
         'SCHEDULED': '📅',
+        'INSTALLED': '✅',
         'CONVERTED': '✨',
       }[contactStatus || 'Sent_1']
 

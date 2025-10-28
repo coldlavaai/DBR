@@ -83,6 +83,7 @@ function calculateStats(leads: any[]) {
     negativeRemoved: leads.filter((l) => l.leadSentiment === 'NEGATIVE_REMOVED').length,
     unclear: leads.filter((l) => l.leadSentiment === 'UNCLEAR').length,
     unsure: leads.filter((l) => l.leadSentiment === 'UNSURE').length,
+    noSentiment: leads.filter((l) => !l.leadSentiment).length,
   }
 
   const statusBreakdown = {
@@ -101,8 +102,9 @@ function calculateStats(leads: any[]) {
   }
 
   const repliedLeads = leads.filter((l) => l.replyReceived).length
-  // Calculate reply rate based on messages sent, not total leads
-  const replyRate = messagesSent.total > 0 ? (repliedLeads / messagesSent.total) * 100 : 0
+  // Calculate reply rate based on leads with messages sent, not total messages
+  const leadsWithMessages = leads.filter((l) => l.m1Sent || l.m2Sent || l.m3Sent).length
+  const replyRate = leadsWithMessages > 0 ? (repliedLeads / leadsWithMessages) * 100 : 0
 
   return {
     totalLeads,

@@ -43,22 +43,14 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
     }
   }
 
-  if (leads.length === 0) {
-    return null // Don't show the section if there are no archived leads
-  }
-
   return (
     <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl overflow-hidden shadow-xl">
-      {/* Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
           <Archive className="w-6 h-6 text-gray-400" />
-          <h3 className="text-xl font-bold text-white">
-            Archived Leads ({leads.length})
-          </h3>
         </div>
         <ArchiveRestore className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -66,16 +58,24 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
       {/* Expanded Content */}
       {isOpen && (
         <div className="p-6 pt-0 space-y-4 animate-fade-in border-t border-white/10">
-          {leads.map((lead) => (
-            <LeadCard
-              key={lead._id}
-              lead={lead}
-              onRefresh={onUnarchive}
-              onArchive={handleUnarchive}
-              showArchiveButton={true}
-              isArchived={true}
-            />
-          ))}
+          {leads.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <Archive className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="text-lg">No archived leads</p>
+              <p className="text-sm mt-1">Archived hot leads will appear here</p>
+            </div>
+          ) : (
+            leads.map((lead) => (
+              <LeadCard
+                key={lead._id}
+                lead={lead}
+                onRefresh={onUnarchive}
+                onArchive={handleUnarchive}
+                showArchiveButton={true}
+                isArchived={true}
+              />
+            ))
+          )}
         </div>
       )}
     </div>

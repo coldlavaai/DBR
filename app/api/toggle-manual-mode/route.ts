@@ -12,6 +12,27 @@ const sanityClient = createClient({
 
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
 
+// Retry helper function for Google Sheets API calls
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 500
+): Promise<T> {
+  let lastError: any
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error
+      console.warn(`⚠️ Attempt ${attempt}/${maxRetries} failed:`, error)
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt)) // Exponential backoff
+      }
+    }
+  }
+  throw lastError
+}
+
 export async function POST(request: Request) {
   try {
     const { leadId, manualMode } = await request.json()
@@ -66,13 +87,15 @@ export async function POST(request: Request) {
           const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
           const range = `V${sheetRow}` // Column V = Manual_Mode
 
-          await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range,
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-              values: [[manualMode ? 'YES' : '']],
-            },
+          await retryOperation(async () => {
+            await sheets.spreadsheets.values.update({
+              spreadsheetId: SPREADSHEET_ID,
+              range,
+              valueInputOption: 'USER_ENTERED',
+              requestBody: {
+                values: [[manualMode ? 'YES' : '']],
+              },
+            })
           })
 
           console.log(`✅ Updated Google Sheet row ${sheetRow} with manual mode: ${manualMode ? 'YES' : 'empty'}`)
@@ -91,6 +114,12 @@ export async function POST(request: Request) {
       success: true,
       lead: updatedLead,
       manualMode: manualMode === true,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     })
   } catch (error) {
     console.error('Error toggling manual mode:', error)

@@ -66,6 +66,8 @@ export async function GET(request: NextRequest) {
       typeFilter = ' && leadSentiment == "NEGATIVE_REMOVED"'
     } else if (filterType === 'sentiment-unclear') {
       typeFilter = ' && leadSentiment == "UNCLEAR"'
+    } else if (filterType === 'sentiment-unsure') {
+      typeFilter = ' && leadSentiment == "UNSURE"'
     }
 
     // Fetch leads with full data

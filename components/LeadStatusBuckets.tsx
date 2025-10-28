@@ -260,7 +260,7 @@ export default function LeadStatusBuckets({ onRefresh }: LeadStatusBucketsProps)
                           key={lead._id}
                           lead={lead}
                           onRefresh={handleLeadUpdate}
-                          showArchiveButton={false}
+                          showArchiveButton={true}
                         />
                       ))}
 

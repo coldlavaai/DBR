@@ -44,6 +44,12 @@ export async function GET() {
       success: true,
       leads: archivedLeads,
       count: archivedLeads.length
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     })
   } catch (error) {
     console.error('Error fetching archived hot leads:', error)

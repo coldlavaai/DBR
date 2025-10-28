@@ -43,6 +43,12 @@ export async function GET() {
       success: true,
       leads: hotLeads,
       count: hotLeads.length
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     })
   } catch (error) {
     console.error('Error fetching hot leads:', error)

@@ -43,7 +43,13 @@ export async function GET() {
 
     const leads = await sanityClient.fetch(query)
 
-    return NextResponse.json({ leads, count: leads.length })
+    return NextResponse.json({ leads, count: leads.length }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
   } catch (error) {
     console.error('Error fetching all booked calls:', error)
     return NextResponse.json(

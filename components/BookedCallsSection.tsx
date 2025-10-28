@@ -38,7 +38,7 @@ export default function BookedCallsSection({ leads, onRefresh, expandedLeadId }:
 
   if (leads.length === 0) {
     return (
-      <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-8 shadow-xl text-center">
+      <div className="p-8 text-center">
         <Calendar className="w-16 h-16 mx-auto text-gray-500 mb-4" />
         <p className="text-gray-400 text-lg">No calls booked</p>
       </div>
@@ -46,46 +46,33 @@ export default function BookedCallsSection({ leads, onRefresh, expandedLeadId }:
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-          <div className="w-1 h-8 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full" />
-          <Calendar className="w-7 h-7 text-emerald-400" />
-          All Booked Calls ({leads.length})
-        </h3>
-        <p className="text-sm text-gray-400">Complete history</p>
-      </div>
+    <div className="p-6 space-y-4">
+      {leads.map((lead) => {
+        const callTime = formatCallTime((lead as any).callBookedTime)
 
-      {/* Leads Grid - Using LeadCard component with call time badges */}
-      <div className="space-y-4">
-        {leads.map((lead) => {
-          const callTime = formatCallTime((lead as any).callBookedTime)
-
-          return (
-            <div key={lead._id} className="relative">
-              {/* Call Time Badge */}
-              {callTime && (
-                <div className={`absolute -top-2 right-4 z-10 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                  callTime.isPast
-                    ? 'bg-gray-600/80 text-gray-300'
-                    : 'bg-emerald-500/80 text-white'
-                }`}>
-                  <Clock className="w-3 h-3" />
-                  {callTime.formatted}
-                  {callTime.isPast && ' (Past)'}
-                </div>
-              )}
-              <LeadCard
-                lead={lead}
-                onRefresh={onRefresh}
-                expandedByDefault={lead._id === expandedLeadId}
-                showArchiveButton={false}
-              />
-            </div>
-          )
-        })}
-      </div>
+        return (
+          <div key={lead._id} className="relative">
+            {/* Call Time Badge */}
+            {callTime && (
+              <div className={`absolute -top-2 right-4 z-10 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
+                callTime.isPast
+                  ? 'bg-gray-600/80 text-gray-300'
+                  : 'bg-emerald-500/80 text-white'
+              }`}>
+                <Clock className="w-3 h-3" />
+                {callTime.formatted}
+                {callTime.isPast && ' (Past)'}
+              </div>
+            )}
+            <LeadCard
+              lead={lead}
+              onRefresh={onRefresh}
+              expandedByDefault={lead._id === expandedLeadId}
+              showArchiveButton={true}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Users, MessageSquare, TrendingUp, Flame, Clock, Target, ChevronDown, ChevronUp } from 'lucide-react'
+import { Users, MessageSquare, TrendingUp, Flame, Clock, Target } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
 import SearchAndExport from './SearchAndExport'
@@ -10,10 +10,11 @@ import HotLeadsSection from './HotLeadsSection'
 import WarmLeadsSection from './WarmLeadsSection'
 import CallBookedSection from './CallBookedSection'
 import BookedCallsSection from './BookedCallsSection'
-import ArchivedHotLeadsSection from './ArchivedHotLeadsSection'
+import ArchivedLeadsSection from './ArchivedLeadsSection'
 import RecentActivity from './RecentActivity'
 import LeadStatusBuckets from './LeadStatusBuckets'
 import LeadDetailModal from './LeadDetailModal'
+import SectionHeader from './SectionHeader'
 
 interface EnhancedStats {
   totalLeads: number
@@ -41,7 +42,7 @@ export default function EnhancedDbrDashboard() {
   const [warmLeads, setWarmLeads] = useState<any[]>([])
   const [callBookedLeads, setCallBookedLeads] = useState<any[]>([])
   const [allBookedCalls, setAllBookedCalls] = useState<any[]>([])
-  const [archivedHotLeads, setArchivedHotLeads] = useState<any[]>([])
+  const [archivedLeads, setArchivedLeads] = useState<any[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
   const [leadDetailModalOpen, setLeadDetailModalOpen] = useState(false)
@@ -60,8 +61,75 @@ export default function EnhancedDbrDashboard() {
     archivedLeads: true,
   })
 
+  // Section ordering state
+  const defaultSectionOrder = [
+    'hotLeads',
+    'warmLeads',
+    'upcomingCalls',
+    'allBookedCalls',
+    'recentActivity',
+    'leadStatusBuckets',
+    'sentimentAnalysis',
+    'statusBreakdown',
+    'archivedLeads',
+  ]
+  const [sectionOrder, setSectionOrder] = useState<string[]>(defaultSectionOrder)
+  const [draggedSection, setDraggedSection] = useState<string | null>(null)
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null)
+
+  // Load section order from localStorage on mount
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('dbr-section-order')
+    if (savedOrder) {
+      try {
+        setSectionOrder(JSON.parse(savedOrder))
+      } catch (e) {
+        console.error('Failed to parse saved section order:', e)
+      }
+    }
+  }, [])
+
   const toggleSection = (section: keyof typeof sectionsExpanded) => {
     setSectionsExpanded(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
+  // Drag and drop handlers
+  const handleDragStart = (sectionId: string) => (e: React.DragEvent) => {
+    setDraggedSection(sectionId)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (sectionId: string) => (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverSection(sectionId)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverSection(null)
+  }
+
+  const handleDrop = (targetSectionId: string) => (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverSection(null)
+
+    if (!draggedSection || draggedSection === targetSectionId) return
+
+    const newOrder = [...sectionOrder]
+    const draggedIndex = newOrder.indexOf(draggedSection)
+    const targetIndex = newOrder.indexOf(targetSectionId)
+
+    // Remove dragged item and insert at target position
+    newOrder.splice(draggedIndex, 1)
+    newOrder.splice(targetIndex, 0, draggedSection)
+
+    setSectionOrder(newOrder)
+    localStorage.setItem('dbr-section-order', JSON.stringify(newOrder))
+  }
+
+  const handleDragEnd = () => {
+    setDraggedSection(null)
+    setDragOverSection(null)
   }
 
   const fetchStats = useCallback(async (isRefresh = false) => {
@@ -72,14 +140,17 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
+      // Add timestamp for cache-busting to ensure instant updates across all sections
+      const cacheBuster = `_=${Date.now()}`
+
       const [statsResponse, hotLeadsResponse, warmLeadsResponse, callBookedLeadsResponse, allBookedCallsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
-        fetch(`/api/dbr-analytics?timeRange=${timeRange}`),
-        fetch('/api/hot-leads'),
-        fetch('/api/warm-leads'),
-        fetch('/api/call-booked-leads'),
-        fetch('/api/all-booked-calls'),
-        fetch('/api/archived-hot-leads'),
-        fetch('/api/recent-activity')
+        fetch(`/api/dbr-analytics?timeRange=${timeRange}&${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/hot-leads?${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/warm-leads?${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/call-booked-leads?${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/all-booked-calls?${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/archived-leads?${cacheBuster}`, { cache: 'no-store' }),
+        fetch(`/api/recent-activity?${cacheBuster}`, { cache: 'no-store' })
       ])
 
       if (!statsResponse.ok) throw new Error('Failed to fetch analytics data')
@@ -108,7 +179,7 @@ export default function EnhancedDbrDashboard() {
 
       if (archivedLeadsResponse.ok) {
         const archivedData = await archivedLeadsResponse.json()
-        setArchivedHotLeads(archivedData.leads || [])
+        setArchivedLeads(archivedData.leads || [])
       }
 
       if (recentActivityResponse.ok) {
@@ -198,6 +269,190 @@ export default function EnhancedDbrDashboard() {
     setTimeout(() => {
       setExpandedLeadFromActivity(null)
     }, 5000)
+  }
+
+  // Render section based on ID
+  const renderSection = (sectionId: string) => {
+    const sectionConfig = {
+      hotLeads: {
+        id: 'hot-leads-section',
+        title: 'Hot Leads',
+        count: hotLeads.length,
+        color: 'border-orange-500/50 hover:border-orange-400',
+        content: <HotLeadsSection leads={hotLeads} onArchive={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+      },
+      warmLeads: {
+        id: 'warm-leads-section',
+        title: 'Warm Leads',
+        count: warmLeads.length,
+        color: 'border-yellow-500/50 hover:border-yellow-400',
+        content: <WarmLeadsSection leads={warmLeads} onArchive={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+      },
+      upcomingCalls: {
+        id: 'upcoming-calls-section',
+        title: 'Upcoming Calls',
+        count: callBookedLeads.length,
+        color: 'border-purple-500/50 hover:border-purple-400',
+        content: <CallBookedSection leads={callBookedLeads} onRefresh={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+      },
+      allBookedCalls: {
+        id: 'all-booked-calls-section',
+        title: 'All Booked Calls',
+        count: allBookedCalls.length,
+        color: 'border-indigo-500/50 hover:border-indigo-400',
+        content: <BookedCallsSection leads={allBookedCalls} onRefresh={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+      },
+      recentActivity: {
+        id: 'recent-activity-section',
+        title: 'Recent Activity',
+        count: recentActivity.length,
+        color: 'border-cyan-500/50 hover:border-cyan-400',
+        content: <RecentActivity activities={recentActivity} onActivityClick={handleActivityClick} />
+      },
+      leadStatusBuckets: {
+        id: 'lead-status-buckets-section',
+        title: 'Lead Status Buckets',
+        color: 'border-pink-500/50 hover:border-pink-400',
+        content: <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
+      },
+      sentimentAnalysis: {
+        id: 'sentiment-analysis-section',
+        title: 'Sentiment Analysis',
+        color: 'border-green-500/50 hover:border-green-400',
+        content: (
+          <div className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+              {[
+                { label: 'Positive', value: stats?.sentiment.positive || 0, color: 'from-green-400 to-emerald-500', filter: 'sentiment-positive' },
+                { label: 'Negative', value: stats?.sentiment.negative || 0, color: 'from-red-400 to-rose-500', filter: 'sentiment-negative' },
+                { label: 'Neutral', value: stats?.sentiment.neutral || 0, color: 'from-gray-400 to-slate-500', filter: 'sentiment-neutral' },
+                { label: 'Unsure', value: stats?.sentiment.unsure || 0, color: 'from-yellow-400 to-amber-500', filter: 'sentiment-unsure' },
+                { label: 'Unclear', value: stats?.sentiment.unclear || 0, color: 'from-orange-400 to-red-400', filter: 'sentiment-unclear' },
+                { label: 'Removed', value: stats?.sentiment.negativeRemoved || 0, color: 'from-gray-600 to-gray-700', filter: 'sentiment-removed' },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => openModal(item.filter, `${item.label} Sentiment`)}
+                  className="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105 group"
+                >
+                  <div className={`text-3xl font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
+                    {item.value}
+                  </div>
+                  <div className="text-sm text-gray-300 mt-1">{item.label}</div>
+                </button>
+              ))}
+            </div>
+            <div className="relative h-8 bg-white/10 rounded-lg overflow-hidden flex">
+              {Object.entries(stats?.sentiment || {}).map(([key, value]) => {
+                if (value === 0) return null
+                const colors: any = {
+                  positive: 'bg-green-500',
+                  negative: 'bg-red-500',
+                  neutral: 'bg-gray-400',
+                  negativeRemoved: 'bg-gray-700',
+                  unclear: 'bg-yellow-500',
+                }
+                const percentage = (value / (stats?.totalLeads || 1)) * 100
+                return (
+                  <div
+                    key={key}
+                    className={`${colors[key]} h-full flex items-center justify-center text-white text-xs font-medium transition-all duration-500`}
+                    style={{ width: `${percentage}%` }}
+                  >
+                    {percentage > 5 ? `${percentage.toFixed(0)}%` : ''}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      },
+      statusBreakdown: {
+        id: 'status-breakdown-section',
+        title: 'Status Breakdown',
+        color: 'border-blue-500/50 hover:border-blue-400',
+        content: (
+          <div className="p-6">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+              {[
+                { label: 'Ready', value: stats?.statusBreakdown.ready || 0, gradient: 'from-slate-400 to-gray-500', filter: 'ready' },
+                { label: 'Sent 1', value: stats?.statusBreakdown.sent1 || 0, gradient: 'from-blue-400 to-cyan-500', filter: 'sent1' },
+                { label: 'Sent 2', value: stats?.statusBreakdown.sent2 || 0, gradient: 'from-blue-500 to-indigo-500', filter: 'sent2' },
+                { label: 'Sent 3', value: stats?.statusBreakdown.sent3 || 0, gradient: 'from-indigo-500 to-purple-500', filter: 'sent3' },
+                { label: 'COLD', value: stats?.statusBreakdown.cold || 0, gradient: 'from-blue-600 to-cyan-700', filter: 'cold' },
+                { label: 'NEUTRAL', value: stats?.statusBreakdown.neutral || 0, gradient: 'from-gray-400 to-slate-500', filter: 'neutral' },
+                { label: 'WARM', value: stats?.statusBreakdown.warm || 0, gradient: 'from-yellow-400 to-orange-400', filter: 'warm' },
+                { label: 'HOT', value: stats?.statusBreakdown.hot || 0, gradient: 'from-orange-400 to-red-500', filter: 'hot' },
+                { label: 'Call Booked', value: stats?.statusBreakdown.callBooked || 0, gradient: 'from-purple-400 to-pink-500', filter: 'callBooked' },
+                { label: 'Converted', value: stats?.statusBreakdown.converted || 0, gradient: 'from-emerald-400 to-teal-500', filter: 'converted' },
+                { label: 'Installed', value: stats?.statusBreakdown.installed || 0, gradient: 'from-green-500 to-emerald-600', filter: 'installed' },
+                { label: 'Removed', value: stats?.statusBreakdown.removed || 0, gradient: 'from-red-400 to-rose-500', filter: 'removed' },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => openModal(item.filter, `${item.label} Leads`)}
+                  className="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105 group"
+                >
+                  <div className={`text-2xl font-bold bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
+                    {item.value}
+                  </div>
+                  <div className="text-xs text-gray-300 mt-1">{item.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      },
+      archivedLeads: {
+        id: 'archived-leads-section',
+        title: 'Archive',
+        count: archivedLeads.length,
+        color: 'border-gray-500/50 hover:border-gray-400',
+        content: <ArchivedLeadsSection leads={archivedLeads} onUnarchive={() => fetchStats(true)} />
+      },
+    }
+
+    const section = sectionConfig[sectionId as keyof typeof sectionConfig]
+    if (!section) return null
+
+    const isExpanded = sectionsExpanded[sectionId as keyof typeof sectionsExpanded]
+
+    const isDragging = draggedSection === sectionId
+    const isDragOver = dragOverSection === sectionId && draggedSection !== sectionId
+
+    const sectionColor = 'color' in section ? section.color : 'border-white/20 hover:border-coldlava-cyan/50'
+
+    return (
+      <div
+        key={sectionId}
+        id={section.id}
+        onDragOver={handleDragOver(sectionId)}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop(sectionId)}
+        className={`
+          mb-4 rounded-xl overflow-hidden
+          bg-gradient-to-r from-white/10 to-white/5
+          backdrop-blur-sm border-2 transition-all duration-300
+          ${isDragging ? 'opacity-50 scale-95' : ''}
+          ${isDragOver ? 'border-coldlava-cyan bg-coldlava-cyan/10' : sectionColor}
+        `}
+      >
+        <SectionHeader
+          title={section.title}
+          isExpanded={isExpanded}
+          onToggle={() => toggleSection(sectionId as keyof typeof sectionsExpanded)}
+          count={'count' in section ? section.count : undefined}
+          draggable={true}
+          onDragStart={handleDragStart(sectionId)}
+          onDragEnd={handleDragEnd}
+        />
+        {isExpanded && (
+          <div className="border-t border-white/10">
+            {section.content}
+          </div>
+        )}
+      </div>
+    )
   }
 
   if (loading) {
@@ -339,306 +594,8 @@ export default function EnhancedDbrDashboard() {
           />
         </div>
 
-        {/* HOT LEADS SECTION - Prominent & Interactive */}
-        <div id="hot-leads-section">
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('hotLeads')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.hotLeads ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.hotLeads ? 'Collapse' : 'Expand'} Hot Leads Section
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.hotLeads && (
-            <HotLeadsSection
-              leads={hotLeads}
-              onArchive={() => fetchStats(true)}
-              expandedLeadId={expandedLeadFromActivity}
-            />
-          )}
-        </div>
-
-        {/* WARM LEADS SECTION */}
-        <div id="warm-leads-section">
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('warmLeads')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.warmLeads ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.warmLeads ? 'Collapse' : 'Expand'} Warm Leads Section
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.warmLeads && (
-            <WarmLeadsSection
-              leads={warmLeads}
-              onArchive={() => fetchStats(true)}
-              expandedLeadId={expandedLeadFromActivity}
-            />
-          )}
-        </div>
-
-        {/* UPCOMING CALLS SECTION */}
-        <div id="upcoming-calls-section">
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('upcomingCalls')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.upcomingCalls ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.upcomingCalls ? 'Collapse' : 'Expand'} Upcoming Calls Section
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.upcomingCalls && (
-            <CallBookedSection
-              leads={callBookedLeads}
-              onRefresh={() => fetchStats(true)}
-              expandedLeadId={expandedLeadFromActivity}
-            />
-          )}
-        </div>
-
-        {/* ALL BOOKED CALLS SECTION */}
-        <div id="all-booked-calls-section">
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('allBookedCalls')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.allBookedCalls ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.allBookedCalls ? 'Collapse' : 'Expand'} All Booked Calls Section
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.allBookedCalls && (
-            <BookedCallsSection
-              leads={allBookedCalls}
-              onRefresh={() => fetchStats(true)}
-              expandedLeadId={expandedLeadFromActivity}
-            />
-          )}
-        </div>
-
-        {/* Recent Activity - Full Width */}
-        <div>
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('recentActivity')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.recentActivity ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.recentActivity ? 'Collapse' : 'Expand'} Recent Activity
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.recentActivity && (
-            <RecentActivity
-              activities={recentActivity}
-              onActivityClick={handleActivityClick}
-            />
-          )}
-        </div>
-
-        {/* LEAD STATUS BUCKETS */}
-        <div id="lead-status-buckets-section">
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('leadStatusBuckets')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.leadStatusBuckets ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.leadStatusBuckets ? 'Collapse' : 'Expand'} Lead Status Buckets
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.leadStatusBuckets && (
-            <LeadStatusBuckets onRefresh={() => fetchStats(true)} />
-          )}
-        </div>
-
-        {/* Sentiment Analysis */}
-        <div>
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('sentimentAnalysis')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.sentimentAnalysis ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.sentimentAnalysis ? 'Collapse' : 'Expand'} Sentiment Analysis
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.sentimentAnalysis && (
-            <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <div className="w-1 h-6 bg-gradient-to-b from-coldlava-cyan to-coldlava-purple rounded-full" />
-                Sentiment Analysis
-              </h3>
-
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-            {[
-              { label: 'Positive', value: stats.sentiment.positive, color: 'from-green-400 to-emerald-500', filter: 'sentiment-positive' },
-              { label: 'Negative', value: stats.sentiment.negative, color: 'from-red-400 to-rose-500', filter: 'sentiment-negative' },
-              { label: 'Neutral', value: stats.sentiment.neutral, color: 'from-gray-400 to-slate-500', filter: 'sentiment-neutral' },
-              { label: 'Unsure', value: stats.sentiment.unsure, color: 'from-yellow-400 to-amber-500', filter: 'sentiment-unsure' },
-              { label: 'Unclear', value: stats.sentiment.unclear, color: 'from-orange-400 to-red-400', filter: 'sentiment-unclear' },
-              { label: 'Removed', value: stats.sentiment.negativeRemoved, color: 'from-gray-600 to-gray-700', filter: 'sentiment-removed' },
-            ].map((item) => (
-              <button
-                key={item.label}
-                onClick={() => openModal(item.filter, `${item.label} Sentiment`)}
-                className="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105 group"
-              >
-                <div className={`text-3xl font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
-                  {item.value}
-                </div>
-                <div className="text-sm text-gray-300 mt-1">{item.label}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Sentiment bar */}
-          <div className="relative h-8 bg-white/10 rounded-lg overflow-hidden flex">
-            {Object.entries(stats.sentiment).map(([key, value]) => {
-              if (value === 0) return null
-              const colors: any = {
-                positive: 'bg-green-500',
-                negative: 'bg-red-500',
-                neutral: 'bg-gray-400',
-                negativeRemoved: 'bg-gray-700',
-                unclear: 'bg-yellow-500',
-              }
-              const percentage = (value / stats.totalLeads) * 100
-              return (
-                <div
-                  key={key}
-                  className={`${colors[key]} h-full flex items-center justify-center text-white text-xs font-medium transition-all duration-500`}
-                  style={{ width: `${percentage}%` }}
-                >
-                  {percentage > 5 ? `${percentage.toFixed(0)}%` : ''}
-                </div>
-              )
-            })}
-          </div>
-            </div>
-          )}
-        </div>
-
-        {/* Status Breakdown */}
-        <div>
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('statusBreakdown')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.statusBreakdown ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.statusBreakdown ? 'Collapse' : 'Expand'} Status Breakdown
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.statusBreakdown && (
-            <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-gradient-to-b from-coldlava-pink to-coldlava-gold rounded-full" />
-            Contact Status Breakdown
-          </h3>
-
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-            {[
-              { label: 'Ready', value: stats.statusBreakdown.ready, gradient: 'from-slate-400 to-gray-500', filter: 'ready' },
-              { label: 'Sent 1', value: stats.statusBreakdown.sent1, gradient: 'from-blue-400 to-cyan-500', filter: 'sent1' },
-              { label: 'Sent 2', value: stats.statusBreakdown.sent2, gradient: 'from-blue-500 to-indigo-500', filter: 'sent2' },
-              { label: 'Sent 3', value: stats.statusBreakdown.sent3, gradient: 'from-indigo-500 to-purple-500', filter: 'sent3' },
-              { label: 'COLD', value: stats.statusBreakdown.cold, gradient: 'from-blue-600 to-cyan-700', filter: 'cold' },
-              { label: 'NEUTRAL', value: stats.statusBreakdown.neutral, gradient: 'from-gray-400 to-slate-500', filter: 'neutral' },
-              { label: 'WARM', value: stats.statusBreakdown.warm, gradient: 'from-yellow-400 to-orange-400', filter: 'warm' },
-              { label: 'HOT', value: stats.statusBreakdown.hot, gradient: 'from-orange-400 to-red-500', filter: 'hot' },
-              { label: 'Call Booked', value: stats.statusBreakdown.callBooked, gradient: 'from-purple-400 to-pink-500', filter: 'callBooked' },
-              { label: 'Converted', value: stats.statusBreakdown.converted, gradient: 'from-emerald-400 to-teal-500', filter: 'converted' },
-              { label: 'Installed', value: stats.statusBreakdown.installed, gradient: 'from-green-500 to-emerald-600', filter: 'installed' },
-              { label: 'Removed', value: stats.statusBreakdown.removed, gradient: 'from-red-400 to-rose-500', filter: 'removed' },
-            ].map((item) => (
-              <button
-                key={item.label}
-                onClick={() => openModal(item.filter, `${item.label} Leads`)}
-                className="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105 group"
-              >
-                <div className={`text-2xl font-bold bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
-                  {item.value}
-                </div>
-                <div className="text-xs text-gray-300 mt-1">{item.label}</div>
-              </button>
-            ))}
-          </div>
-            </div>
-          )}
-        </div>
-
-        {/* ARCHIVED HOT LEADS SECTION - Moved to Bottom */}
-        <div>
-          <div className="mb-2">
-            <button
-              onClick={() => toggleSection('archivedLeads')}
-              className="flex items-center gap-2 text-white hover:text-coldlava-cyan transition-colors"
-            >
-              {sectionsExpanded.archivedLeads ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {sectionsExpanded.archivedLeads ? 'Collapse' : 'Expand'} Archived Hot Leads
-              </span>
-            </button>
-          </div>
-          {sectionsExpanded.archivedLeads && (
-            <ArchivedHotLeadsSection leads={archivedHotLeads} onUnarchive={() => fetchStats(true)} />
-          )}
-        </div>
+        {/* Dynamic Sections - Draggable & Reorderable */}
+        {sectionOrder.map((sectionId) => renderSection(sectionId))}
       </div>
 
       {/* Leads Modal */}

@@ -148,10 +148,6 @@ export default function RecentActivity({ activities: initialActivities, onActivi
 
   return (
     <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl p-6 shadow-xl">
-      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <div className="w-1 h-6 bg-gradient-to-b from-coldlava-cyan to-coldlava-purple rounded-full" />
-        Recent Activity
-      </h3>
 
       <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
         {activities.map((activity) => (
