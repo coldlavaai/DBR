@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token);
 -- Password hash for 'admin123' using bcrypt
 INSERT INTO users (email, name, password_hash, role, is_active, email_verified)
 VALUES (
-  'oliver@otdm.net',
+  'oliver@coldlava.ai',
   'Oliver Tatler',
   '$2a$10$rYW3qKvQVVHQVQVQVQVQVuJ7Z3jK9K8K8K8K8K8K8K8K8K8K8K8K8',
   'admin',
