@@ -58,7 +58,7 @@ INSERT INTO users (email, name, password_hash, role, is_active, email_verified)
 VALUES (
   'oliver@coldlava.ai',
   'Oliver Tatler',
-  '$2a$10$rYW3qKvQVVHQVQVQVQVQVuJ7Z3jK9K8K8K8K8K8K8K8K8K8K8K8K8',
+  '$2b$10$qZ1gfGXln9N1FPkn3mPhd.9jhgGD37h/b7KyjeHTeFc/3A4D4j7de',
   'admin',
   true,
   CURRENT_TIMESTAMP
