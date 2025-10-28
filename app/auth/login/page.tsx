@@ -17,6 +17,36 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
+  // Loading screen component
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-coldlava flex items-center justify-center p-4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-20 w-64 h-64 bg-coldlava-cyan opacity-10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-coldlava-pink opacity-10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        </div>
+        <div className="relative text-center">
+          <div className="mb-8 animate-pulse">
+            <Image
+              src="/logos/cold-lava-logo.png"
+              alt="Cold Lava AI"
+              width={300}
+              height={90}
+              className="drop-shadow-2xl"
+              priority
+            />
+          </div>
+          <div className="flex justify-center items-center gap-3">
+            <div className="w-3 h-3 bg-coldlava-cyan rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-3 h-3 bg-coldlava-yellow rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 bg-coldlava-pink rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
+          <p className="text-white text-lg mt-6 animate-pulse">Signing you in...</p>
+        </div>
+      </div>
+    )
+  }
+
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
