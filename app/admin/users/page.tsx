@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Users, Plus, Shield, ShieldOff, Trash2, Key, CheckCircle, XCircle, Mail, Calendar, Clock } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Users, Plus, Shield, ShieldOff, Trash2, Key, CheckCircle, XCircle, Mail, Calendar, Clock, Eye, EyeOff } from 'lucide-react'
 
 interface User {
   id: number
@@ -18,12 +18,18 @@ interface User {
   auth_providers: { provider: string }[]
 }
 
-export default function UserManagementPage() {
+function UserManagementContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [newUser, setNewUser] = useState({ email: '', name: '', password: '', role: 'user' })
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -37,6 +43,21 @@ export default function UserManagementPage() {
       fetchUsers()
     }
   }, [status, session, router])
+
+  useEffect(() => {
+    if (users.length > 0) {
+      const action = searchParams.get('action')
+      const userId = searchParams.get('userId')
+
+      if (action === 'change-password' && userId) {
+        const user = users.find(u => u.id === parseInt(userId))
+        if (user) {
+          setSelectedUser(user)
+          setShowPasswordModal(true)
+        }
+      }
+    }
+  }, [searchParams, users])
 
   const fetchUsers = async () => {
     try {
@@ -142,6 +163,76 @@ export default function UserManagementPage() {
     } catch (error) {
       setError('An error occurred while deleting user')
     }
+  }
+
+  const validatePassword = (password: string): { valid: boolean; message: string } => {
+    if (password.length < 12) {
+      return { valid: false, message: 'Password must be at least 12 characters long' }
+    }
+    if (!/[a-z]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one lowercase letter' }
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one uppercase letter' }
+    }
+    if (!/[0-9]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one number' }
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};:'",.<>?/\\|`~]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one special character (!@#$%^&*()_+-=[]{}etc.)' }
+    }
+    return { valid: true, message: 'Password meets requirements' }
+  }
+
+  const changePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+
+    if (!selectedUser) return
+
+    // Validate password match
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    // Validate password strength
+    const validation = validatePassword(newPassword)
+    if (!validation.valid) {
+      setError(validation.message)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword }),
+      })
+
+      if (response.ok) {
+        setSuccess(`Password changed successfully for ${selectedUser.email}`)
+        setShowPasswordModal(false)
+        setNewPassword('')
+        setConfirmPassword('')
+        setSelectedUser(null)
+        router.push('/admin/users')
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Failed to change password')
+      }
+    } catch (error) {
+      setError('An error occurred while changing password')
+    }
+  }
+
+  const openPasswordModal = (user: User) => {
+    setSelectedUser(user)
+    setShowPasswordModal(true)
+    setNewPassword('')
+    setConfirmPassword('')
+    setError(null)
   }
 
   if (status === 'loading' || loading) {
@@ -272,6 +363,13 @@ export default function UserManagementPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => openPasswordModal(user)}
+                          className="p-2 text-coldlava-cyan hover:text-coldlava-cyan/80 hover:bg-coldlava-cyan/10 rounded transition-all"
+                          title="Change password"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => deleteUser(user.id, user.email)}
                           className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-all"
                           title="Delete user"
@@ -357,7 +455,99 @@ export default function UserManagementPage() {
             </div>
           </div>
         )}
+
+        {/* Change Password Modal */}
+        {showPasswordModal && selectedUser && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-coldlava-secondary rounded-xl shadow-2xl border border-white/20 p-6 w-full max-w-md">
+              <h2 className="text-2xl font-bold text-white mb-2">Change Password</h2>
+              <p className="text-gray-300 mb-6">
+                Changing password for <span className="text-coldlava-cyan font-semibold">{selectedUser.email}</span>
+              </p>
+
+              <form onSubmit={changePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      className="w-full px-4 py-2 pr-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-coldlava-cyan"
+                      placeholder="Enter new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">Confirm Password</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-coldlava-cyan"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <p className="text-xs font-semibold text-gray-300 mb-2">Password Requirements:</p>
+                  <ul className="text-xs text-gray-400 space-y-1">
+                    <li className={newPassword.length >= 12 ? 'text-green-400' : ''}>• At least 12 characters long</li>
+                    <li className={/[a-z]/.test(newPassword) ? 'text-green-400' : ''}>• One lowercase letter (a-z)</li>
+                    <li className={/[A-Z]/.test(newPassword) ? 'text-green-400' : ''}>• One uppercase letter (A-Z)</li>
+                    <li className={/[0-9]/.test(newPassword) ? 'text-green-400' : ''}>• One number (0-9)</li>
+                    <li className={/[!@#$%^&*()_+\-=\[\]{};:'",.<>?/\\|`~]/.test(newPassword) ? 'text-green-400' : ''}>• One special character (!@#$%^&* etc.)</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordModal(false)
+                      setNewPassword('')
+                      setConfirmPassword('')
+                      setSelectedUser(null)
+                      router.push('/admin/users')
+                    }}
+                    className="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-gradient-cyan text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+                  >
+                    Change Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  )
+}
+
+export default function UserManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-coldlava flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    }>
+      <UserManagementContent />
+    </Suspense>
   )
 }
