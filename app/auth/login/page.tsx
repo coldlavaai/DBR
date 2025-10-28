@@ -150,7 +150,7 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-coldlava-cyan focus:border-transparent transition-all"
-                  placeholder="oliver@otdm.net"
+                  placeholder="oliver@coldlava.ai"
                   disabled={loading}
                 />
               </div>
@@ -192,7 +192,7 @@ function LoginForm() {
 
         {/* Additional Info */}
         <div className="mt-6 text-center text-sm text-gray-300">
-          <p>Need access? Contact <a href="mailto:oliver@otdm.net" className="text-coldlava-cyan hover:underline">oliver@otdm.net</a></p>
+          <p>Need access? Contact <a href="mailto:oliver@coldlava.ai" className="text-coldlava-cyan hover:underline">oliver@coldlava.ai</a></p>
         </div>
       </div>
     </div>
