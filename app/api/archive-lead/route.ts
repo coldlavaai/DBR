@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
+import { getGoogleSheetsClient } from '@/lib/google-auth'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -14,6 +15,8 @@ const sanityClient = createClient({
   useCdn: false,
 })
 
+const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
+
 export async function POST(request: Request) {
   try {
     const { leadId, archived } = await request.json()
@@ -24,6 +27,8 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    console.log(`📦 ${archived ? 'Archiving' : 'Unarchiving'} lead ${leadId}`)
 
     // Update the lead's archived status
     const updateData: any = { archived }
@@ -39,6 +44,51 @@ export async function POST(request: Request) {
       .patch(leadId)
       .set(updateData)
       .commit()
+
+    console.log(`✅ Updated Sanity archived status for lead ${leadId}`)
+
+    // Get lead phone number to update Google Sheets
+    const lead = await sanityClient.fetch(
+      `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber }`,
+      { leadId }
+    )
+
+    // Update Google Sheets column Z (Archived)
+    if (lead?.phoneNumber) {
+      const sheets = getGoogleSheetsClient()
+
+      // Search for the phone number in column D (Phone_number)
+      const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
+      const allRows = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'D2:D', // Column D (Phone_number) from row 2 onwards
+      })
+
+      const rows = allRows.data.values || []
+      const rowIndex = rows.findIndex((row: any[]) =>
+        row[0] && row[0].replace(/\D/g, '') === phoneWithoutPlus.replace(/\D/g, '')
+      )
+
+      if (rowIndex >= 0) {
+        const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
+        const range = `Z${sheetRow}` // Column Z = Archived
+
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[archived ? 'Yes' : 'No']],
+          },
+        })
+
+        console.log(`✅ Updated Google Sheets Archived column for row ${sheetRow} to ${archived ? 'Yes' : 'No'}`)
+      } else {
+        console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
+      }
+    } else {
+      console.warn(`⚠️ No phone number found for lead ${leadId}`)
+    }
 
     return NextResponse.json({
       success: true,

@@ -19,7 +19,7 @@ const sanityClient = createClient({
 
 // Your actual Google Sheet ID
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
-const RANGE = 'A2:X' // First sheet, starting from row 2 (includes Manual_Mode column V and call_booked column X)
+const RANGE = 'A2:Z' // First sheet, starting from row 2 (includes Manual_Mode column V, call_booked column X, and Archived column Z)
 
 // Calculate British timezone offset dynamically based on date
 // BST: Last Sunday in March (1am) to last Sunday in October (1am)
@@ -208,7 +208,7 @@ export async function GET() {
         // 9: Reply_received, 10: Notes, 11: M_1_sent, 12: M_2_sent, 13: M_3_sent,
         // 14: Conversation History, 15: Latest_lead_reply, 16: Reply_processed,
         // 17: Lead_sentiment, 18: AI_reply_sent, 19: Install_Date, 20: Final_status,
-        // 21: Manual_Mode, 22: (column W), 23: call_booked (column X)
+        // 21: Manual_Mode, 22: (column W), 23: call_booked (column X), 24: (column Y), 25: Archived (column Z)
         const emailAddress = row[4]
         const postcode = row[5]
         const address = row[6]
@@ -228,6 +228,7 @@ export async function GET() {
         const finalStatus = row[20]
         const manualModeStr = row[21]
         const callBookedTime = row[23] // Column X
+        const archivedStr = row[25] // Column Z
 
         if (!phoneNumber || !firstName || !secondName) {
           continue // Skip rows without required fields
@@ -274,15 +275,22 @@ export async function GET() {
         // Date field (not datetime!)
         if (installDate) leadData.installDate = parseDate(installDate)
 
-        // Preserve archived status and manual mode if document exists
+        // Set archived status from sheet (Google Sheets is source of truth for archived status)
+        const isArchived = archivedStr?.toUpperCase() === 'YES'
+        leadData.archived = isArchived
+
+        // Preserve archived timestamp if document exists and is still archived
         const existingDoc = existingDocsMap.get(docId) as { archived?: boolean; archivedAt?: string; manualMode?: boolean; manualModeActivatedAt?: string } | undefined
         if (existingDoc) {
-          // Preserve archived fields from existing document
-          if (existingDoc.archived !== undefined) {
-            leadData.archived = existingDoc.archived
-          }
-          if (existingDoc.archivedAt) {
+          // If still archived and has timestamp, preserve it; if newly archived, it needs a timestamp
+          if (isArchived && existingDoc.archivedAt) {
             leadData.archivedAt = existingDoc.archivedAt
+          } else if (isArchived && !existingDoc.archivedAt) {
+            // Newly archived - set timestamp
+            leadData.archivedAt = new Date().toISOString()
+          } else if (!isArchived) {
+            // Not archived - clear timestamp
+            leadData.archivedAt = null
           }
 
           // Preserve manual mode - if it exists in Sanity, use that value instead of sheet
@@ -298,8 +306,11 @@ export async function GET() {
             leadData.manualModeActivatedAt = existingDoc.manualModeActivatedAt
           }
         } else {
-          // New lead - read manual mode from sheet
+          // New lead - read manual mode and archived status from sheet
           leadData.manualMode = manualModeStr === 'YES'
+          if (isArchived) {
+            leadData.archivedAt = new Date().toISOString()
+          }
         }
 
         // Add to mutations array for batch processing
