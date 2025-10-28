@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "sync:dbr": "npx tsx scripts/sync-dbr-leads.ts"
+    "sync:dbr": "npx tsx scripts/sync-dbr-leads.ts",
+    "db:init": "npx tsx scripts/init-database.ts"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
