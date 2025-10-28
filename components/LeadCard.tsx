@@ -146,8 +146,6 @@ export default function LeadCard({
   }
 
   const handleArchive = async () => {
-    if (!onArchive) return
-
     const action = isArchived ? 'Unarchive' : 'Archive'
     const actionLower = isArchived ? 'unarchive' : 'archive'
 
@@ -168,7 +166,12 @@ export default function LeadCard({
         throw new Error(`Failed to ${actionLower} lead`)
       }
 
-      onArchive(lead._id, `${lead.firstName} ${lead.secondName}`)
+      // Call the custom archive handler if provided, otherwise just refresh
+      if (onArchive) {
+        await onArchive(lead._id, `${lead.firstName} ${lead.secondName}`)
+      } else if (onRefresh) {
+        onRefresh()
+      }
     } catch (error) {
       console.error(`Error ${actionLower}ing lead:`, error)
       alert(`Failed to ${actionLower} lead. Please try again.`)
@@ -694,10 +697,63 @@ export default function LeadCard({
                     )}
                   </button>
                 </div>
-                <div className="p-4 bg-black/30 rounded-xl border border-white/10 max-h-64 overflow-y-auto custom-scrollbar">
-                  <pre className="text-sm text-gray-300 whitespace-pre-wrap font-inter leading-relaxed">
-                    {lead.conversationHistory}
-                  </pre>
+                <div className="p-4 bg-black/30 rounded-xl border border-white/10 max-h-64 overflow-y-auto custom-scrollbar space-y-3">
+                  {lead.conversationHistory.split(/\n\n+/).filter(msg => msg.trim()).map((message, idx) => {
+                    // Parse format: [DD/MM/YYYY HH:MM] SENDER: message
+                    const timestampMatch = message.match(/^\[([^\]]+)\]\s*([^:]+):\s*([\s\S]+)$/)
+
+                    if (timestampMatch) {
+                      const [, timestamp, sender, text] = timestampMatch
+                      const isManual = sender.trim().toUpperCase() === 'MANUAL'
+
+                      // Parse timestamp to show just time, full date on hover
+                      // Support both formats: "DD/MM/YYYY HH:MM" and "HH:MM DD/MM/YYYY"
+                      let timeOnly: string
+                      let fullDate: string
+
+                      const parts = timestamp.split(' ')
+                      if (parts.length === 2) {
+                        // Check which format it is
+                        if (parts[0].includes('/')) {
+                          // Format: DD/MM/YYYY HH:MM
+                          timeOnly = parts[1]
+                          fullDate = timestamp
+                        } else {
+                          // Format: HH:MM DD/MM/YYYY (n8n format)
+                          timeOnly = parts[0]
+                          fullDate = `${parts[1]} ${parts[0]}` // Convert to DD/MM/YYYY HH:MM
+                        }
+                      } else {
+                        // Fallback
+                        timeOnly = timestamp
+                        fullDate = timestamp
+                      }
+
+                      return (
+                        <div key={idx} className={`p-3 rounded-lg border ${isManual ? 'bg-coldlava-purple/10 border-coldlava-purple/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span
+                              className="text-xs font-mono text-coldlava-cyan font-semibold cursor-help"
+                              title={fullDate}
+                            >
+                              {timeOnly}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${isManual ? 'bg-coldlava-pink/20 text-coldlava-gold' : 'bg-white/10 text-gray-300'}`}>
+                              {sender.trim()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">{text.trim()}</p>
+                        </div>
+                      )
+                    } else {
+                      // Fallback for messages without timestamps
+                      return (
+                        <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                          <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{message}</p>
+                        </div>
+                      )
+                    }
+                  })}
                 </div>
               </div>
             )}
