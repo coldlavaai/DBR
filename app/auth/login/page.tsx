@@ -112,25 +112,12 @@ function LoginForm() {
               <img
                 src="/logos/cold-lava-logo.png"
                 alt="Cold Lava AI"
-                className="h-16 w-auto drop-shadow-2xl"
+                className="h-20 w-auto drop-shadow-2xl"
               />
             </div>
 
-            {/* DBR + Greenstar */}
-            <div className="flex flex-col items-center gap-4 mb-4">
-              <div className="flex items-center gap-4 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-coldlava-cyan to-coldlava-purple bg-clip-text text-transparent">
-                  DBR
-                </h1>
-                <img
-                  src="/greenstar-logo.png"
-                  alt="Greenstar Solar"
-                  className="h-10 w-auto drop-shadow-lg"
-                />
-              </div>
-            </div>
-
-            <p className="text-gray-300 mt-4 text-base">Sign in to continue</p>
+            <h1 className="text-3xl font-bold text-white mb-2">DBR Dashboard</h1>
+            <p className="text-gray-300 text-base">Sign in to continue</p>
           </div>
 
           {/* Error Message */}
