@@ -21,7 +21,8 @@ export const authConfigEdge: NextAuthConfig = {
         '/api/sync-calcom-bookings',
         '/api/webhook/dbr-update',
         '/api/calcom-webhook',
-        '/api/diagnostic'
+        '/api/diagnostic',
+        '/api/health'
       ]
       const isPublicApi = publicApiRoutes.some(route => nextUrl.pathname.startsWith(route))
 
