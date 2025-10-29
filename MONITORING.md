@@ -1,28 +1,28 @@
 # Quick Monitoring Guide
 
 ## Production Dashboard
-**https://greenstar-dbr-dashboard-hqc3jxxpd-olivers-projects-a3cbd2e0.vercel.app**
+**https://greenstar-dbr-dashboard-9zogr1m78-olivers-projects-a3cbd2e0.vercel.app**
 
 ---
 
 ## One-Click Health Checks
 
 ### Is Everything Working?
-https://greenstar-dbr-dashboard-hqc3jxxpd-olivers-projects-a3cbd2e0.vercel.app/api/health
+https://greenstar-dbr-dashboard-9zogr1m78-olivers-projects-a3cbd2e0.vercel.app/api/health
 
 ✅ Look for: `"overall": "healthy"`
 
 ---
 
 ### Did Watchdog Detect Any Problems?
-https://greenstar-dbr-dashboard-hqc3jxxpd-olivers-projects-a3cbd2e0.vercel.app/api/watchdog
+https://greenstar-dbr-dashboard-9zogr1m78-olivers-projects-a3cbd2e0.vercel.app/api/watchdog
 
 ✅ Look for: `"overall": "healthy"` and `"actions": []` (empty = no problems)
 
 ---
 
 ### Find a Specific Lead
-https://greenstar-dbr-dashboard-hqc3jxxpd-olivers-projects-a3cbd2e0.vercel.app/api/diagnostic?name=LeadName
+https://greenstar-dbr-dashboard-9zogr1m78-olivers-projects-a3cbd2e0.vercel.app/api/diagnostic?name=LeadName
 
 Replace `LeadName` with the person's first or last name.
 
@@ -65,7 +65,7 @@ If everything looks broken:
 
 1. **Manual Sync**: Click green "Sync Sheets" button in dashboard
 2. **Force Recovery**: Visit this URL to trigger full resilient sync
-   https://greenstar-dbr-dashboard-hqc3jxxpd-olivers-projects-a3cbd2e0.vercel.app/api/sync-with-retry
+   https://greenstar-dbr-dashboard-9zogr1m78-olivers-projects-a3cbd2e0.vercel.app/api/sync-with-retry
 3. **Wait 2 minutes**, then check health again
 
 ---
