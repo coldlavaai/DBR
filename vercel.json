@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/sync-sheets",
-      "schedule": "*/2 5-23 * * *"
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/sync-calcom-bookings",
