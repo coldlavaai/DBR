@@ -15,7 +15,16 @@ export const authConfigEdge: NextAuthConfig = {
       const isPublicRoute = publicRoutes.some(route => nextUrl.pathname.startsWith(route))
       const isAuthApi = nextUrl.pathname.startsWith('/api/auth')
 
-      if (isAuthApi || isPublicRoute) {
+      // Allow cron jobs and webhooks to run without authentication
+      const publicApiRoutes = [
+        '/api/sync-sheets',
+        '/api/sync-calcom-bookings',
+        '/api/webhook/dbr-update',
+        '/api/calcom-webhook'
+      ]
+      const isPublicApi = publicApiRoutes.some(route => nextUrl.pathname.startsWith(route))
+
+      if (isAuthApi || isPublicRoute || isPublicApi) {
         return true
       }
 
