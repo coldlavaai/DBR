@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Archive, ArchiveRestore, ChevronDown, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Archive, ArchiveRestore, ChevronDown, Loader2, Maximize2, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import LeadCard, { Lead } from './LeadCard'
 
 interface ArchivedHotLeadsSectionProps {
@@ -14,6 +15,12 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
   const [unarchiving, setUnarchiving] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(3)
   const [loading, setLoading] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const loadMore = () => {
     setLoading(true)
@@ -53,6 +60,53 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
     }
   }
 
+  // Fullscreen view
+  if (isFullScreen && mounted) {
+    return createPortal(
+      <div className="fixed inset-0 z-[100000] bg-gradient-coldlava overflow-y-auto">
+        <div className="min-h-screen p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 sticky top-6 z-10 bg-gradient-coldlava/95 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+            <div className="flex items-center gap-3">
+              <Archive className="w-6 h-6 text-gray-400" />
+              <h2 className="text-2xl font-bold text-white">Archived Hot Leads ({leads.length})</h2>
+            </div>
+            <button
+              onClick={() => setIsFullScreen(false)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
+              title="Exit fullscreen"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* All leads - no limit */}
+          <div className="space-y-4 pb-6">
+            {leads.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <Archive className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-lg">No archived leads</p>
+                <p className="text-sm mt-1">Archived hot leads will appear here</p>
+              </div>
+            ) : (
+              leads.map((lead) => (
+                <LeadCard
+                  key={lead._id}
+                  lead={lead}
+                  onRefresh={onUnarchive}
+                  onArchive={handleUnarchive}
+                  showArchiveButton={true}
+                  isArchived={true}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
   return (
     <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl overflow-hidden shadow-xl">
       <button
@@ -76,6 +130,18 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
             </div>
           ) : (
             <>
+              {/* Maximize button */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setIsFullScreen(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
+                  title="Open fullscreen"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                  Full Screen
+                </button>
+              </div>
+
               <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
                 {leads.slice(0, visibleCount).map((lead) => (
                   <LeadCard

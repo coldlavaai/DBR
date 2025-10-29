@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Archive, ArchiveRestore, ChevronDown, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Archive, ArchiveRestore, ChevronDown, Loader2, Maximize2, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import LeadCard, { Lead } from './LeadCard'
 
 interface ArchivedLeadsSectionProps {
@@ -15,6 +16,12 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [visibleCount, setVisibleCount] = useState(3)
   const [loading, setLoading] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const loadMore = () => {
     setLoading(true)
@@ -109,6 +116,86 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
     }
   }
 
+  // Fullscreen view
+  if (isFullScreen && mounted) {
+    return createPortal(
+      <div className="fixed inset-0 z-[100000] bg-gradient-coldlava overflow-y-auto">
+        <div className="min-h-screen p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 sticky top-6 z-10 bg-gradient-coldlava/95 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+            <div className="flex items-center gap-3">
+              <Archive className="w-6 h-6 text-gray-400" />
+              <h2 className="text-2xl font-bold text-white">Archive ({leads.length})</h2>
+            </div>
+            <button
+              onClick={() => setIsFullScreen(false)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
+              title="Exit fullscreen"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Status Tabs */}
+          <div className="mb-6 bg-black/20 p-4 rounded-xl border border-white/10">
+            <div className="flex flex-wrap gap-2">
+              {statuses.map((status) => {
+                const display = getStatusDisplay(status)
+                const isActive = selectedStatus === status
+
+                return (
+                  <button
+                    key={status}
+                    onClick={() => {
+                      setSelectedStatus(status)
+                      setVisibleCount(3)
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
+                      isActive
+                        ? `bg-gradient-to-r ${display.color} text-white shadow-lg scale-105`
+                        : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{display.emoji}</span>
+                    <span>{display.label}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                      isActive ? 'bg-white/20' : 'bg-white/10'
+                    }`}>
+                      {statusCounts[status] || 0}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* All leads - no limit */}
+          <div className="space-y-4 pb-6">
+            {filteredLeads.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <Archive className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-lg">No archived leads in this category</p>
+                <p className="text-sm mt-1">Archived leads will appear here</p>
+              </div>
+            ) : (
+              filteredLeads.map((lead) => (
+                <LeadCard
+                  key={lead._id}
+                  lead={lead}
+                  onRefresh={onUnarchive}
+                  onArchive={handleUnarchive}
+                  showArchiveButton={true}
+                  isArchived={true}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
   return (
     <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl overflow-hidden shadow-xl">
       <button
@@ -171,6 +258,18 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
               </div>
             ) : (
               <>
+                {/* Maximize button */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setIsFullScreen(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
+                    title="Open fullscreen"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                    Full Screen
+                  </button>
+                </div>
+
                 <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
                   {filteredLeads.slice(0, visibleCount).map((lead) => (
                     <LeadCard
