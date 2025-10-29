@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Archive, ArchiveRestore } from 'lucide-react'
+import { Archive, ArchiveRestore, ChevronDown, Loader2 } from 'lucide-react'
 import LeadCard, { Lead } from './LeadCard'
 
 interface ArchivedHotLeadsSectionProps {
@@ -12,6 +12,16 @@ interface ArchivedHotLeadsSectionProps {
 export default function ArchivedHotLeadsSection({ leads, onUnarchive }: ArchivedHotLeadsSectionProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [unarchiving, setUnarchiving] = useState<string | null>(null)
+  const [visibleCount, setVisibleCount] = useState(3)
+  const [loading, setLoading] = useState(false)
+
+  const loadMore = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 5)
+      setLoading(false)
+    }, 300)
+  }
 
   const handleUnarchive = async (leadId: string, leadName: string) => {
     if (!confirm(`Unarchive ${leadName}? This will move them back to active leads.`)) {
@@ -65,18 +75,40 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
               <p className="text-sm mt-1">Archived hot leads will appear here</p>
             </div>
           ) : (
-            <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-              {leads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  onRefresh={onUnarchive}
-                  onArchive={handleUnarchive}
-                  showArchiveButton={true}
-                  isArchived={true}
-                />
-              ))}
-            </div>
+            <>
+              <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                {leads.slice(0, visibleCount).map((lead) => (
+                  <LeadCard
+                    key={lead._id}
+                    lead={lead}
+                    onRefresh={onUnarchive}
+                    onArchive={handleUnarchive}
+                    showArchiveButton={true}
+                    isArchived={true}
+                  />
+                ))}
+              </div>
+
+              {visibleCount < leads.length && (
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="w-full mt-4 py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Load More ({leads.length - visibleCount} remaining)
+                    </>
+                  )}
+                </button>
+              )}
+            </>
           )}
         </div>
       )}

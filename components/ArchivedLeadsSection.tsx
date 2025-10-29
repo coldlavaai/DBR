@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Archive, ArchiveRestore } from 'lucide-react'
+import { Archive, ArchiveRestore, ChevronDown, Loader2 } from 'lucide-react'
 import LeadCard, { Lead } from './LeadCard'
 
 interface ArchivedLeadsSectionProps {
@@ -13,6 +13,16 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
   const [isOpen, setIsOpen] = useState(false)
   const [unarchiving, setUnarchiving] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [visibleCount, setVisibleCount] = useState(3)
+  const [loading, setLoading] = useState(false)
+
+  const loadMore = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 5)
+      setLoading(false)
+    }, 300)
+  }
 
   // Get unique statuses from archived leads
   const uniqueStatuses = new Set(leads.map(lead => lead.contactStatus).filter(Boolean))
@@ -128,7 +138,10 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
                 return (
                   <button
                     key={status}
-                    onClick={() => setSelectedStatus(status)}
+                    onClick={() => {
+                      setSelectedStatus(status)
+                      setVisibleCount(3) // Reset visible count when changing filter
+                    }}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
                       isActive
                         ? `bg-gradient-to-r ${display.color} text-white shadow-lg scale-105`
@@ -157,18 +170,40 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
                 <p className="text-sm mt-1">Archived leads will appear here</p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-                {filteredLeads.map((lead) => (
-                  <LeadCard
-                    key={lead._id}
-                    lead={lead}
-                    onRefresh={onUnarchive}
-                    onArchive={handleUnarchive}
-                    showArchiveButton={true}
-                    isArchived={true}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                  {filteredLeads.slice(0, visibleCount).map((lead) => (
+                    <LeadCard
+                      key={lead._id}
+                      lead={lead}
+                      onRefresh={onUnarchive}
+                      onArchive={handleUnarchive}
+                      showArchiveButton={true}
+                      isArchived={true}
+                    />
+                  ))}
+                </div>
+
+                {visibleCount < filteredLeads.length && (
+                  <button
+                    onClick={loadMore}
+                    disabled={loading}
+                    className="w-full mt-4 py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        Load More ({filteredLeads.length - visibleCount} remaining)
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { Calendar, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Calendar, Clock, ChevronDown, Loader2 } from 'lucide-react'
 import LeadCard, { Lead } from './LeadCard'
 
 interface CallBookedSectionProps {
@@ -10,6 +11,16 @@ interface CallBookedSectionProps {
 }
 
 export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: CallBookedSectionProps) {
+  const [visibleCount, setVisibleCount] = useState(3)
+  const [loading, setLoading] = useState(false)
+
+  const loadMore = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 5)
+      setLoading(false)
+    }, 300)
+  }
   const formatCallTime = (callTime?: string) => {
     if (!callTime) return null
     try {
@@ -70,10 +81,13 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
     )
   }
 
+  const visibleLeads = sortedLeads.slice(0, visibleCount)
+  const hasMore = visibleCount < sortedLeads.length
+
   return (
     <div className="p-6">
       <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-        {sortedLeads.map((lead) => {
+        {visibleLeads.map((lead) => {
           const callTime = formatCallTime((lead as any).callBookedTime)
 
           return (
@@ -100,6 +114,26 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
           )
         })}
       </div>
+
+      {hasMore && (
+        <button
+          onClick={loadMore}
+          disabled={loading}
+          className="w-full mt-4 py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-4 h-4" />
+              Load More ({sortedLeads.length - visibleCount} remaining)
+            </>
+          )}
+        </button>
+      )}
     </div>
   )
 }
