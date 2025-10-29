@@ -22,7 +22,9 @@ export const authConfigEdge: NextAuthConfig = {
         '/api/webhook/dbr-update',
         '/api/calcom-webhook',
         '/api/diagnostic',
-        '/api/health'
+        '/api/health',
+        '/api/watchdog',
+        '/api/sync-with-retry'
       ]
       const isPublicApi = publicApiRoutes.some(route => nextUrl.pathname.startsWith(route))
 

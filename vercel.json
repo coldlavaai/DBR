@@ -7,6 +7,14 @@
     {
       "path": "/api/sync-calcom-bookings",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/watchdog",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/sync-with-retry",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
