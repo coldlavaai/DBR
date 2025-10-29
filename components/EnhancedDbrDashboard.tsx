@@ -1,20 +1,17 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Users, MessageSquare, TrendingUp, Flame, Clock, Target, RefreshCw } from 'lucide-react'
+import { Users, MessageSquare, TrendingUp, Flame, Clock, Target, RefreshCw, Calendar, Archive } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
 import SearchAndExport from './SearchAndExport'
 import LeadsModal from './LeadsModal'
-import HotLeadsSection from './HotLeadsSection'
-import WarmLeadsSection from './WarmLeadsSection'
-import CallBookedSection from './CallBookedSection'
-import BookedCallsSection from './BookedCallsSection'
-import ArchivedLeadsSection from './ArchivedLeadsSection'
+import UnifiedLeadSection from './UnifiedLeadSection'
 import RecentActivity from './RecentActivity'
 import LeadStatusBuckets from './LeadStatusBuckets'
 import LeadDetailModal from './LeadDetailModal'
 import SectionHeader from './SectionHeader'
+import { Lead } from './LeadCard'
 
 interface EnhancedStats {
   totalLeads: number
@@ -141,52 +138,24 @@ export default function EnhancedDbrDashboard() {
     }
 
     try {
-      // Add timestamp for cache-busting to ensure instant updates across all sections
+      // UNIFIED ENDPOINT - One API call instead of 7!
       const cacheBuster = `_=${Date.now()}`
+      const response = await fetch(`/api/dashboard?timeRange=${timeRange}&${cacheBuster}`, {
+        cache: 'no-store'
+      })
 
-      const [statsResponse, hotLeadsResponse, warmLeadsResponse, callBookedLeadsResponse, allBookedCallsResponse, archivedLeadsResponse, recentActivityResponse] = await Promise.all([
-        fetch(`/api/dbr-analytics?timeRange=${timeRange}&${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/hot-leads?${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/warm-leads?${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/call-booked-leads?${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/all-booked-calls?${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/archived-leads?${cacheBuster}`, { cache: 'no-store' }),
-        fetch(`/api/recent-activity?${cacheBuster}`, { cache: 'no-store' })
-      ])
+      if (!response.ok) throw new Error('Failed to fetch dashboard data')
 
-      if (!statsResponse.ok) throw new Error('Failed to fetch analytics data')
-      const data = await statsResponse.json()
-      setStats(data)
+      const data = await response.json()
 
-      if (hotLeadsResponse.ok) {
-        const hotData = await hotLeadsResponse.json()
-        setHotLeads(hotData.leads || [])
-      }
-
-      if (warmLeadsResponse.ok) {
-        const warmData = await warmLeadsResponse.json()
-        setWarmLeads(warmData.leads || [])
-      }
-
-      if (callBookedLeadsResponse.ok) {
-        const callBookedData = await callBookedLeadsResponse.json()
-        setCallBookedLeads(callBookedData.leads || [])
-      }
-
-      if (allBookedCallsResponse.ok) {
-        const allCallsData = await allBookedCallsResponse.json()
-        setAllBookedCalls(allCallsData.leads || [])
-      }
-
-      if (archivedLeadsResponse.ok) {
-        const archivedData = await archivedLeadsResponse.json()
-        setArchivedLeads(archivedData.leads || [])
-      }
-
-      if (recentActivityResponse.ok) {
-        const activityData = await recentActivityResponse.json()
-        setRecentActivity(activityData.activities || [])
-      }
+      // Set all state from single response
+      setStats(data.stats)
+      setHotLeads(data.hotLeads || [])
+      setWarmLeads(data.warmLeads || [])
+      setCallBookedLeads(data.callBookedLeads || [])
+      setAllBookedCalls(data.allBookedCalls || [])
+      setArchivedLeads(data.archivedLeads || [])
+      setRecentActivity(data.recentActivity || [])
     } catch (error) {
       console.error('Error fetching DBR stats:', error)
     } finally {
@@ -300,34 +269,95 @@ export default function EnhancedDbrDashboard() {
 
   // Render section based on ID
   const renderSection = (sectionId: string) => {
+    // Sort function for call booked leads (upcoming first, then past)
+    const sortCallBookedLeads = (leads: Lead[]) => {
+      return [...leads].sort((a, b) => {
+        const aTime = (a as any).callBookedTime
+        const bTime = (b as any).callBookedTime
+
+        if (!aTime && !bTime) return 0
+        if (!aTime) return 1
+        if (!bTime) return -1
+
+        const aDate = new Date(aTime)
+        const bDate = new Date(bTime)
+        const now = new Date()
+
+        const aIsPast = aDate < now
+        const bIsPast = bDate < now
+
+        // If one is past and one is future, future comes first
+        if (aIsPast && !bIsPast) return 1
+        if (!aIsPast && bIsPast) return -1
+
+        // Both future or both past: sort by date ascending (soonest first)
+        return aDate.getTime() - bDate.getTime()
+      })
+    }
+
     const sectionConfig = {
       hotLeads: {
         id: 'hot-leads-section',
         title: 'Hot Leads',
         count: hotLeads.length,
         color: 'border-orange-500/50 hover:border-orange-400',
-        content: <HotLeadsSection leads={hotLeads} onArchive={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+        content: <UnifiedLeadSection
+          leads={hotLeads}
+          icon={Flame}
+          title="Hot Leads"
+          emptyMessage="No hot leads at the moment"
+          colorScheme="orange"
+          onRefresh={() => fetchStats(true)}
+          expandedLeadId={expandedLeadFromActivity}
+        />
       },
       warmLeads: {
         id: 'warm-leads-section',
         title: 'Warm Leads',
         count: warmLeads.length,
         color: 'border-yellow-500/50 hover:border-yellow-400',
-        content: <WarmLeadsSection leads={warmLeads} onArchive={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+        content: <UnifiedLeadSection
+          leads={warmLeads}
+          icon={TrendingUp}
+          title="Warm Leads"
+          emptyMessage="No warm leads at the moment"
+          colorScheme="yellow"
+          onRefresh={() => fetchStats(true)}
+          expandedLeadId={expandedLeadFromActivity}
+        />
       },
       upcomingCalls: {
         id: 'upcoming-calls-section',
         title: 'Upcoming Calls',
         count: callBookedLeads.length,
         color: 'border-purple-500/50 hover:border-purple-400',
-        content: <CallBookedSection leads={callBookedLeads} onRefresh={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+        content: <UnifiedLeadSection
+          leads={callBookedLeads}
+          icon={Calendar}
+          title="Upcoming Calls"
+          emptyMessage="No upcoming calls"
+          colorScheme="purple"
+          onRefresh={() => fetchStats(true)}
+          expandedLeadId={expandedLeadFromActivity}
+          sortFn={sortCallBookedLeads}
+          showCallTimeBadge={true}
+        />
       },
       allBookedCalls: {
         id: 'all-booked-calls-section',
         title: 'All Booked Calls',
         count: allBookedCalls.length,
         color: 'border-indigo-500/50 hover:border-indigo-400',
-        content: <BookedCallsSection leads={allBookedCalls} onRefresh={() => fetchStats(true)} expandedLeadId={expandedLeadFromActivity} />
+        content: <UnifiedLeadSection
+          leads={allBookedCalls}
+          icon={Calendar}
+          title="Booked Calls"
+          emptyMessage="No calls booked"
+          colorScheme="purple"
+          onRefresh={() => fetchStats(true)}
+          expandedLeadId={expandedLeadFromActivity}
+          showCallTimeBadge={true}
+        />
       },
       recentActivity: {
         id: 'recent-activity-section',
@@ -435,7 +465,31 @@ export default function EnhancedDbrDashboard() {
         title: 'Archive',
         count: archivedLeads.length,
         color: 'border-gray-500/50 hover:border-gray-400',
-        content: <ArchivedLeadsSection leads={archivedLeads} onUnarchive={() => fetchStats(true)} />
+        content: <UnifiedLeadSection
+          leads={archivedLeads}
+          icon={Archive}
+          title="Archive"
+          emptyMessage="No archived leads"
+          colorScheme="gray"
+          onRefresh={() => fetchStats(true)}
+          expandedLeadId={expandedLeadFromActivity}
+          isArchived={true}
+          collapsible={true}
+          defaultCollapsed={false}
+          filterTabs={[
+            { id: 'HOT', label: 'Hot', emoji: '🔥', color: 'from-orange-400 to-red-500' },
+            { id: 'WARM', label: 'Warm', emoji: '🟠', color: 'from-yellow-400 to-orange-400' },
+            { id: 'NEUTRAL', label: 'Neutral', emoji: '🔵', color: 'from-gray-400 to-slate-500' },
+            { id: 'COLD', label: 'Cold', emoji: '🧊', color: 'from-blue-600 to-cyan-700' },
+            { id: 'POSITIVE', label: 'Positive', emoji: '✅', color: 'from-emerald-400 to-teal-500' },
+            { id: 'CALL_BOOKED', label: 'Call Booked', emoji: '📞', color: 'from-purple-400 to-pink-500' },
+            { id: 'CONVERTED', label: 'Converted', emoji: '✨', color: 'from-emerald-400 to-teal-500' },
+            { id: 'INSTALLED', label: 'Installed', emoji: '✅', color: 'from-green-500 to-emerald-600' },
+            { id: 'NEGATIVE', label: 'Negative', emoji: '❌', color: 'from-red-400 to-rose-500' },
+            { id: 'REMOVED', label: 'Removed', emoji: '🚫', color: 'from-red-400 to-rose-500' },
+          ]}
+          getLeadFilterValue={(lead) => lead.contactStatus}
+        />
       },
     }
 

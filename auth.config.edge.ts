@@ -24,7 +24,8 @@ export const authConfigEdge: NextAuthConfig = {
         '/api/diagnostic',
         '/api/health',
         '/api/watchdog',
-        '/api/sync-with-retry'
+        '/api/sync-with-retry',
+        '/api/dashboard'
       ]
       const isPublicApi = publicApiRoutes.some(route => nextUrl.pathname.startsWith(route))
 
