@@ -137,7 +137,7 @@ export default function BookedCallsSection({ leads, onRefresh, expandedLeadId }:
         </button>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+      <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-2">
         {visibleLeads.map((lead) => {
           const callTime = formatCallTime((lead as any).callBookedTime)
 

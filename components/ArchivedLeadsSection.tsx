@@ -270,7 +270,7 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
                   </button>
                 </div>
 
-                <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-2">
                   {filteredLeads.slice(0, visibleCount).map((lead) => (
                     <LeadCard
                       key={lead._id}

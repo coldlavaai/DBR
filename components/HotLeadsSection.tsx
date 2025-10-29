@@ -94,7 +94,7 @@ export default function HotLeadsSection({ leads, onArchive, expandedLeadId }: Ho
         </button>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+      <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-2">
         {visibleLeads.map((lead) => (
           <LeadCard
             key={lead._id}
