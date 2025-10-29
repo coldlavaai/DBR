@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Users, MessageSquare, TrendingUp, Flame, Clock, Target } from 'lucide-react'
+import { Users, MessageSquare, TrendingUp, Flame, Clock, Target, RefreshCw } from 'lucide-react'
 import DashboardHeader from './DashboardHeader'
 import MetricCard from './MetricCard'
 import SearchAndExport from './SearchAndExport'
@@ -34,6 +34,7 @@ export default function EnhancedDbrDashboard() {
   const [stats, setStats] = useState<EnhancedStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [syncing, setSyncing] = useState(false)
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
@@ -193,6 +194,32 @@ export default function EnhancedDbrDashboard() {
       setRefreshing(false)
     }
   }, [timeRange])
+
+  // Sync from Google Sheets
+  const syncFromSheets = useCallback(async () => {
+    setSyncing(true)
+    try {
+      const response = await fetch('/api/sync-sheets', {
+        method: 'GET',
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to sync from Google Sheets')
+      }
+
+      const result = await response.json()
+      console.log('Sync complete:', result)
+
+      // Refresh dashboard data after sync
+      await fetchStats(true)
+    } catch (error) {
+      console.error('Error syncing from Google Sheets:', error)
+      alert('Failed to sync from Google Sheets. Please try again.')
+    } finally {
+      setSyncing(false)
+    }
+  }, [fetchStats])
 
   // Initial fetch
   useEffect(() => {
@@ -509,6 +536,18 @@ export default function EnhancedDbrDashboard() {
               </button>
             ))}
           </div>
+
+          {/* Sync from Sheets button */}
+          <button
+            onClick={syncFromSheets}
+            disabled={syncing}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-300 text-xs sm:text-sm whitespace-nowrap shadow-lg"
+            title="Sync latest data from Google Sheets"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync Sheets'}</span>
+            <span className="sm:hidden">{syncing ? 'Syncing' : 'Sync'}</span>
+          </button>
 
           {/* Auto-refresh toggle */}
           <div className="flex items-center gap-2 flex-shrink-0">
