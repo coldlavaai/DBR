@@ -149,7 +149,7 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
           </div>
 
           {/* Leads List */}
-          <div className="p-6 space-y-4 animate-fade-in">
+          <div className="p-6 animate-fade-in">
             {filteredLeads.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 <Archive className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -157,16 +157,18 @@ export default function ArchivedLeadsSection({ leads, onUnarchive }: ArchivedLea
                 <p className="text-sm mt-1">Archived leads will appear here</p>
               </div>
             ) : (
-              filteredLeads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  onRefresh={onUnarchive}
-                  onArchive={handleUnarchive}
-                  showArchiveButton={true}
-                  isArchived={true}
-                />
-              ))
+              <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                {filteredLeads.map((lead) => (
+                  <LeadCard
+                    key={lead._id}
+                    lead={lead}
+                    onRefresh={onUnarchive}
+                    onArchive={handleUnarchive}
+                    showArchiveButton={true}
+                    isArchived={true}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>

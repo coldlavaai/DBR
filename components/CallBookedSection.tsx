@@ -71,33 +71,35 @@ export default function CallBookedSection({ leads, onRefresh, expandedLeadId }: 
   }
 
   return (
-    <div className="p-6 space-y-4">
-      {sortedLeads.map((lead) => {
-        const callTime = formatCallTime((lead as any).callBookedTime)
+    <div className="p-6">
+      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+        {sortedLeads.map((lead) => {
+          const callTime = formatCallTime((lead as any).callBookedTime)
 
-        return (
-          <div key={lead._id} className="relative">
-            {/* Call Time Badge */}
-            {callTime && (
-              <div className={`absolute -top-2 right-4 z-10 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                callTime.isPast
-                  ? 'bg-gray-600/80 text-gray-300'
-                  : 'bg-emerald-500/80 text-white'
-              }`}>
-                <Clock className="w-3 h-3" />
-                {callTime.formatted}
-                {callTime.isPast && ' (Past)'}
-              </div>
-            )}
-            <LeadCard
-              lead={lead}
-              onRefresh={onRefresh}
-              expandedByDefault={lead._id === expandedLeadId}
-              showArchiveButton={true}
-            />
-          </div>
-        )
-      })}
+          return (
+            <div key={lead._id} className="relative">
+              {/* Call Time Badge */}
+              {callTime && (
+                <div className={`absolute -top-2 right-4 z-10 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
+                  callTime.isPast
+                    ? 'bg-gray-600/80 text-gray-300'
+                    : 'bg-emerald-500/80 text-white'
+                }`}>
+                  <Clock className="w-3 h-3" />
+                  {callTime.formatted}
+                  {callTime.isPast && ' (Past)'}
+                </div>
+              )}
+              <LeadCard
+                lead={lead}
+                onRefresh={onRefresh}
+                expandedByDefault={lead._id === expandedLeadId}
+                showArchiveButton={true}
+              />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

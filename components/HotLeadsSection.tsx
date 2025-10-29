@@ -20,16 +20,18 @@ export default function HotLeadsSection({ leads, onArchive, expandedLeadId }: Ho
   }
 
   return (
-    <div className="p-6 space-y-4">
-      {leads.map((lead) => (
-        <LeadCard
-          key={lead._id}
-          lead={lead}
-          onRefresh={onArchive}
-          expandedByDefault={lead._id === expandedLeadId}
-          showArchiveButton={true}
-        />
-      ))}
+    <div className="p-6">
+      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+        {leads.map((lead) => (
+          <LeadCard
+            key={lead._id}
+            lead={lead}
+            onRefresh={onArchive}
+            expandedByDefault={lead._id === expandedLeadId}
+            showArchiveButton={true}
+          />
+        ))}
+      </div>
     </div>
   )
 }

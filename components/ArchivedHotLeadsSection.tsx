@@ -57,7 +57,7 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
 
       {/* Expanded Content */}
       {isOpen && (
-        <div className="p-6 pt-0 space-y-4 animate-fade-in border-t border-white/10">
+        <div className="p-6 pt-0 border-t border-white/10 animate-fade-in">
           {leads.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <Archive className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -65,16 +65,18 @@ export default function ArchivedHotLeadsSection({ leads, onUnarchive }: Archived
               <p className="text-sm mt-1">Archived hot leads will appear here</p>
             </div>
           ) : (
-            leads.map((lead) => (
-              <LeadCard
-                key={lead._id}
-                lead={lead}
-                onRefresh={onUnarchive}
-                onArchive={handleUnarchive}
-                showArchiveButton={true}
-                isArchived={true}
-              />
-            ))
+            <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+              {leads.map((lead) => (
+                <LeadCard
+                  key={lead._id}
+                  lead={lead}
+                  onRefresh={onUnarchive}
+                  onArchive={handleUnarchive}
+                  showArchiveButton={true}
+                  isArchived={true}
+                />
+              ))}
+            </div>
           )}
         </div>
       )}
