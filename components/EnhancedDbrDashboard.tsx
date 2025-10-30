@@ -11,6 +11,7 @@ import RecentActivity from './RecentActivity'
 import LeadStatusBuckets from './LeadStatusBuckets'
 import LeadDetailModal from './LeadDetailModal'
 import SectionHeader from './SectionHeader'
+import AccountSettingsModal from './AccountSettingsModal'
 import { Lead } from './LeadCard'
 
 interface EnhancedStats {
@@ -47,6 +48,11 @@ export default function EnhancedDbrDashboard() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
   const [upcomingCallsCount, setUpcomingCallsCount] = useState(0)
   const [totalCallsBooked, setTotalCallsBooked] = useState(0)
+
+  // Account Settings
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [userPreferences, setUserPreferences] = useState<any>(null)
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false)
 
   // Collapsible section states
   const [sectionsExpanded, setSectionsExpanded] = useState({
@@ -125,6 +131,14 @@ export default function EnhancedDbrDashboard() {
 
     setSectionOrder(newOrder)
     localStorage.setItem('dbr-section-order', JSON.stringify(newOrder))
+
+    // Auto-save to user preferences if loaded
+    if (preferencesLoaded && userPreferences) {
+      saveUserPreferences({
+        ...userPreferences,
+        sectionOrder: newOrder,
+      })
+    }
   }
 
   const handleDragEnd = () => {
@@ -194,10 +208,66 @@ export default function EnhancedDbrDashboard() {
     }
   }, [fetchStats])
 
+  // Load user preferences
+  const loadUserPreferences = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/preferences')
+      if (!response.ok) throw new Error('Failed to load preferences')
+
+      const prefs = await response.json()
+      setUserPreferences(prefs)
+
+      // Apply preferences to dashboard state
+      if (!prefs.isDefault) {
+        setSectionOrder(prefs.sectionOrder || defaultSectionOrder)
+        setSectionsExpanded(prefs.sectionsExpanded || sectionsExpanded)
+        setTimeRange(prefs.defaultTimeRange || 'all')
+        setAutoRefresh(prefs.autoRefreshEnabled !== false)
+      }
+
+      setPreferencesLoaded(true)
+    } catch (error) {
+      console.error('Error loading user preferences:', error)
+      setPreferencesLoaded(true) // Continue with defaults
+    }
+  }, [])
+
+  // Save user preferences
+  const saveUserPreferences = useCallback(async (preferences: any) => {
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences),
+      })
+
+      if (!response.ok) throw new Error('Failed to save preferences')
+
+      // Apply preferences immediately
+      setSectionOrder(preferences.sectionOrder || sectionOrder)
+      setSectionsExpanded(preferences.sectionsExpanded || sectionsExpanded)
+      setTimeRange(preferences.defaultTimeRange || timeRange)
+      setAutoRefresh(preferences.autoRefreshEnabled !== false)
+
+      setUserPreferences(preferences)
+      setSettingsModalOpen(false)
+
+      console.log('✅ Preferences saved successfully')
+    } catch (error) {
+      console.error('Error saving user preferences:', error)
+      alert('Failed to save preferences. Please try again.')
+    }
+  }, [sectionOrder, sectionsExpanded, timeRange])
+
   // Initial fetch
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
+
+  // Load preferences on mount
+  useEffect(() => {
+    loadUserPreferences()
+  }, [loadUserPreferences])
 
   // Auto-refresh every 30 seconds for near real-time updates
   useEffect(() => {
@@ -568,6 +638,7 @@ export default function EnhancedDbrDashboard() {
       {/* Header */}
       <DashboardHeader
         lastUpdated={stats.lastUpdated}
+        onSettingsClick={() => setSettingsModalOpen(true)}
       />
 
       {/* Main content */}
@@ -718,6 +789,27 @@ export default function EnhancedDbrDashboard() {
         }}
         onRefresh={() => fetchStats(true)}
       />
+
+      {/* Account Settings Modal */}
+      {settingsModalOpen && userPreferences && (
+        <AccountSettingsModal
+          isOpen={settingsModalOpen}
+          onClose={() => setSettingsModalOpen(false)}
+          currentPreferences={{
+            sectionOrder,
+            sectionsExpanded,
+            sectionsVisible: userPreferences.sectionsVisible || {},
+            defaultTimeRange: timeRange,
+            autoRefreshEnabled: autoRefresh,
+            autoRefreshInterval: 30,
+            visibleMetricCards: userPreferences.visibleMetricCards || [
+              'totalLeads', 'messagesSent', 'replyRate', 'hotLeads',
+              'avgResponse', 'callsBooked', 'upcomingCalls'
+            ],
+          }}
+          onSave={saveUserPreferences}
+        />
+      )}
 
       {/* Footer */}
       <footer className="max-w-7xl mx-auto px-8 py-6 mt-12 border-t border-white/10">
