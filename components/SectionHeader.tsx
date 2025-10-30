@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
+import { ChevronUp, ChevronDown, GripVertical, Maximize2 } from 'lucide-react'
 
 interface SectionHeaderProps {
   title: string
@@ -12,6 +12,7 @@ interface SectionHeaderProps {
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: (e: React.DragEvent) => void
   onDragEnd?: (e: React.DragEvent) => void
+  onFullScreenClick?: () => void
 }
 
 export default function SectionHeader({
@@ -23,19 +24,36 @@ export default function SectionHeader({
   onDragStart,
   onDragOver,
   onDrop,
-  onDragEnd
+  onDragEnd,
+  onFullScreenClick
 }: SectionHeaderProps) {
   return (
     <div className="group flex items-center">
-      {/* Drag Handle */}
+      {/* Drag Handle and Full Screen Button */}
       {draggable && (
-        <div
-          draggable={true}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          className="px-3 py-4 hover:bg-white/5 transition-colors cursor-move flex items-center"
-        >
-          <GripVertical className="w-5 h-5 text-gray-400 group-hover:text-coldlava-cyan transition-colors" />
+        <div className="flex items-center">
+          <div
+            draggable={true}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            className="px-3 py-4 hover:bg-white/5 transition-colors cursor-move flex items-center"
+          >
+            <GripVertical className="w-5 h-5 text-gray-400 group-hover:text-coldlava-cyan transition-colors" />
+          </div>
+
+          {/* Full Screen Button */}
+          {onFullScreenClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onFullScreenClick()
+              }}
+              className="px-2 py-2 hover:bg-white/10 rounded-lg transition-colors flex items-center"
+              title="Open fullscreen"
+            >
+              <Maximize2 className="w-4 h-4 text-gray-400 hover:text-coldlava-cyan transition-colors" />
+            </button>
+          )}
         </div>
       )}
 

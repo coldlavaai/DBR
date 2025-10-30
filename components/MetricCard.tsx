@@ -108,46 +108,46 @@ export default function MetricCard({
       {/* Background gradient decoration */}
       <div className={`absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br ${colors.gradient} opacity-10 group-hover:opacity-20 blur-2xl rounded-full transition-opacity duration-300`} />
 
-      <div className="relative z-10 flex flex-col h-full gap-2">
+      <div className="relative z-10 flex flex-col h-full">
         {/* Title */}
-        <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider">
+        <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">
           {title}
         </h3>
 
         {/* Value */}
-        <div className="mb-1">
-          <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent tracking-tight leading-tight`}>
+        <div className="mb-2">
+          <p className={`text-4xl sm:text-5xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent tracking-tight`}>
             {value}
           </p>
         </div>
 
-        {/* Subtitle - with better line height */}
+        {/* Subtitle */}
         {subtitle && (
-          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed whitespace-pre-line">
+          <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-line mb-2">
             {subtitle}
           </p>
         )}
 
         {/* Trend indicator */}
         {trend !== undefined && trend !== null && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${getTrendColor()} mt-1`}>
+          <div className={`flex items-center gap-1 text-xs font-semibold ${getTrendColor()} mb-2`}>
             {getTrendIcon()}
             <span>{Math.abs(trend).toFixed(1)}%</span>
           </div>
         )}
 
         {/* Bottom row - Icon and Click indicator */}
-        <div className="mt-auto pt-2 flex items-center justify-between">
+        <div className="mt-auto pt-3 flex items-center justify-between border-t border-white/10">
           {/* Icon bottom left */}
           {Icon && (
-            <div className={`p-2 rounded-lg ${colors.icon} transition-transform duration-300 ${isClickable ? 'group-hover:scale-110' : ''}`}>
-              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className={`p-1.5 rounded-lg ${colors.icon} transition-transform duration-300 ${isClickable ? 'group-hover:scale-110' : ''}`}>
+              <Icon className="w-4 h-4 text-white" />
             </div>
           )}
 
           {/* Click indicator bottom right */}
           {isClickable && (
-            <p className="text-xs text-gray-500 group-hover:text-gray-400 flex items-center gap-1 transition-colors ml-auto">
+            <p className="text-xs text-gray-500 group-hover:text-gray-400 flex items-center gap-1 transition-colors">
               View <span className="group-hover:translate-x-1 transition-transform">→</span>
             </p>
           )}
