@@ -415,7 +415,7 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
                   )}
 
                   {/* Conversation Quality Issues */}
-                  {conversationAnalysis && conversationAnalysis.conversationsWithIssues > 0 && (
+                  {conversationAnalysis && conversationAnalysis.analyzedConversations > 0 && (
                     <div className="bg-black/40 rounded-xl p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -423,50 +423,75 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
                           Conversation Quality Issues
                         </h3>
                         <span className="text-red-400 font-bold">
-                          {conversationAnalysis.conversationsWithIssues} conversations
+                          {conversationAnalysis.analyzedConversations} conversations analyzed
                         </span>
                       </div>
 
                       <div className="space-y-3">
-                        {conversationAnalysis.issues.slice(0, 10).map((conv: any, index: number) => (
-                          <div key={index} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
+                        {conversationAnalysis.conversations.slice(0, 10).map((conv: any, index: number) => (
+                          <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
                               <div>
-                                <h4 className="text-white font-medium">{conv.leadName}</h4>
+                                <h4 className="text-white font-bold">{conv.leadName}</h4>
                                 <p className="text-gray-400 text-xs">{conv.phoneNumber}</p>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-xs px-2 py-1 rounded-full ${
-                                  conv.contactStatus === 'HOT' ? 'bg-orange-500/20 text-orange-400' :
-                                  conv.contactStatus === 'WARM' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  'bg-blue-500/20 text-blue-400'
-                                }`}>
-                                  {conv.contactStatus}
-                                </span>
-                                <span className={`text-xs px-2 py-1 rounded-full ${
-                                  conv.leadSentiment === 'POSITIVE' ? 'bg-green-500/20 text-green-400' :
-                                  conv.leadSentiment === 'NEGATIVE' ? 'bg-red-500/20 text-red-400' :
-                                  'bg-gray-500/20 text-gray-400'
-                                }`}>
-                                  {conv.leadSentiment}
-                                </span>
+                              <div className="flex items-center gap-3">
+                                <div className="text-center">
+                                  <div className={`text-2xl font-bold ${
+                                    conv.qualityScore >= 80 ? 'text-green-400' :
+                                    conv.qualityScore >= 60 ? 'text-yellow-400' :
+                                    'text-red-400'
+                                  }`}>
+                                    {conv.qualityScore}
+                                  </div>
+                                  <div className="text-xs text-gray-500">Quality</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`text-sm font-medium ${
+                                    conv.conversationOutcome === 'Call Booked' ? 'text-green-400' :
+                                    conv.conversationOutcome === 'Positive Engagement' ? 'text-cyan-400' :
+                                    conv.conversationOutcome === 'Negative Response' ? 'text-red-400' :
+                                    'text-gray-400'
+                                  }`}>
+                                    {conv.conversationOutcome}
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="space-y-2 mb-3">
-                              {conv.issues.map((issue: any, issueIdx: number) => (
-                                <div key={issueIdx} className="text-sm">
-                                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mr-2 ${
-                                    issue.type === 'CRITICAL'
-                                      ? 'bg-red-500/30 text-red-300'
-                                      : 'bg-yellow-500/30 text-yellow-300'
-                                  }`}>
-                                    {issue.type}
-                                  </span>
-                                  <span className="text-white font-medium">{issue.title}</span>
-                                  <p className="text-gray-400 ml-16 mt-1 text-xs">{issue.description}</p>
+                            <div className="space-y-3 mb-3">
+                              {conv.insights.slice(0, 3).map((insight: any, issueIdx: number) => (
+                                <div key={issueIdx} className="bg-black/30 rounded-lg p-3 text-sm">
+                                  <div className="flex items-start gap-2 mb-2">
+                                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+                                      insight.type === 'success' ? 'bg-green-500/30 text-green-300' :
+                                      insight.type === 'missed_opportunity' ? 'bg-orange-500/30 text-orange-300' :
+                                      'bg-red-500/30 text-red-300'
+                                    }`}>
+                                      {insight.category}
+                                    </span>
+                                    <span className="text-white font-medium flex-1">{insight.title}</span>
+                                  </div>
+                                  {insight.whatWentWrong && (
+                                    <p className="text-red-300 text-xs mt-2">❌ {insight.whatWentWrong}</p>
+                                  )}
+                                  {insight.howToImprove && (
+                                    <p className="text-cyan-300 text-xs mt-1">💡 {insight.howToImprove}</p>
+                                  )}
+                                  {insight.whatWorked && (
+                                    <p className="text-green-300 text-xs mt-2">✅ {insight.whatWorked}</p>
+                                  )}
+                                  {insight.learnFrom && (
+                                    <p className="text-cyan-300 text-xs mt-1">📚 {insight.learnFrom}</p>
+                                  )}
+                                  {insight.impact && (
+                                    <p className="text-gray-400 text-xs mt-1 italic">Impact: {insight.impact}</p>
+                                  )}
                                 </div>
                               ))}
+                              {conv.insights.length > 3 && (
+                                <p className="text-gray-500 text-xs text-center">+ {conv.insights.length - 3} more insights</p>
+                              )}
                             </div>
 
                             <button
