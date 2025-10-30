@@ -127,11 +127,12 @@ export async function POST(request: NextRequest) {
           analysisId: savedAnalysis._id,
         })
       } catch (error) {
-        console.error(`Failed to analyze lead ${lead._id}:`, error)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        console.error(`Failed to analyze lead ${lead._id}:`, errorMessage)
         results.push({
           leadId: lead._id,
           leadName: `${lead.firstName} ${lead.secondName}`,
-          error: 'Analysis failed',
+          error: `Analysis failed: ${errorMessage}`,
         })
       }
     }
