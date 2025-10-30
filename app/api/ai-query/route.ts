@@ -587,12 +587,17 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error('❌ AI Query error:', error)
+    console.error('❌ Error stack:', error.stack)
+    console.error('❌ Error name:', error.name)
+    console.error('❌ Error message:', error.message)
 
-    // Return user-friendly error
+    // Return user-friendly error with details for debugging
     return NextResponse.json(
       {
         error: 'I encountered an error processing your question. Please try again or rephrase your question.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: error.message,
+        errorName: error.name,
+        stack: error.stack?.split('\n').slice(0, 5).join('\n')
       },
       { status: 500 }
     )
