@@ -123,8 +123,12 @@ export default function SearchAndExport({
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to process query')
+        const errorData = await response.json()
+        console.error('❌ API Error Response:', errorData)
+
+        // Show detailed error for debugging
+        const detailedError = `${errorData.error}\n\nDetails: ${errorData.details || 'None'}\nError Type: ${errorData.errorName || 'Unknown'}\n\nStack:\n${errorData.stack || 'No stack trace'}`
+        throw new Error(detailedError)
       }
 
       const data = await response.json()
