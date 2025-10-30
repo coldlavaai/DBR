@@ -174,8 +174,13 @@ export const sophieLearning = defineType({
       priority: 'priority',
       createdBy: 'createdBy',
     },
-    prepare({ title, category, priority, createdBy }) {
-      const categoryEmoji = {
+    prepare({ title, category, priority, createdBy }: {
+      title: string;
+      category: string;
+      priority: string;
+      createdBy: string;
+    }) {
+      const categoryEmoji: Record<string, string> = {
         'price_objection': '💰',
         'timing_objection': '⏰',
         'interest_signal': '🤔',
@@ -185,18 +190,18 @@ export const sophieLearning = defineType({
         'followup_strategy': '🔄',
         'general_ethos': '🌟',
         'other': '🎨',
-      }[category || ''] || '📚'
+      }
 
-      const priorityEmoji = {
+      const priorityEmoji: Record<string, string> = {
         'critical': '🔥',
         'high': '⚠️',
         'medium': '📊',
         'low': '💡',
-      }[priority || ''] || '📊'
+      }
 
       return {
-        title: `${categoryEmoji} ${title}`,
-        subtitle: `${priorityEmoji} ${priority ? priority.toUpperCase() : 'MEDIUM'}${createdBy ? ` • by ${createdBy}` : ''}`,
+        title: `${categoryEmoji[category] || '📚'} ${title}`,
+        subtitle: `${priorityEmoji[priority] || '📊'} ${priority ? priority.toUpperCase() : 'MEDIUM'}${createdBy ? ` • by ${createdBy}` : ''}`,
       }
     },
   },
