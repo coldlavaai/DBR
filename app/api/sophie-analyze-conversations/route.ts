@@ -297,24 +297,14 @@ function parseConversationMessages(conversation: string) {
 }
 
 /**
- * Call OpenAI to analyze conversation quality
+ * Call Anthropic Claude to analyze conversation quality
  */
 async function callAIForAnalysis(messages: any[], lead: any) {
   const conversationText = messages.map((m, i) =>
     `Message ${i + 1} [${m.sender}]: ${m.content}`
   ).join('\n\n')
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'system',
-        content: `You are Sophie, an AI conversation quality analyst for Greenstar Solar's DBR (Database Reactivation) campaign.
+  const systemPrompt = `You are Sophie, an AI conversation quality analyst for Greenstar Solar's DBR (Database Reactivation) campaign.
 
 ## YOUR MISSION
 Analyze conversations between the AI agent and leads to identify quality issues and learning opportunities. The goal is to help the AI achieve 100% quality conversations that book consultations while respecting UK cultural values.
@@ -454,22 +444,36 @@ Return your analysis as JSON with this structure:
     }
   ]
 }`
-      },
-      {
-        role: 'user',
-        content: `Analyze this conversation with ${lead.firstName}:\n\nLead Status: ${lead.contactStatus}\n\n${conversationText}`
-      }],
-      response_format: { type: 'json_object' },
+
+  const userPrompt = `Analyze this conversation with ${lead.firstName}:\n\nLead Status: ${lead.contactStatus}\n\n${conversationText}`
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY!,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 4096,
       temperature: 0.3,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: userPrompt
+      }]
     }),
   })
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.statusText}`)
+    const errorText = await response.text()
+    throw new Error(`Anthropic API error: ${response.statusText} - ${errorText}`)
   }
 
   const data = await response.json()
-  const analysis = JSON.parse(data.choices[0].message.content)
+  const analysisText = data.content[0].text
+  const analysis = JSON.parse(analysisText)
 
   return analysis
 }
