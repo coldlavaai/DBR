@@ -158,9 +158,9 @@ export default function AccountSettingsModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-white/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-scale-in">
+      <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-white/20 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+        <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-coldlava-cyan" />
             <h2 className="text-2xl font-bold text-white">Account Settings</h2>
@@ -174,7 +174,7 @@ export default function AccountSettingsModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 p-4 border-b border-white/10 bg-black/20">
+        <div className="flex gap-2 p-4 border-b border-white/10 bg-black/20 flex-shrink-0">
           {[
             { id: 'layout' as const, label: 'Layout', icon: Layout },
             { id: 'dashboard' as const, label: 'Dashboard', icon: Clock },
@@ -199,7 +199,7 @@ export default function AccountSettingsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] custom-scrollbar">
+        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
           {/* Layout Tab */}
           {activeTab === 'layout' && (
             <div className="space-y-6">
@@ -355,7 +355,7 @@ export default function AccountSettingsModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-white/10 bg-black/20">
+        <div className="flex items-center justify-between p-6 border-t border-white/10 bg-black/20 flex-shrink-0">
           <button
             onClick={resetToDefaults}
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-white font-semibold transition-colors"
