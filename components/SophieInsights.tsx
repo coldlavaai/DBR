@@ -506,9 +506,9 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
                         ))}
                       </div>
 
-                      {conversationAnalysis.issues.length > 10 && (
+                      {conversationAnalysis.conversations.length > 10 && (
                         <p className="text-center text-gray-400 text-sm mt-4">
-                          Showing 10 of {conversationAnalysis.issues.length} conversations with issues
+                          Showing 10 of {conversationAnalysis.conversations.length} conversations analyzed
                         </p>
                       )}
                     </div>
