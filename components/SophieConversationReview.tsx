@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, X, AlertTriangle, Lightbulb, ArrowRight, ThumbsUp, ThumbsDown, Save } from 'lucide-react'
+import { CheckCircle, X, AlertTriangle, Lightbulb, ArrowRight, ThumbsUp, ThumbsDown, Save, MessageCircle, Send } from 'lucide-react'
 
 interface Issue {
   issueType: string
@@ -38,6 +38,13 @@ export default function SophieConversationReview() {
   const [analyzing, setAnalyzing] = useState(false)
   const [filter, setFilter] = useState<'all' | 'pending' | 'critical'>('pending')
   const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
+  // Teaching dialogue state
+  const [teachingMode, setTeachingMode] = useState(false)
+  const [teachingIssueIndex, setTeachingIssueIndex] = useState<number | null>(null)
+  const [dialogueHistory, setDialogueHistory] = useState<any[]>([])
+  const [userInput, setUserInput] = useState('')
+  const [sophieThinking, setSophieThinking] = useState(false)
 
   useEffect(() => {
     fetchAnalyses()
@@ -135,6 +142,15 @@ export default function SophieConversationReview() {
   const submitFeedback = async (action: 'agree' | 'disagree') => {
     if (!selectedAnalysis) return
 
+    if (action === 'disagree') {
+      // Enter teaching mode instead of direct disagreement
+      setTeachingMode(true)
+      setTeachingIssueIndex(0) // Start with first issue
+      setDialogueHistory([])
+      setUserInput('')
+      return
+    }
+
     setSubmittingFeedback(true)
     try {
       const response = await fetch('/api/sophie-review-feedback', {
@@ -161,6 +177,77 @@ export default function SophieConversationReview() {
     } catch (error) {
       console.error('Failed to submit feedback:', error)
       alert('❌ Failed to submit feedback')
+    } finally {
+      setSubmittingFeedback(false)
+    }
+  }
+
+  const sendTeachingMessage = async () => {
+    if (!selectedAnalysis || teachingIssueIndex === null || !userInput.trim()) return
+
+    setSophieThinking(true)
+    try {
+      const action = dialogueHistory.length === 0 ? 'start_teaching' : 'continue_dialogue'
+
+      const response = await fetch('/api/sophie-teaching-dialogue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: selectedAnalysis._id,
+          issueIndex: teachingIssueIndex,
+          action,
+          userMessage: userInput,
+          dialogueHistory,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setDialogueHistory(data.dialogueHistory)
+        setUserInput('')
+      } else {
+        alert('❌ Failed to get Sophie\'s response')
+      }
+    } catch (error) {
+      console.error('Teaching dialogue error:', error)
+      alert('❌ Teaching dialogue failed')
+    } finally {
+      setSophieThinking(false)
+    }
+  }
+
+  const saveFinalLearning = async () => {
+    if (!selectedAnalysis || teachingIssueIndex === null) return
+
+    setSubmittingFeedback(true)
+    try {
+      const response = await fetch('/api/sophie-teaching-dialogue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: selectedAnalysis._id,
+          issueIndex: teachingIssueIndex,
+          action: 'save_learning',
+          userMessage: userInput,
+          dialogueHistory,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message)
+
+        // Exit teaching mode and refresh
+        setTeachingMode(false)
+        setDialogueHistory([])
+        fetchAnalyses()
+        setSelectedAnalysis(null)
+      } else {
+        alert('❌ Failed to save learning')
+      }
+    } catch (error) {
+      console.error('Save learning error:', error)
+      alert('❌ Failed to save learning')
     } finally {
       setSubmittingFeedback(false)
     }
@@ -353,32 +440,113 @@ export default function SophieConversationReview() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="p-6 border-t border-white/10 flex gap-3">
-              <button
-                onClick={() => submitFeedback('agree')}
-                disabled={submittingFeedback}
-                className="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <ThumbsUp className="w-5 h-5" />
-                {submittingFeedback ? 'Capturing Learnings...' : 'Agree & Learn'}
-              </button>
-              <button
-                onClick={() => submitFeedback('disagree')}
-                disabled={submittingFeedback}
-                className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <ThumbsDown className="w-5 h-5" />
-                Disagree
-              </button>
-              <button
-                onClick={fetchAnalyses}
-                className="px-6 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium transition-all"
-                title="Refresh analyses"
-              >
-                <Save className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Actions or Teaching Dialogue */}
+            {!teachingMode ? (
+              <div className="p-6 border-t border-white/10 flex gap-3">
+                <button
+                  onClick={() => submitFeedback('agree')}
+                  disabled={submittingFeedback}
+                  className="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <ThumbsUp className="w-5 h-5" />
+                  {submittingFeedback ? 'Capturing Learnings...' : 'Agree & Learn'}
+                </button>
+                <button
+                  onClick={() => submitFeedback('disagree')}
+                  disabled={submittingFeedback}
+                  className="flex-1 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Disagree & Teach
+                </button>
+                <button
+                  onClick={fetchAnalyses}
+                  className="px-6 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium transition-all"
+                  title="Refresh analyses"
+                >
+                  <Save className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              // Teaching Dialogue Interface
+              <div className="p-6 border-t border-white/10 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="text-purple-400 font-semibold flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    Teaching Sophie (Issue #{teachingIssueIndex !== null ? teachingIssueIndex + 1 : 0})
+                  </div>
+                  <button
+                    onClick={() => {
+                      setTeachingMode(false)
+                      setDialogueHistory([])
+                    }}
+                    className="text-gray-400 hover:text-white text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {/* Dialogue History */}
+                <div className="mb-4 max-h-64 overflow-y-auto space-y-3 bg-gray-900/50 rounded-lg p-4">
+                  {dialogueHistory.length === 0 ? (
+                    <div className="text-gray-400 text-sm text-center py-4">
+                      Start by explaining what you think the real issue is...
+                    </div>
+                  ) : (
+                    dialogueHistory.map((msg, i) => (
+                      <div
+                        key={i}
+                        className={`${
+                          msg.role === 'sophie'
+                            ? 'bg-purple-900/30 border-purple-500/30'
+                            : 'bg-blue-900/30 border-blue-500/30'
+                        } border rounded-lg p-3`}
+                      >
+                        <div className="text-xs font-semibold mb-1 ${msg.role === 'sophie' ? 'text-purple-400' : 'text-blue-400'}">
+                          {msg.role === 'sophie' ? '🤖 Sophie:' : '👤 You:'}
+                        </div>
+                        <div className="text-white text-sm">{msg.message}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Input */}
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !sophieThinking && sendTeachingMessage()}
+                    placeholder={dialogueHistory.length === 0 ? "Explain what you think the real issue is..." : "Continue the conversation..."}
+                    className="flex-1 px-4 py-2 bg-gray-800 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    disabled={sophieThinking}
+                  />
+                  <button
+                    onClick={sendTeachingMessage}
+                    disabled={!userInput.trim() || sophieThinking}
+                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all disabled:opacity-50"
+                  >
+                    {sophieThinking ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Save Learning Button */}
+                {dialogueHistory.length > 2 && (
+                  <button
+                    onClick={saveFinalLearning}
+                    disabled={submittingFeedback}
+                    className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all disabled:opacity-50"
+                  >
+                    ✅ Capture Agreed Learning
+                  </button>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">
