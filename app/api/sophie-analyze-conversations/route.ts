@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       )
       const analyzedIds = analyzedLeadIds.map((a: any) => a.leadId)
 
-      leadsToAnalyze = await sanityClient.fetch(
+      const allUnanalyzed = await sanityClient.fetch(
         `*[_type == "dbrLead" && !(_id in $analyzedIds) && defined(conversationHistory) && conversationHistory != ""] {
           _id,
           firstName,
@@ -48,9 +48,17 @@ export async function POST(request: NextRequest) {
           m1Sent,
           m2Sent,
           m3Sent
-        }[0...50]`, // Limit to 50 at a time to avoid timeout
+        }`, // Get all unanalyzed first
         { analyzedIds }
       )
+
+      // Filter for conversations with 2+ messages
+      leadsToAnalyze = allUnanalyzed
+        .filter((lead: any) => {
+          const messages = parseConversationMessages(lead.conversationHistory)
+          return messages.length >= 2 // Only analyze conversations with 2+ messages
+        })
+        .slice(0, 50) // Then limit to 50 for processing
     } else if (leadIds && Array.isArray(leadIds)) {
       // Analyze specific leads
       leadsToAnalyze = await sanityClient.fetch(
