@@ -57,11 +57,13 @@ export async function POST(request: NextRequest) {
         { analyzedIds }
       )
 
-      // Filter for conversations with 2+ messages
+      // Filter for conversations where CUSTOMER replied (not just AI sent M1/M2/M3)
       leadsToAnalyze = allUnanalyzed
         .filter((lead: any) => {
           const messages = parseConversationMessages(lead.conversationHistory)
-          return messages.length >= 2 // Only analyze conversations with 2+ messages
+          // Must have at least one message from the Lead (customer reply)
+          const hasCustomerReply = messages.some((m: any) => m.sender === 'Lead')
+          return hasCustomerReply
         })
         .slice(0, 100) // Process 100 at a time
     } else if (leadIds && Array.isArray(leadIds)) {
@@ -101,6 +103,23 @@ export async function POST(request: NextRequest) {
     // Analyze each conversation
     for (const lead of leadsToAnalyze) {
       try {
+        // DUPLICATE PREVENTION: Check if analysis already exists for this lead
+        const existingAnalysis = await sanityClient.fetch(
+          `*[_type == "sophieAnalysis" && lead._ref == $leadId][0]._id`,
+          { leadId: lead._id }
+        )
+
+        if (existingAnalysis) {
+          console.log(`Skipping ${lead.firstName} ${lead.secondName} - already analyzed`)
+          results.push({
+            leadId: lead._id,
+            leadName: `${lead.firstName} ${lead.secondName}`,
+            skipped: true,
+            reason: 'Already analyzed'
+          })
+          continue
+        }
+
         const analysis = await analyzeConversation(lead)
 
         // Store in Sanity
@@ -264,12 +283,18 @@ function parseConversationMessages(conversation: string) {
     // New format: [19:15 30/10/2025] Name: message
     const newFormatMatch = line.match(/\[(\d{2}:\d{2} \d{2}\/\d{2}\/\d{4})\] ([^:]+): (.+)/)
 
+    // Very old format: Just "AI: message" (M1/M2/M3 without timestamps - SKIP THESE)
+    const simpleAiMatch = line.match(/^AI: (.+)/)
+
     // Old format: AI (30/10/2025 19:15): message
     // Old format: Lead (30/10/2025 19:15): message
     const oldAiMatch = line.match(/AI \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
     const oldLeadMatch = line.match(/Lead \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
 
-    if (newFormatMatch) {
+    // SKIP simple AI messages (M1/M2/M3 automated sends)
+    if (simpleAiMatch) {
+      continue
+    } else if (newFormatMatch) {
       const [, timestamp, sender, content] = newFormatMatch
       // Skip empty messages
       if (content && content.trim()) {
@@ -456,7 +481,7 @@ Return your analysis as JSON with this structure:
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 4096,
       temperature: 0.3,
       system: systemPrompt,

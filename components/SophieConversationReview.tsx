@@ -392,6 +392,39 @@ export default function SophieConversationReview() {
                   {selectedAnalysis.overallAssessment}
                 </p>
               </div>
+
+              {/* Conversation History */}
+              {selectedAnalysis.leadDetails?.conversationHistory && (
+                <div className="bg-gray-900/50 rounded-lg p-4 mt-4">
+                  <div className="text-coldlava-cyan text-sm font-semibold mb-3 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    Full Conversation:
+                  </div>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {selectedAnalysis.leadDetails.conversationHistory.split('\n').filter((line: string) => line.trim()).map((line: string, idx: number) => {
+                      // Check for various AI message formats
+                      const isAI = line.includes('] AI:') || line.startsWith('AI:') || line.match(/^AI \(/)
+                      const isLead = !isAI && (line.includes(']:') || line.match(/^Lead \(/))
+                      return (
+                        <div key={idx} className={`flex ${isAI ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] rounded-lg p-3 ${
+                            isAI
+                              ? 'bg-blue-500/20 border border-blue-500/30'
+                              : 'bg-gray-700/50 border border-white/10'
+                          }`}>
+                            <div className="text-xs text-gray-400 mb-1">
+                              {isAI ? '🤖 AI' : '👤 Customer'}
+                            </div>
+                            <div className="text-white text-sm whitespace-pre-wrap">
+                              {line.replace(/^\[.*?\]\s*(AI:|[^:]+:)\s*/, '')}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Issues List */}
