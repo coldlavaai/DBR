@@ -41,6 +41,7 @@ export default function SophieQualityMonitor() {
   const [dialogueHistory, setDialogueHistory] = useState<any[]>([])
   const [userInput, setUserInput] = useState('')
   const [sophieThinking, setSophieThinking] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<'to_review' | 'all' | 'reviewed' | 'dismissed'>('to_review')
 
   // Initial load: Auto-analyze and fetch
   useEffect(() => {
@@ -66,12 +67,11 @@ export default function SophieQualityMonitor() {
 
   const fetchAnalyses = async () => {
     try {
-      // Fetch ALL analyses (not just pending_review)
+      // Fetch ALL analyses
       const response = await fetch('/api/sophie-analyze-conversations')
       if (response.ok) {
         const data = await response.json()
-        // Filter out dismissed ones
-        setAnalyses((data.analyses || []).filter((a: Analysis) => a.status !== 'dismissed'))
+        setAnalyses(data.analyses || [])
       }
     } catch (error) {
       console.error('Failed to fetch analyses:', error)
@@ -226,8 +226,16 @@ export default function SophieQualityMonitor() {
     return issueType.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
   }
 
+  // Filter based on status filter
+  const filteredAnalyses = analyses.filter((a) => {
+    if (statusFilter === 'to_review') return a.status === 'pending_review'
+    if (statusFilter === 'reviewed') return a.status === 'reviewed'
+    if (statusFilter === 'dismissed') return a.status === 'dismissed'
+    return true // 'all' shows everything
+  })
+
   // Sort by priority and score
-  const sortedAnalyses = [...analyses].sort((a, b) => {
+  const sortedAnalyses = [...filteredAnalyses].sort((a, b) => {
     const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 }
     const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2
     const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2
@@ -272,30 +280,74 @@ export default function SophieQualityMonitor() {
 
   return (
     <div className="space-y-4">
+      {/* Status Filter Tabs */}
+      <div className="flex items-center gap-2 bg-gray-800/50 border border-white/10 rounded-lg p-2">
+        <button
+          onClick={() => setStatusFilter('to_review')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            statusFilter === 'to_review'
+              ? 'bg-coldlava-cyan text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          To Review ({analyses.filter(a => a.status === 'pending_review').length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            statusFilter === 'all'
+              ? 'bg-coldlava-cyan text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          All ({analyses.length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('reviewed')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            statusFilter === 'reviewed'
+              ? 'bg-coldlava-cyan text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Reviewed ({analyses.filter(a => a.status === 'reviewed').length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('dismissed')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            statusFilter === 'dismissed'
+              ? 'bg-coldlava-cyan text-white'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Dismissed ({analyses.filter(a => a.status === 'dismissed').length})
+        </button>
+      </div>
+
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
           <div className="text-red-400 text-sm font-medium">Critical</div>
           <div className="text-white text-2xl font-bold">
-            {analyses.filter(a => a.priority === 'critical').length}
+            {filteredAnalyses.filter(a => a.priority === 'critical').length}
           </div>
         </div>
         <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
           <div className="text-orange-400 text-sm font-medium">High</div>
           <div className="text-white text-2xl font-bold">
-            {analyses.filter(a => a.priority === 'high').length}
+            {filteredAnalyses.filter(a => a.priority === 'high').length}
           </div>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
           <div className="text-yellow-400 text-sm font-medium">Medium</div>
           <div className="text-white text-2xl font-bold">
-            {analyses.filter(a => a.priority === 'medium').length}
+            {filteredAnalyses.filter(a => a.priority === 'medium').length}
           </div>
         </div>
         <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-          <div className="text-green-400 text-sm font-medium">Good</div>
+          <div className="text-green-400 text-sm font-medium">Good (80%+)</div>
           <div className="text-white text-2xl font-bold">
-            {analyses.filter(a => a.qualityScore >= 80).length}
+            {filteredAnalyses.filter(a => a.qualityScore >= 80).length}
           </div>
         </div>
       </div>
