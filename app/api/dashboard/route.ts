@@ -130,6 +130,10 @@ export async function GET(request: Request) {
     // CALCULATE STATS - From filtered leads
     const stats = calculateStats(filteredLeads, activeLeads, timeRange)
 
+    // TOTAL CALLS BOOKED - Running total of ALL leads that ever had callBookedTime set
+    // This includes leads that moved to CONVERTED, INSTALLED, or any other status
+    const totalCallsBookedEver = allLeads.filter((l: any) => l.callBookedTime).length
+
     // RETURN EVERYTHING in one response
     return NextResponse.json({
       // Core data
@@ -144,8 +148,8 @@ export async function GET(request: Request) {
       stats,
 
       // Additional metrics
-      upcomingCallsCount: callBookedLeads.length,  // Future calls only
-      totalCallsBooked: allBookedCalls.length,      // All calls (past + future)
+      upcomingCallsCount: callBookedLeads.length,  // Future calls only (CALL_BOOKED status)
+      totalCallsBooked: totalCallsBookedEver,      // Running total of ALL calls ever booked
 
       // Metadata
       lastUpdated: new Date().toISOString(),

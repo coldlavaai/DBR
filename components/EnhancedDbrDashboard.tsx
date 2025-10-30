@@ -677,10 +677,10 @@ export default function EnhancedDbrDashboard() {
           />
 
           <MetricCard
-            title="Calls Booked"
+            title="Total Calls Booked"
             value={totalCallsBooked}
             trend={stats.trends?.callBooked}
-            subtitle="Total (all time)"
+            subtitle="Running total"
             icon={Target}
             color="green"
             onClick={() => openModal('callBooked', '📞 Calls Booked')}
@@ -691,7 +691,7 @@ export default function EnhancedDbrDashboard() {
             value={upcomingCallsCount}
             subtitle="Future scheduled"
             icon={Calendar}
-            color="cyan"
+            color="blue"
           />
         </div>
 
