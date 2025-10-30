@@ -191,7 +191,7 @@ export default function SearchAndExport({
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          Ask AI
+          Ask Sophie
         </button>
       </div>
 
@@ -208,7 +208,7 @@ export default function SearchAndExport({
             placeholder={
               mode === 'search'
                 ? 'Search by name, phone, or email...'
-                : 'Ask anything about your leads and performance...'
+                : 'Ask Sophie anything about your leads and performance...'
             }
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
@@ -303,8 +303,8 @@ export default function SearchAndExport({
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white mb-1">AI Assistant</h4>
-                  <p className="text-xs text-gray-400">Powered by Claude</p>
+                  <h4 className="font-semibold text-white mb-1">Sophie</h4>
+                  <p className="text-xs text-gray-400">Your AI Sales Assistant</p>
                 </div>
               </div>
               <div className="prose prose-invert prose-sm max-w-none">
