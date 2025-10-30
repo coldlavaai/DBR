@@ -1,7 +1,8 @@
 'use client'
 
-import { Search, Download, Filter, Phone, Mail, MapPin, X, Sparkles, Loader2 } from 'lucide-react'
+import { Search, Download, Filter, Phone, Mail, MapPin, X, Sparkles, Loader2, Brain } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import SophieInsights from './SophieInsights'
 
 interface SearchResult {
   _id: string
@@ -50,7 +51,28 @@ export default function SearchAndExport({
   const [aiResponse, setAiResponse] = useState<AIResponse | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [showInsights, setShowInsights] = useState(false)
+  const [criticalCount, setCriticalCount] = useState(0)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  // Fetch critical issues count for badge
+  useEffect(() => {
+    const fetchCriticalCount = async () => {
+      try {
+        const response = await fetch('/api/sophie-insights')
+        if (response.ok) {
+          const data = await response.json()
+          setCriticalCount(data.criticalCount || 0)
+        }
+      } catch (error) {
+        console.error('Failed to fetch critical count:', error)
+      }
+    }
+
+    fetchCriticalCount()
+    const interval = setInterval(fetchCriticalCount, 60000) // Every 60s
+    return () => clearInterval(interval)
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -166,38 +188,51 @@ export default function SearchAndExport({
   }
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Mode Toggle */}
-      <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/10 w-fit">
-        <button
-          onClick={() => {
-            setMode('search')
-            clearAll()
-          }}
-          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
-            mode === 'search'
-              ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Search className="w-4 h-4" />
-          Search Leads
-        </button>
-        <button
-          onClick={() => {
-            setMode('ai')
-            clearAll()
-          }}
-          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
-            mode === 'ai'
-              ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          Ask Sophie
-        </button>
-      </div>
+    <>
+      <div className="space-y-4 mb-6">
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/10 w-fit">
+          <button
+            onClick={() => {
+              setMode('search')
+              clearAll()
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
+              mode === 'search'
+                ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Search className="w-4 h-4" />
+            Search Leads
+          </button>
+          <button
+            onClick={() => {
+              setMode('ai')
+              clearAll()
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
+              mode === 'ai'
+                ? 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            Ask Sophie
+          </button>
+          <button
+            onClick={() => setShowInsights(true)}
+            className="px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg relative"
+          >
+            <Brain className="w-4 h-4" />
+            Sophie's Insights
+            {criticalCount > 0 && (
+              <span className="absolute -top-1 -right-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold animate-pulse">
+                {criticalCount}
+              </span>
+            )}
+          </button>
+        </div>
 
       <div className="flex items-center gap-4">
         {/* Search/AI Input */}
@@ -383,5 +418,9 @@ export default function SearchAndExport({
         )}
       </div>
     </div>
+
+    {/* Sophie's Intelligence HQ */}
+    <SophieInsights isOpen={showInsights} onClose={() => setShowInsights(false)} />
+  </>
   )
 }
