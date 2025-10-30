@@ -390,7 +390,7 @@ async function identifyBotFailures(params: any) {
     return {
       failureType,
       count: failures.length,
-      examples: failures.map(l => ({
+      examples: failures.map((l: any) => ({
         id: l._id,
         name: `${l.firstName} ${l.secondName}`,
         phone: l.phoneNumber,
