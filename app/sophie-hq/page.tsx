@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare, FileText } from 'lucide-react'
+import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare, FileText, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import SophieConversationCoach from '@/components/SophieConversationCoach'
 import SophieLearningLog from '@/components/SophieLearningLog'
 import SophieConversationReview from '@/components/SophieConversationReview'
@@ -67,6 +68,13 @@ export default function SophieHQPage() {
           </div>
 
           <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 border border-white/20"
+            >
+              <ArrowLeft className="w-5 h-5 text-white" />
+              <span className="text-white font-medium">Dashboard</span>
+            </Link>
             {lastUpdated && (
               <div className="text-white/70 text-sm">
                 Updated: {lastUpdated.toLocaleTimeString()}
