@@ -1,17 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react'
+import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare, FileText } from 'lucide-react'
 import SophieConversationCoach from '@/components/SophieConversationCoach'
 import SophieLearningLog from '@/components/SophieLearningLog'
 import SophieConversationReview from '@/components/SophieConversationReview'
+import SophiePromptImprovement from '@/components/SophiePromptImprovement'
 
 export default function SophieHQPage() {
   const [insights, setInsights] = useState<any>(null)
   const [conversationAnalysis, setConversationAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [activeView, setActiveView] = useState<'coach' | 'insights' | 'patterns' | 'alerts'>('coach')
+  const [activeView, setActiveView] = useState<'coach' | 'insights' | 'prompt' | 'patterns' | 'alerts'>('coach')
   const [learningLogOpen, setLearningLogOpen] = useState(false)
 
   // Fetch insights
@@ -109,6 +110,17 @@ export default function SophieHQPage() {
             Quality Insights
           </button>
           <button
+            onClick={() => setActiveView('prompt')}
+            className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
+              activeView === 'prompt'
+                ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            Prompt Updates
+          </button>
+          <button
             onClick={() => setActiveView('patterns')}
             className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
               activeView === 'patterns'
@@ -152,6 +164,12 @@ export default function SophieHQPage() {
         {activeView === 'insights' && (
           <div className="h-[calc(100vh-280px)]">
             <SophieConversationReview />
+          </div>
+        )}
+
+        {activeView === 'prompt' && (
+          <div className="h-[calc(100vh-280px)]">
+            <SophiePromptImprovement />
           </div>
         )}
 
