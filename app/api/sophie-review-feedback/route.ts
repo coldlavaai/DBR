@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         const learning = await sanityClient.create({
           _type: 'sophieLearning',
           category,
-          title: `${issue.issueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: Message #${issue.messageIndex}`,
+          title: `${issue.issueType.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}: Message #${issue.messageIndex}`,
           userGuidance: issue.explanation,
           dontDoThis: issue.actualResponse,
           doThis: issue.suggestedResponse,

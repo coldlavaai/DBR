@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, X, AlertTriangle, Lightbulb, ArrowRight, ThumbsUp, ThumbsDown, Save, MessageCircle, Send } from 'lucide-react'
+import { CheckCircle, X, AlertTriangle, Lightbulb, ArrowRight, ThumbsUp, ThumbsDown, Save, MessageCircle, Send, RefreshCw } from 'lucide-react'
 
 interface Issue {
   issueType: string
