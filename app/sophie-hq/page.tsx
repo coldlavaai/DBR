@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react'
 import SophieConversationCoach from '@/components/SophieConversationCoach'
 import SophieLearningLog from '@/components/SophieLearningLog'
+import SophieConversationReview from '@/components/SophieConversationReview'
 
 export default function SophieHQPage() {
   const [insights, setInsights] = useState<any>(null)
@@ -149,9 +150,8 @@ export default function SophieHQPage() {
         )}
 
         {activeView === 'insights' && (
-          <div className="text-white">
-            <h2 className="text-2xl font-bold mb-4">Quality Insights</h2>
-            <p className="text-gray-400">Conversation quality analysis coming soon...</p>
+          <div className="h-[calc(100vh-280px)]">
+            <SophieConversationReview />
           </div>
         )}
 
