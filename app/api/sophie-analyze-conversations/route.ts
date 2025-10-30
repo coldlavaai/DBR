@@ -259,20 +259,36 @@ function parseConversationMessages(conversation: string) {
   const lines = conversation.split('\n')
 
   for (const line of lines) {
-    const aiMatch = line.match(/AI \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
-    const leadMatch = line.match(/Lead \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
+    // New format: [19:15 30/10/2025] AI: message
+    // New format: [19:15 30/10/2025] Name: message
+    const newFormatMatch = line.match(/\[(\d{2}:\d{2} \d{2}\/\d{2}\/\d{4})\] ([^:]+): (.+)/)
 
-    if (aiMatch) {
+    // Old format: AI (30/10/2025 19:15): message
+    // Old format: Lead (30/10/2025 19:15): message
+    const oldAiMatch = line.match(/AI \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
+    const oldLeadMatch = line.match(/Lead \((\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\): (.+)/)
+
+    if (newFormatMatch) {
+      const [, timestamp, sender, content] = newFormatMatch
+      // Skip empty messages
+      if (content && content.trim()) {
+        messages.push({
+          sender: sender.trim() === 'AI' ? 'AI' : 'Lead',
+          timestamp,
+          content: content.trim(),
+        })
+      }
+    } else if (oldAiMatch) {
       messages.push({
         sender: 'AI',
-        timestamp: aiMatch[1],
-        content: aiMatch[2],
+        timestamp: oldAiMatch[1],
+        content: oldAiMatch[2],
       })
-    } else if (leadMatch) {
+    } else if (oldLeadMatch) {
       messages.push({
         sender: 'Lead',
-        timestamp: leadMatch[1],
-        content: leadMatch[2],
+        timestamp: oldLeadMatch[1],
+        content: oldLeadMatch[2],
       })
     }
   }
