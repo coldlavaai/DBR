@@ -142,75 +142,85 @@ export default function SophieConversationCoach({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-coldlava-cyan to-coldlava-purple p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Brain className="w-6 h-6 text-white" />
-          <div>
-            <h3 className="text-lg font-bold text-white">Sophie's Conversation Coach</h3>
-            <p className="text-white/80 text-xs">Training your AI agent to be perfect</p>
+    <div className="flex flex-col h-[calc(100vh-280px)] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl overflow-hidden">
+      {/* Workspace Header */}
+      <div className="bg-gradient-to-r from-coldlava-cyan/20 to-coldlava-purple/20 border-b border-white/10 p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-coldlava-cyan to-coldlava-purple flex items-center justify-center">
+              <Brain className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-1">Training Session</h3>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-3xl">
+                Have a conversation with Sophie to teach her how to handle different situations.
+                She'll learn from your expertise and apply it to future conversations.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-white/20 rounded-full text-white text-xs font-medium">
-            {userName}
+          <span className="px-4 py-2 bg-white/10 rounded-lg text-white text-sm font-medium border border-white/20">
+            👤 {userName}
           </span>
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Area - Full Width Layout */}
+      <div className="flex-1 overflow-y-auto p-8 space-y-6">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex gap-6 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            {/* Avatar */}
-            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-              message.sender === 'sophie'
-                ? 'bg-gradient-to-br from-coldlava-cyan to-coldlava-purple'
-                : 'bg-gray-700'
-            }`}>
-              {message.sender === 'sophie' ? (
-                <Brain className="w-5 h-5 text-white" />
-              ) : (
-                <User className="w-5 h-5 text-white" />
-              )}
-            </div>
+            {message.sender === 'sophie' && (
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-coldlava-cyan to-coldlava-purple flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+            )}
 
-            {/* Message Bubble */}
-            <div className={`flex-1 max-w-[75%] ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
-              <div className={`inline-block p-4 rounded-lg ${
+            {/* Message Card */}
+            <div className={`flex-1 max-w-4xl ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
+              <div className={`inline-block w-full p-6 rounded-xl ${
                 message.sender === 'sophie'
-                  ? 'bg-gray-800 text-white border border-gray-700'
-                  : 'bg-coldlava-cyan text-gray-900'
+                  ? 'bg-gray-800/80 text-white border border-gray-700'
+                  : 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white'
               }`}>
-                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                <div className="flex items-start justify-between mb-2">
+                  <span className="font-semibold text-sm">
+                    {message.sender === 'sophie' ? '🧠 Sophie' : '👤 You'}
+                  </span>
+                  <span className="text-xs opacity-70">
+                    {message.timestamp.toLocaleTimeString('en-GB', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap break-words text-base leading-relaxed">
                   {message.content}
                 </p>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {message.timestamp.toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
             </div>
+
+            {message.sender === 'user' && (
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-700 flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+            )}
           </div>
         ))}
 
         {/* Typing Indicator */}
         {isLoading && (
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-coldlava-cyan to-coldlava-purple flex items-center justify-center">
-              <Brain className="w-5 h-5 text-white" />
+          <div className="flex gap-6">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-coldlava-cyan to-coldlava-purple flex items-center justify-center">
+              <Brain className="w-6 h-6 text-white" />
             </div>
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-              <div className="flex gap-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="bg-gray-800/80 border border-gray-700 rounded-xl p-6">
+              <div className="flex gap-2 items-center">
+                <span className="text-white/70 text-sm mr-3">Sophie is thinking</span>
+                <div className="w-2 h-2 bg-coldlava-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-coldlava-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-coldlava-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
           </div>
@@ -219,35 +229,49 @@ export default function SophieConversationCoach({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-black/30 border-t border-gray-700">
-        <div className="flex gap-3">
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Tell Sophie how you would handle this..."
-            className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:border-coldlava-cyan focus:outline-none resize-none"
-            rows={2}
-            disabled={isLoading}
-          />
+      {/* Input Area - Prominent & Spacious */}
+      <div className="p-6 bg-black/40 border-t border-white/10">
+        <div className="flex gap-4 items-end max-w-6xl mx-auto">
+          <div className="flex-1">
+            <label className="text-white text-sm font-medium mb-2 block">
+              Your guidance for Sophie
+            </label>
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Example: 'When someone says they're worried about price, we should focus on the long-term savings rather than upfront cost...'"
+              className="w-full bg-gray-800 text-white rounded-xl px-6 py-4 border border-gray-700 focus:border-coldlava-cyan focus:outline-none resize-none text-base"
+              rows={3}
+              disabled={isLoading}
+            />
+          </div>
           <button
             onClick={sendMessage}
             disabled={isLoading || !inputValue.trim()}
-            className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+            className={`px-8 py-4 rounded-xl font-medium transition-all flex items-center gap-3 text-lg ${
               isLoading || !inputValue.trim()
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white hover:shadow-lg hover:scale-105'
+                : 'bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white hover:shadow-xl hover:scale-105'
             }`}
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <>
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Sending</span>
+              </>
             ) : (
-              <Send className="w-5 h-5" />
+              <>
+                <Send className="w-6 h-6" />
+                <span>Send</span>
+              </>
             )}
           </button>
         </div>
+        <p className="text-gray-500 text-xs mt-3 text-center">
+          Press Enter to send • Shift + Enter for new line
+        </p>
       </div>
     </div>
   )

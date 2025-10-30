@@ -2,6 +2,7 @@
 
 import { Search, Download, Filter, Phone, Mail, MapPin, X, Sparkles, Loader2, Brain } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import SophieInsights from './SophieInsights'
 
 interface SearchResult {
@@ -220,18 +221,18 @@ export default function SearchAndExport({
             <Sparkles className="w-4 h-4" />
             Ask Sophie
           </button>
-          <button
-            onClick={() => setShowInsights(true)}
+          <Link
+            href="/sophie-hq"
             className="px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg relative"
           >
             <Brain className="w-4 h-4" />
-            Sophie's Insights
+            Sophie's Intelligence HQ
             {criticalCount > 0 && (
               <span className="absolute -top-1 -right-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold animate-pulse">
                 {criticalCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
 
       <div className="flex items-center gap-4">
