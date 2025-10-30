@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, TrendingUp, Activity, Settings, RefreshCw, ExternalLink, MessageSquare } from 'lucide-react'
+import { X, AlertCircle, TrendingUp, Activity, Settings, RefreshCw, ExternalLink, MessageSquare, Brain, BookOpen } from 'lucide-react'
 import ConversationViewer from './ConversationViewer'
+import SophieConversationCoach from './SophieConversationCoach'
+import SophieLearningLog from './SophieLearningLog'
 
 interface SophieInsightsProps {
   isOpen: boolean
@@ -14,7 +16,7 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
   const [conversationAnalysis, setConversationAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [activeTab, setActiveTab] = useState<'issues' | 'patterns' | 'quality' | 'health'>('quality')
+  const [activeTab, setActiveTab] = useState<'coach' | 'quality' | 'patterns' | 'issues' | 'health'>('coach')
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
 
   // Fetch insights
@@ -115,6 +117,17 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
 
         {/* Tabs */}
         <div className="flex border-b border-white/10 bg-black/20">
+          <button
+            onClick={() => setActiveTab('coach')}
+            className={`flex-1 px-6 py-4 font-medium transition-all ${
+              activeTab === 'coach'
+                ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Brain className="w-5 h-5 inline mr-2" />
+            Coach
+          </button>
           <button
             onClick={() => setActiveTab('quality')}
             className={`flex-1 px-6 py-4 font-medium transition-all ${
@@ -244,6 +257,24 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* COACH TAB */}
+              {activeTab === 'coach' && (
+                <div className="h-full flex gap-4">
+                  {/* Left Side: Conversation Coach */}
+                  <div className="flex-1 bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700">
+                    <SophieConversationCoach
+                      userName="JJ" // TODO: Get from auth context
+                      currentLeadId={selectedLeadId}
+                    />
+                  </div>
+
+                  {/* Right Side: Learning Log */}
+                  <div className="w-[400px] bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700">
+                    <SophieLearningLog />
+                  </div>
                 </div>
               )}
 
