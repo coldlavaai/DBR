@@ -82,18 +82,6 @@ export default function HotLeadsSection({ leads, onArchive, expandedLeadId }: Ho
   // Compact view
   return (
     <div className="p-6">
-      {/* Maximize button */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setIsFullScreen(true)}
-          className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
-          title="Open fullscreen"
-        >
-          <Maximize2 className="w-4 h-4" />
-          Full Screen
-        </button>
-      </div>
-
       <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-2">
         {visibleLeads.map((lead) => (
           <LeadCard

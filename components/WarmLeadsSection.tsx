@@ -83,7 +83,7 @@ export default function WarmLeadsSection({ leads, onArchive, expandedLeadId }: W
   return (
     <div className="p-6">
       {/* Maximize button */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end">
         <button
           onClick={() => setIsFullScreen(true)}
           className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
