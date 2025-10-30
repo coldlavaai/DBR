@@ -143,6 +143,10 @@ export async function GET(request: Request) {
       // Analytics
       stats,
 
+      // Additional metrics
+      upcomingCallsCount: callBookedLeads.length,  // Future calls only
+      totalCallsBooked: allBookedCalls.length,      // All calls (past + future)
+
       // Metadata
       lastUpdated: new Date().toISOString(),
       totalLeads: filteredLeads.length,

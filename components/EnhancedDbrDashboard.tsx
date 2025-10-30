@@ -45,6 +45,8 @@ export default function EnhancedDbrDashboard() {
   const [expandedLeadFromActivity, setExpandedLeadFromActivity] = useState<string | null>(null)
   const [leadDetailModalOpen, setLeadDetailModalOpen] = useState(false)
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
+  const [upcomingCallsCount, setUpcomingCallsCount] = useState(0)
+  const [totalCallsBooked, setTotalCallsBooked] = useState(0)
 
   // Collapsible section states
   const [sectionsExpanded, setSectionsExpanded] = useState({
@@ -156,6 +158,8 @@ export default function EnhancedDbrDashboard() {
       setAllBookedCalls(data.allBookedCalls || [])
       setArchivedLeads(data.archivedLeads || [])
       setRecentActivity(data.recentActivity || [])
+      setUpcomingCallsCount(data.upcomingCallsCount || 0)
+      setTotalCallsBooked(data.totalCallsBooked || 0)
     } catch (error) {
       console.error('Error fetching DBR stats:', error)
     } finally {
@@ -250,21 +254,17 @@ export default function EnhancedDbrDashboard() {
     // Expand the section if collapsed
     setSectionsExpanded(prev => ({ ...prev, [sectionKey]: true }))
 
-    // Set the lead to be expanded
-    setExpandedLeadFromActivity(leadId)
+    // Open the lead detail modal directly - much better UX
+    setSelectedLeadId(leadId)
+    setLeadDetailModalOpen(true)
 
-    // Scroll to the section after a brief delay to allow for section expansion
+    // Also scroll to the section after a brief delay
     setTimeout(() => {
       const element = document.getElementById(sectionId)
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }, 100)
-
-    // Clear the expanded lead after 5 seconds
-    setTimeout(() => {
-      setExpandedLeadFromActivity(null)
-    }, 5000)
   }
 
   // Render section based on ID
@@ -630,7 +630,7 @@ export default function EnhancedDbrDashboard() {
         />
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
           <MetricCard
             title="Total Leads"
             value={stats.totalLeads}
@@ -678,12 +678,20 @@ export default function EnhancedDbrDashboard() {
 
           <MetricCard
             title="Calls Booked"
-            value={stats.statusBreakdown.callBooked}
+            value={totalCallsBooked}
             trend={stats.trends?.callBooked}
-            subtitle="Via Cal.com"
+            subtitle="Total (all time)"
             icon={Target}
             color="green"
             onClick={() => openModal('callBooked', '📞 Calls Booked')}
+          />
+
+          <MetricCard
+            title="Upcoming Calls"
+            value={upcomingCallsCount}
+            subtitle="Future scheduled"
+            icon={Calendar}
+            color="cyan"
           />
         </div>
 
