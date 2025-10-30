@@ -37,6 +37,7 @@ export default function SophieConversationReview() {
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
   const [filter, setFilter] = useState<'all' | 'pending' | 'critical'>('pending')
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
 
   useEffect(() => {
     fetchAnalyses()
@@ -129,6 +130,40 @@ export default function SophieConversationReview() {
       not_assertive: '🐌 Not Assertive',
     }
     return labels[issueType] || issueType
+  }
+
+  const submitFeedback = async (action: 'agree' | 'disagree') => {
+    if (!selectedAnalysis) return
+
+    setSubmittingFeedback(true)
+    try {
+      const response = await fetch('/api/sophie-review-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: selectedAnalysis._id,
+          action,
+          userName: 'Oliver', // TODO: Get from auth context
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message)
+
+        // Refresh analyses and clear selection
+        fetchAnalyses()
+        setSelectedAnalysis(null)
+      } else {
+        const error = await response.json()
+        alert(`❌ Failed: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Failed to submit feedback:', error)
+      alert('❌ Failed to submit feedback')
+    } finally {
+      setSubmittingFeedback(false)
+    }
   }
 
   return (
@@ -320,15 +355,27 @@ export default function SophieConversationReview() {
 
             {/* Actions */}
             <div className="p-6 border-t border-white/10 flex gap-3">
-              <button className="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={() => submitFeedback('agree')}
+                disabled={submittingFeedback}
+                className="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
                 <ThumbsUp className="w-5 h-5" />
-                Agree & Learn
+                {submittingFeedback ? 'Capturing Learnings...' : 'Agree & Learn'}
               </button>
-              <button className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={() => submitFeedback('disagree')}
+                disabled={submittingFeedback}
+                className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
                 <ThumbsDown className="w-5 h-5" />
                 Disagree
               </button>
-              <button className="px-6 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium transition-all">
+              <button
+                onClick={fetchAnalyses}
+                className="px-6 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium transition-all"
+                title="Refresh analyses"
+              >
                 <Save className="w-5 h-5" />
               </button>
             </div>
