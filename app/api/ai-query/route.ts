@@ -173,14 +173,67 @@ const tools: Anthropic.Tool[] = [
 // Tool execution functions
 async function getDashboardMetrics(timeRange: string, metrics?: string[]) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/dashboard?timeRange=${timeRange}`,
-      { cache: 'no-store' }
+    // Directly query Sanity instead of making HTTP call
+    const allLeads = await sanityClient.fetch(
+      `*[_type == "dbrLead"] {
+        _id, contactStatus, leadSentiment, m1Sent, m2Sent, m3Sent,
+        replyReceived, callBookedTime, archived, _createdAt
+      }`
     )
 
-    if (!response.ok) throw new Error('Failed to fetch dashboard data')
+    // Apply time filter
+    let filteredLeads = allLeads
+    if (timeRange !== 'all') {
+      const now = new Date()
+      let cutoffDate: Date
 
-    const data = await response.json()
+      switch (timeRange) {
+        case 'today':
+          cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          break
+        case 'week':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          break
+        case 'month':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          break
+        default:
+          cutoffDate = new Date(0)
+      }
+
+      filteredLeads = allLeads.filter((lead: any) => {
+        const createdAt = new Date(lead._createdAt || 0)
+        return createdAt >= cutoffDate
+      })
+    }
+
+    const activeLeads = filteredLeads.filter((l: any) => !l.archived)
+    const hotLeads = activeLeads.filter((l: any) => l.contactStatus === 'HOT')
+    const warmLeads = activeLeads.filter((l: any) => l.contactStatus === 'WARM')
+    const repliedLeads = activeLeads.filter((l: any) => l.replyReceived).length
+    const leadsWithMessages = activeLeads.filter((l: any) => l.m1Sent || l.m2Sent || l.m3Sent).length
+    const replyRate = leadsWithMessages > 0 ? (repliedLeads / leadsWithMessages) * 100 : 0
+    const callBookedCount = allLeads.filter((l: any) => l.callBookedTime).length
+    const upcomingCalls = activeLeads.filter((l: any) =>
+      l.contactStatus === 'CALL_BOOKED' &&
+      l.callBookedTime &&
+      new Date(l.callBookedTime) > new Date()
+    ).length
+
+    const data = {
+      stats: {
+        totalLeads: filteredLeads.length,
+        replyRate,
+        repliedLeads,
+        messagesSent: {
+          total: activeLeads.filter((l: any) => l.m1Sent || l.m2Sent || l.m3Sent).length
+        }
+      },
+      hotLeads: hotLeads,
+      warmLeads: warmLeads,
+      totalCallsBooked: callBookedCount,
+      upcomingCallsCount: upcomingCalls
+    }
 
     // Return filtered metrics if specified
     if (metrics && metrics.length > 0) {
@@ -190,9 +243,8 @@ async function getDashboardMetrics(timeRange: string, metrics?: string[]) {
         if (m === 'hotLeads') filtered.hotLeads = data.hotLeads.length
         if (m === 'warmLeads') filtered.warmLeads = data.warmLeads.length
         if (m === 'replyRate') filtered.replyRate = data.stats.replyRate
-        if (m === 'messagesSent') filtered.messagesSent = data.stats.messagesSent
+        if (m === 'messagesSent') filtered.messagesSent = data.stats.messagesSent.total
         if (m === 'callsBooked') filtered.callsBooked = data.totalCallsBooked
-        if (m === 'avgResponseTime') filtered.avgResponseTime = data.stats.avgResponseTime
       })
       return filtered
     }
@@ -203,15 +255,11 @@ async function getDashboardMetrics(timeRange: string, metrics?: string[]) {
       totalLeads: data.stats.totalLeads,
       hotLeads: data.hotLeads.length,
       warmLeads: data.warmLeads.length,
-      callBookedLeads: data.callBookedLeads.length,
       replyRate: data.stats.replyRate,
       repliedLeads: data.stats.repliedLeads,
-      messagesSent: data.stats.messagesSent,
-      avgResponseTime: data.stats.avgResponseTime,
-      sentiment: data.stats.sentiment,
-      statusBreakdown: data.stats.statusBreakdown,
-      upcomingCalls: data.upcomingCallsCount,
-      totalCallsBooked: data.totalCallsBooked
+      messagesSent: data.stats.messagesSent.total,
+      callsBooked: data.totalCallsBooked,
+      upcomingCalls: data.upcomingCallsCount
     }
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error)
@@ -266,11 +314,9 @@ async function searchLeads(params: any) {
 
 async function comparePerformance(period1: string, period2: string, metric?: string) {
   try {
-    // Fetch both periods
-    const [data1, data2] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/dashboard?timeRange=${period1}`, { cache: 'no-store' }).then(r => r.json()),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/dashboard?timeRange=${period2}`, { cache: 'no-store' }).then(r => r.json())
-    ])
+    // Get both period data directly
+    const data1 = await getDashboardMetrics(period1)
+    const data2 = await getDashboardMetrics(period2 === 'yesterday' ? 'today' : period2 === 'lastWeek' ? 'week' : 'month')
 
     const comparison: any = {
       period1,
@@ -280,12 +326,12 @@ async function comparePerformance(period1: string, period2: string, metric?: str
 
     // Calculate changes
     const metrics: any = {
-      totalLeads: { current: data1.stats.totalLeads, previous: data2.stats.totalLeads },
-      hotLeads: { current: data1.hotLeads.length, previous: data2.hotLeads.length },
-      warmLeads: { current: data1.warmLeads.length, previous: data2.warmLeads.length },
-      replyRate: { current: data1.stats.replyRate, previous: data2.stats.replyRate },
-      messagesSent: { current: data1.stats.messagesSent.total, previous: data2.stats.messagesSent.total },
-      callsBooked: { current: data1.upcomingCallsCount, previous: data2.upcomingCallsCount }
+      totalLeads: { current: data1.totalLeads, previous: data2.totalLeads },
+      hotLeads: { current: data1.hotLeads, previous: data2.hotLeads },
+      warmLeads: { current: data1.warmLeads, previous: data2.warmLeads },
+      replyRate: { current: data1.replyRate, previous: data2.replyRate },
+      messagesSent: { current: data1.messagesSent, previous: data2.messagesSent },
+      callsBooked: { current: data1.callsBooked, previous: data2.callsBooked }
     }
 
     Object.entries(metrics).forEach(([key, values]: [string, any]) => {
