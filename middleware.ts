@@ -1,7 +1,10 @@
-import NextAuth from 'next-auth'
-import { authConfigEdge } from './auth.config.edge'
+// TEMPORARY: Authentication disabled for testing
+// Re-enable by uncommenting the lines below
 
-export default NextAuth(authConfigEdge).auth
+// import NextAuth from 'next-auth'
+// import { authConfigEdge } from './auth.config.edge'
+
+// export default NextAuth(authConfigEdge).auth
 
 export const config = {
   matcher: [
