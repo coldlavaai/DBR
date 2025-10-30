@@ -50,6 +50,16 @@ export default function SophieConversationReview() {
     fetchAnalyses()
   }, [filter])
 
+  // Auto-analyze on first mount
+  useEffect(() => {
+    const hasAnalyzedBefore = localStorage.getItem('sophie_initial_analysis_done')
+    if (!hasAnalyzedBefore) {
+      // Auto-run analysis for last 3 days on first load
+      startNewAnalysis(3)
+      localStorage.setItem('sophie_initial_analysis_done', 'true')
+    }
+  }, [])
+
   const fetchAnalyses = async () => {
     setLoading(true)
     try {
@@ -69,18 +79,20 @@ export default function SophieConversationReview() {
     }
   }
 
-  const startNewAnalysis = async () => {
+  const startNewAnalysis = async (daysBack: number = 3) => {
     setAnalyzing(true)
     try {
       const response = await fetch('/api/sophie-analyze-conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'all_unanalyzed' }),
+        body: JSON.stringify({ mode: 'all_unanalyzed', daysBack }),
       })
 
       if (response.ok) {
         const data = await response.json()
-        alert(`✅ Analyzed ${data.results?.length || 0} conversations`)
+        if (data.results?.length > 0) {
+          alert(`✅ Analyzed ${data.results.length} conversations from the last ${daysBack} days`)
+        }
         fetchAnalyses()
       }
     } catch (error) {
@@ -297,7 +309,7 @@ export default function SophieConversationReview() {
 
           {/* Analyze Button */}
           <button
-            onClick={startNewAnalysis}
+            onClick={() => startNewAnalysis()}
             disabled={analyzing}
             className="w-full px-4 py-2 bg-gradient-to-r from-coldlava-cyan to-coldlava-purple text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
           >

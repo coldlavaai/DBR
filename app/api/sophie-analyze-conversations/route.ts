@@ -19,7 +19,7 @@ const sanityClient = createClient({
 
 export async function POST(request: NextRequest) {
   try {
-    const { leadIds, mode = 'batch' } = await request.json()
+    const { leadIds, mode = 'batch', daysBack = 3 } = await request.json()
 
     // Mode options:
     // - 'batch': Analyze multiple leads (pass array of leadIds)
@@ -29,6 +29,11 @@ export async function POST(request: NextRequest) {
     let leadsToAnalyze: any[] = []
 
     if (mode === 'all_unanalyzed') {
+      // Calculate cutoff date (X days ago)
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - daysBack)
+      const cutoffISO = cutoffDate.toISOString()
+
       // Get all leads that haven't been analyzed yet
       const analyzedLeadIds = await sanityClient.fetch(
         `*[_type == "sophieAnalysis"]{ "leadId": lead._ref }`
@@ -36,7 +41,15 @@ export async function POST(request: NextRequest) {
       const analyzedIds = analyzedLeadIds.map((a: any) => a.leadId)
 
       const allUnanalyzed = await sanityClient.fetch(
-        `*[_type == "dbrLead" && !(_id in $analyzedIds) && defined(conversationHistory) && conversationHistory != ""] {
+        `*[_type == "dbrLead" &&
+           !(_id in $analyzedIds) &&
+           defined(conversationHistory) &&
+           conversationHistory != "" &&
+           (defined(replyReceived) && replyReceived > $cutoffDate ||
+            defined(m3Sent) && m3Sent > $cutoffDate ||
+            defined(m2Sent) && m2Sent > $cutoffDate ||
+            defined(m1Sent) && m1Sent > $cutoffDate)
+        ] {
           _id,
           firstName,
           secondName,
@@ -48,8 +61,8 @@ export async function POST(request: NextRequest) {
           m1Sent,
           m2Sent,
           m3Sent
-        }`, // Get all unanalyzed first
-        { analyzedIds }
+        }`, // Get all unanalyzed from last X days
+        { analyzedIds, cutoffDate: cutoffISO }
       )
 
       // Filter for conversations with 2+ messages

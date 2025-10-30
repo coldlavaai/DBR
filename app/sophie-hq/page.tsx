@@ -1,54 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Brain, BookOpen, TrendingUp, AlertCircle, Activity, RefreshCw, ChevronDown, ChevronUp, MessageSquare, FileText, ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
+import { Brain, BookOpen, FileText, ArrowLeft, Activity, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
-import SophieConversationCoach from '@/components/SophieConversationCoach'
+import SophieQualityMonitor from '@/components/SophieQualityMonitor'
 import SophieLearningLog from '@/components/SophieLearningLog'
-import SophieConversationReview from '@/components/SophieConversationReview'
 import SophiePromptImprovement from '@/components/SophiePromptImprovement'
 
 export default function SophieHQPage() {
-  const [insights, setInsights] = useState<any>(null)
-  const [conversationAnalysis, setConversationAnalysis] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [activeView, setActiveView] = useState<'coach' | 'insights' | 'prompt' | 'patterns' | 'alerts'>('coach')
+  const [activeView, setActiveView] = useState<'monitor' | 'prompt' | 'learning'>('monitor')
   const [learningLogOpen, setLearningLogOpen] = useState(false)
-
-  // Fetch insights
-  const fetchInsights = async () => {
-    try {
-      setLoading(true)
-      const [insightsResponse, conversationResponse] = await Promise.all([
-        fetch('/api/sophie-insights'),
-        fetch('/api/analyze-conversations')
-      ])
-
-      if (insightsResponse.ok) {
-        const data = await insightsResponse.json()
-        setInsights(data)
-      }
-
-      if (conversationResponse.ok) {
-        const data = await conversationResponse.json()
-        setConversationAnalysis(data)
-      }
-
-      setLastUpdated(new Date())
-    } catch (error) {
-      console.error('Failed to fetch insights:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Initial fetch and auto-refresh every 30s
-  useEffect(() => {
-    fetchInsights()
-    const interval = setInterval(fetchInsights, 30000)
-    return () => clearInterval(interval)
-  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -62,33 +23,18 @@ export default function SophieHQPage() {
             <div>
               <h1 className="text-3xl font-bold text-white">Sophie's Intelligence HQ</h1>
               <p className="text-white/80 text-sm mt-1">
-                The brain of your DBR operation • Train, Monitor, Optimize
+                Conversation Quality Monitoring • Real-time Analysis • Continuous Learning
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 border border-white/20"
-            >
-              <ArrowLeft className="w-5 h-5 text-white" />
-              <span className="text-white font-medium">Dashboard</span>
-            </Link>
-            {lastUpdated && (
-              <div className="text-white/70 text-sm">
-                Updated: {lastUpdated.toLocaleTimeString()}
-              </div>
-            )}
-            <button
-              onClick={fetchInsights}
-              disabled={loading}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all flex items-center gap-2"
-            >
-              <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
-              <span className="text-white font-medium">Refresh</span>
-            </button>
-          </div>
+          <Link
+            href="/"
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 border border-white/20"
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+            <span className="text-white font-medium">Dashboard</span>
+          </Link>
         </div>
       </header>
 
@@ -96,26 +42,15 @@ export default function SophieHQPage() {
       <div className="bg-black/30 border-b border-white/10">
         <div className="max-w-[1800px] mx-auto flex items-center gap-2 px-6">
           <button
-            onClick={() => setActiveView('coach')}
+            onClick={() => setActiveView('monitor')}
             className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
-              activeView === 'coach'
-                ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Brain className="w-5 h-5" />
-            Conversation Coach
-          </button>
-          <button
-            onClick={() => setActiveView('insights')}
-            className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
-              activeView === 'insights'
+              activeView === 'monitor'
                 ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Activity className="w-5 h-5" />
-            Quality Insights
+            Quality Monitor
           </button>
           <button
             onClick={() => setActiveView('prompt')}
@@ -129,69 +64,32 @@ export default function SophieHQPage() {
             Prompt Updates
           </button>
           <button
-            onClick={() => setActiveView('patterns')}
+            onClick={() => setActiveView('learning')}
             className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
-              activeView === 'patterns'
+              activeView === 'learning'
                 ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <TrendingUp className="w-5 h-5" />
-            Patterns
-          </button>
-          <button
-            onClick={() => setActiveView('alerts')}
-            className={`px-6 py-4 font-medium transition-all flex items-center gap-2 ${
-              activeView === 'alerts'
-                ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <AlertCircle className="w-5 h-5" />
-            Alerts
-            {insights?.criticalCount > 0 && (
-              <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                {insights.criticalCount}
-              </span>
-            )}
+            <BookOpen className="w-5 h-5" />
+            Learning Archive
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-[1800px] mx-auto p-6">
-        {activeView === 'coach' && (
-          <div className="grid grid-cols-1 gap-6">
-            {/* Conversation Coach - Full Width */}
-            <div className="bg-gray-800/50 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-              <SophieConversationCoach userName="Oliver" currentLeadId={null} />
-            </div>
-          </div>
-        )}
-
-        {activeView === 'insights' && (
-          <div className="h-[calc(100vh-280px)]">
-            <SophieConversationReview />
-          </div>
-        )}
+      <div className="max-w-[1800px] mx-auto p-6 pb-24">
+        {activeView === 'monitor' && <SophieQualityMonitor />}
 
         {activeView === 'prompt' && (
-          <div className="h-[calc(100vh-280px)]">
+          <div className="h-[calc(100vh-220px)]">
             <SophiePromptImprovement />
           </div>
         )}
 
-        {activeView === 'patterns' && (
-          <div className="text-white">
-            <h2 className="text-2xl font-bold mb-4">Conversation Patterns</h2>
-            <p className="text-gray-400">Pattern analysis coming soon...</p>
-          </div>
-        )}
-
-        {activeView === 'alerts' && (
-          <div className="text-white">
-            <h2 className="text-2xl font-bold mb-4">Priority Alerts</h2>
-            <p className="text-gray-400">Alert system coming soon...</p>
+        {activeView === 'learning' && (
+          <div className="bg-gray-800/50 rounded-xl border border-white/10 p-6">
+            <SophieLearningLog />
           </div>
         )}
       </div>
