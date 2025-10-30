@@ -494,7 +494,7 @@ export async function POST(request: Request) {
     ]
 
     let response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620', // Claude 3.5 Sonnet
+      model: 'claude-3-haiku-20240307', // Claude 3 Haiku - fast and cost-effective
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       tools,
@@ -535,7 +535,7 @@ export async function POST(request: Request) {
 
         // Get final response from Claude
         response = await anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20240620',
+          model: 'claude-3-haiku-20240307',
           max_tokens: 1024,
           system: SYSTEM_PROMPT,
           tools,
@@ -567,7 +567,7 @@ export async function POST(request: Request) {
 
         // Let Claude handle the error gracefully
         response = await anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20240620',
+          model: 'claude-3-haiku-20240307',
           max_tokens: 512,
           system: SYSTEM_PROMPT,
           messages
@@ -581,7 +581,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       answer,
-      model: 'claude-3-5-sonnet',
+      model: 'claude-3-haiku',
       timestamp: new Date().toISOString()
     })
 
