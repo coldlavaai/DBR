@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, TrendingUp, Activity, Settings, RefreshCw, ExternalLink } from 'lucide-react'
+import { X, AlertCircle, TrendingUp, Activity, Settings, RefreshCw, ExternalLink, MessageSquare } from 'lucide-react'
+import ConversationViewer from './ConversationViewer'
 
 interface SophieInsightsProps {
   isOpen: boolean
@@ -10,20 +11,32 @@ interface SophieInsightsProps {
 
 export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps) {
   const [insights, setInsights] = useState<any>(null)
+  const [conversationAnalysis, setConversationAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [activeTab, setActiveTab] = useState<'issues' | 'patterns' | 'quality' | 'health'>('issues')
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
 
   // Fetch insights
   const fetchInsights = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/sophie-insights')
-      if (response.ok) {
-        const data = await response.json()
+      const [insightsResponse, conversationResponse] = await Promise.all([
+        fetch('/api/sophie-insights'),
+        fetch('/api/analyze-conversations')
+      ])
+
+      if (insightsResponse.ok) {
+        const data = await insightsResponse.json()
         setInsights(data)
-        setLastUpdated(new Date())
       }
+
+      if (conversationResponse.ok) {
+        const data = await conversationResponse.json()
+        setConversationAnalysis(data)
+      }
+
+      setLastUpdated(new Date())
     } catch (error) {
       console.error('Failed to fetch insights:', error)
     } finally {
@@ -400,6 +413,81 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
                       </div>
                     </div>
                   )}
+
+                  {/* Conversation Quality Issues */}
+                  {conversationAnalysis && conversationAnalysis.conversationsWithIssues > 0 && (
+                    <div className="bg-black/40 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                          <MessageSquare className="w-5 h-5" />
+                          Conversation Quality Issues
+                        </h3>
+                        <span className="text-red-400 font-bold">
+                          {conversationAnalysis.conversationsWithIssues} conversations
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {conversationAnalysis.issues.slice(0, 10).map((conv: any, index: number) => (
+                          <div key={index} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <h4 className="text-white font-medium">{conv.leadName}</h4>
+                                <p className="text-gray-400 text-xs">{conv.phoneNumber}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  conv.contactStatus === 'HOT' ? 'bg-orange-500/20 text-orange-400' :
+                                  conv.contactStatus === 'WARM' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  'bg-blue-500/20 text-blue-400'
+                                }`}>
+                                  {conv.contactStatus}
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  conv.leadSentiment === 'POSITIVE' ? 'bg-green-500/20 text-green-400' :
+                                  conv.leadSentiment === 'NEGATIVE' ? 'bg-red-500/20 text-red-400' :
+                                  'bg-gray-500/20 text-gray-400'
+                                }`}>
+                                  {conv.leadSentiment}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 mb-3">
+                              {conv.issues.map((issue: any, issueIdx: number) => (
+                                <div key={issueIdx} className="text-sm">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mr-2 ${
+                                    issue.type === 'CRITICAL'
+                                      ? 'bg-red-500/30 text-red-300'
+                                      : 'bg-yellow-500/30 text-yellow-300'
+                                  }`}>
+                                    {issue.type}
+                                  </span>
+                                  <span className="text-white font-medium">{issue.title}</span>
+                                  <p className="text-gray-400 ml-16 mt-1 text-xs">{issue.description}</p>
+                                </div>
+                              ))}
+                            </div>
+
+                            <button
+                              onClick={() => setSelectedLeadId(conv.leadId)}
+                              className="w-full px-3 py-2 bg-coldlava-cyan/20 hover:bg-coldlava-cyan/30 rounded-lg text-sm text-cyan-400 font-medium transition-all flex items-center justify-center gap-2"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              View Full Conversation
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {conversationAnalysis.issues.length > 10 && (
+                        <p className="text-center text-gray-400 text-sm mt-4">
+                          Showing 10 of {conversationAnalysis.issues.length} conversations with issues
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -480,6 +568,12 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
           )}
         </div>
       </div>
+
+      {/* Conversation Viewer Modal */}
+      <ConversationViewer
+        leadId={selectedLeadId}
+        onClose={() => setSelectedLeadId(null)}
+      />
 
       <style jsx>{`
         @keyframes slide-in-right {
