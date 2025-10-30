@@ -14,6 +14,7 @@ interface DashboardHeaderProps {
   lastUpdated?: string
   onRefresh?: () => void
   isRefreshing?: boolean
+  onSettingsClick?: () => void
 }
 
 export default function DashboardHeader({
@@ -23,6 +24,7 @@ export default function DashboardHeader({
   lastUpdated,
   onRefresh,
   isRefreshing = false,
+  onSettingsClick,
 }: DashboardHeaderProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -218,8 +220,22 @@ export default function DashboardHeader({
                         </>
                       )}
 
-                      {/* Sign Out */}
+                      {/* Account Settings */}
                       <div className="my-2 border-t border-white/10"></div>
+                      {onSettingsClick && (
+                        <button
+                          onClick={() => {
+                            onSettingsClick()
+                            setShowUserMenu(false)
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-coldlava-cyan/20 rounded-xl transition-all group"
+                        >
+                          <Settings className="w-5 h-5 text-coldlava-cyan group-hover:scale-110 transition-transform" />
+                          <span className="font-medium">Account Settings</span>
+                        </button>
+                      )}
+
+                      {/* Sign Out */}
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/20 rounded-xl transition-all group"
