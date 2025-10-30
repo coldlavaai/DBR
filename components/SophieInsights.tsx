@@ -14,7 +14,7 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
   const [conversationAnalysis, setConversationAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [activeTab, setActiveTab] = useState<'issues' | 'patterns' | 'quality' | 'health'>('issues')
+  const [activeTab, setActiveTab] = useState<'issues' | 'patterns' | 'quality' | 'health'>('quality')
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
 
   // Fetch insights
@@ -116,20 +116,15 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
         {/* Tabs */}
         <div className="flex border-b border-white/10 bg-black/20">
           <button
-            onClick={() => setActiveTab('issues')}
+            onClick={() => setActiveTab('quality')}
             className={`flex-1 px-6 py-4 font-medium transition-all ${
-              activeTab === 'issues'
+              activeTab === 'quality'
                 ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <AlertCircle className="w-5 h-5 inline mr-2" />
-            Live Issues
-            {insights?.criticalCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                {insights.criticalCount}
-              </span>
-            )}
+            <MessageSquare className="w-5 h-5 inline mr-2" />
+            Conversations
           </button>
           <button
             onClick={() => setActiveTab('patterns')}
@@ -143,15 +138,20 @@ export default function SophieInsights({ isOpen, onClose }: SophieInsightsProps)
             Patterns
           </button>
           <button
-            onClick={() => setActiveTab('quality')}
+            onClick={() => setActiveTab('issues')}
             className={`flex-1 px-6 py-4 font-medium transition-all ${
-              activeTab === 'quality'
+              activeTab === 'issues'
                 ? 'text-white border-b-2 border-coldlava-cyan bg-coldlava-cyan/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Activity className="w-5 h-5 inline mr-2" />
-            Quality
+            <AlertCircle className="w-5 h-5 inline mr-2" />
+            Alerts
+            {insights?.criticalCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                {insights.criticalCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('health')}
