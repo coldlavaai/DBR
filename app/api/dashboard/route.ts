@@ -111,7 +111,7 @@ export async function GET(request: Request) {
       (b.callBookedTime || '').localeCompare(a.callBookedTime || '')
     )
 
-    // Recent activity (leads with recent replies)
+    // Recent activity (correct format for RecentActivity component)
     const recentActivity = activeLeads
       .filter((l: any) => l.replyReceived)
       .sort((a: any, b: any) =>
@@ -119,22 +119,16 @@ export async function GET(request: Request) {
       )
       .slice(0, 20)
       .map((l: any) => ({
-        lead: {
-          _id: l._id,
-          firstName: l.firstName,
-          secondName: l.secondName,
-          phoneNumber: l.phoneNumber,
-          contactStatus: l.contactStatus,
-        },
-        type: 'reply_received',
+        id: l._id,
+        type: 'reply' as const,
+        leadName: `${l.firstName} ${l.secondName}`,
+        message: l.latestLeadReply || 'No message preview',
         timestamp: l.replyReceived,
-        description: `${l.firstName} ${l.secondName} replied`,
-        leadSentiment: l.leadSentiment,
-        latestReply: l.latestLeadReply,
+        contactStatus: l.contactStatus,
       }))
 
     // CALCULATE STATS - From filtered leads
-    const stats = calculateStats(filteredLeads, activeLeads)
+    const stats = calculateStats(filteredLeads, activeLeads, timeRange)
 
     // RETURN EVERYTHING in one response
     return NextResponse.json({
@@ -170,87 +164,91 @@ export async function GET(request: Request) {
   }
 }
 
-function calculateStats(allLeads: any[], activeLeads: any[]) {
-  // Message counts
-  const m1Sent = activeLeads.filter(l => l.m1Sent).length
-  const m2Sent = activeLeads.filter(l => l.m2Sent).length
-  const m3Sent = activeLeads.filter(l => l.m3Sent).length
-  const manualMessages = activeLeads.filter(l => l.manualMode).length
+function calculateStats(allLeads: any[], activeLeads: any[], timeRange: string) {
+  // Separate manual and AI leads
+  const manualLeads = activeLeads.filter(l => l.manualMode === true)
+  const aiLeads = activeLeads.filter(l => l.manualMode !== true)
 
-  // Sentiment breakdown
-  const sentimentCounts: any = {
-    positive: 0,
-    negative: 0,
-    neutral: 0,
-    negativeRemoved: 0,
-    unclear: 0,
-    unsure: 0
+  // Message counts by type
+  const manualMessages = {
+    m1: manualLeads.filter(l => l.m1Sent).length,
+    m2: manualLeads.filter(l => l.m2Sent).length,
+    m3: manualLeads.filter(l => l.m3Sent).length,
+    total: 0
   }
+  manualMessages.total = manualMessages.m1 + manualMessages.m2 + manualMessages.m3
 
-  activeLeads.forEach(lead => {
-    const sentiment = (lead.leadSentiment || '').toLowerCase()
-    if (sentiment.includes('positive')) sentimentCounts.positive++
-    else if (sentiment.includes('negative') && sentiment.includes('removed')) sentimentCounts.negativeRemoved++
-    else if (sentiment.includes('negative')) sentimentCounts.negative++
-    else if (sentiment.includes('neutral')) sentimentCounts.neutral++
-    else if (sentiment.includes('unclear')) sentimentCounts.unclear++
-    else if (sentiment.includes('unsure')) sentimentCounts.unsure++
-  })
+  const aiMessages = {
+    m1: aiLeads.filter(l => l.m1Sent).length,
+    m2: aiLeads.filter(l => l.m2Sent).length,
+    m3: aiLeads.filter(l => l.m3Sent).length,
+    total: 0
+  }
+  aiMessages.total = aiMessages.m1 + aiMessages.m2 + aiMessages.m3
+
+  const messagesSent = {
+    m1: activeLeads.filter(l => l.m1Sent).length,
+    m2: activeLeads.filter(l => l.m2Sent).length,
+    m3: activeLeads.filter(l => l.m3Sent).length,
+    total: 0,
+    manual: manualMessages.total,
+    ai: aiMessages.total
+  }
+  messagesSent.total = messagesSent.m1 + messagesSent.m2 + messagesSent.m3
+
+  // Sentiment breakdown (exact match, not includes)
+  const sentimentCounts: any = {
+    positive: activeLeads.filter(l => l.leadSentiment === 'POSITIVE').length,
+    negative: activeLeads.filter(l => l.leadSentiment === 'NEGATIVE').length,
+    neutral: activeLeads.filter(l => l.leadSentiment === 'NEUTRAL').length,
+    negativeRemoved: activeLeads.filter(l => l.leadSentiment === 'NEGATIVE_REMOVED').length,
+    unclear: activeLeads.filter(l => l.leadSentiment === 'UNCLEAR').length,
+    unsure: activeLeads.filter(l => l.leadSentiment === 'UNSURE').length,
+    noSentiment: activeLeads.filter(l => !l.leadSentiment).length
+  }
 
   // Status breakdown
   const statusCounts: any = {
-    ready: 0,
-    sent1: 0,
-    sent2: 0,
-    sent3: 0,
-    cold: 0,
-    neutral: 0,
-    warm: 0,
-    hot: 0,
-    callBooked: 0,
-    converted: 0,
-    installed: 0,
-    removed: 0
+    ready: activeLeads.filter(l => l.contactStatus === 'Ready').length,
+    sent1: activeLeads.filter(l => l.contactStatus === 'Sent_1').length,
+    sent2: activeLeads.filter(l => l.contactStatus === 'Sent_2').length,
+    sent3: activeLeads.filter(l => l.contactStatus === 'Sent_3').length,
+    cold: activeLeads.filter(l => l.contactStatus === 'COLD').length,
+    neutral: activeLeads.filter(l => l.contactStatus === 'NEUTRAL').length,
+    warm: activeLeads.filter(l => l.contactStatus === 'WARM').length,
+    hot: activeLeads.filter(l => l.contactStatus === 'HOT').length,
+    callBooked: activeLeads.filter(l => l.contactStatus === 'CALL_BOOKED').length,
+    converted: activeLeads.filter(l => l.contactStatus === 'CONVERTED').length,
+    installed: activeLeads.filter(l => l.contactStatus === 'INSTALLED').length,
+    removed: activeLeads.filter(l => l.contactStatus === 'REMOVED').length
   }
-
-  activeLeads.forEach(lead => {
-    const status = (lead.contactStatus || '').toUpperCase()
-    switch (status) {
-      case 'READY': statusCounts.ready++; break
-      case 'SENT_1': statusCounts.sent1++; break
-      case 'SENT_2': statusCounts.sent2++; break
-      case 'SENT_3': statusCounts.sent3++; break
-      case 'COLD': statusCounts.cold++; break
-      case 'NEUTRAL': statusCounts.neutral++; break
-      case 'WARM': statusCounts.warm++; break
-      case 'HOT': statusCounts.hot++; break
-      case 'CALL_BOOKED': statusCounts.callBooked++; break
-      case 'CONVERTED': statusCounts.converted++; break
-      case 'INSTALLED': statusCounts.installed++; break
-      case 'REMOVED': statusCounts.removed++; break
-    }
-  })
 
   // Reply metrics
   const repliedLeads = activeLeads.filter(l => l.replyReceived).length
-  const replyRate = activeLeads.length > 0
-    ? ((repliedLeads / activeLeads.length) * 100).toFixed(1)
-    : '0.0'
+  const leadsWithMessages = activeLeads.filter(l => l.m1Sent || l.m2Sent || l.m3Sent).length
+  const replyRate = leadsWithMessages > 0 ? (repliedLeads / leadsWithMessages) * 100 : 0
+
+  // Average response time (hours)
+  const responseTimes = activeLeads
+    .filter(l => l.m1Sent && l.replyReceived)
+    .map(l => {
+      const sent = new Date(l.m1Sent).getTime()
+      const replied = new Date(l.replyReceived).getTime()
+      return (replied - sent) / (1000 * 60 * 60) // hours
+    })
+
+  const avgResponseTime = responseTimes.length > 0
+    ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 10) / 10
+    : 0
 
   return {
     totalLeads: allLeads.length,
-    messagesSent: {
-      m1: m1Sent,
-      m2: m2Sent,
-      m3: m3Sent,
-      total: m1Sent + m2Sent + m3Sent,
-      manual: manualMessages,
-      ai: m1Sent + m2Sent + m3Sent - manualMessages
-    },
+    messagesSent,
     sentiment: sentimentCounts,
     statusBreakdown: statusCounts,
-    replyRate: parseFloat(replyRate),
+    replyRate,
     repliedLeads,
+    avgResponseTime,
     lastUpdated: new Date().toISOString()
   }
 }
