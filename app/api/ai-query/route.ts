@@ -494,7 +494,7 @@ export async function POST(request: Request) {
     ]
 
     let response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022', // Use Sonnet for better analysis
+      model: 'claude-3-5-sonnet-20240620', // Claude 3.5 Sonnet
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       tools,
@@ -535,7 +535,7 @@ export async function POST(request: Request) {
 
         // Get final response from Claude
         response = await anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
+          model: 'claude-3-5-sonnet-20240620',
           max_tokens: 1024,
           system: SYSTEM_PROMPT,
           tools,
