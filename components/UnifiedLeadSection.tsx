@@ -37,6 +37,10 @@ interface UnifiedLeadSectionProps {
   // Optional: collapsible (for archived sections)
   collapsible?: boolean
   defaultCollapsed?: boolean
+
+  // Fullscreen state (controlled by parent)
+  isFullScreen?: boolean
+  setIsFullScreen?: (value: boolean) => void
 }
 
 const colorSchemes = {
@@ -83,11 +87,12 @@ export default function UnifiedLeadSection({
   filterTabs,
   getLeadFilterValue,
   collapsible = false,
-  defaultCollapsed = false
+  defaultCollapsed = false,
+  isFullScreen = false,
+  setIsFullScreen
 }: UnifiedLeadSectionProps) {
   const [visibleCount, setVisibleCount] = useState(3)
   const [loading, setLoading] = useState(false)
-  const [isFullScreen, setIsFullScreen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(!defaultCollapsed)
   const [selectedFilter, setSelectedFilter] = useState<string>('all')
@@ -182,7 +187,7 @@ export default function UnifiedLeadSection({
               <h2 className="text-2xl font-bold text-white">{title} ({processedLeads.length})</h2>
             </div>
             <button
-              onClick={() => setIsFullScreen(false)}
+              onClick={() => setIsFullScreen?.(false)}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
               title="Exit fullscreen"
             >
@@ -300,18 +305,6 @@ export default function UnifiedLeadSection({
                 </div>
               </div>
             )}
-
-            {/* Maximize button */}
-            <div className="flex justify-end">
-              <button
-                onClick={() => setIsFullScreen(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
-                title="Open fullscreen"
-              >
-                <Maximize2 className="w-4 h-4" />
-                Full Screen
-              </button>
-            </div>
 
             <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-2">
               {visibleLeads.map(renderLead)}

@@ -83,6 +83,19 @@ export default function EnhancedDbrDashboard() {
   const [draggedSection, setDraggedSection] = useState<string | null>(null)
   const [dragOverSection, setDragOverSection] = useState<string | null>(null)
 
+  // Fullscreen states for each section
+  const [fullscreenStates, setFullscreenStates] = useState({
+    hotLeads: false,
+    warmLeads: false,
+    upcomingCalls: false,
+    allBookedCalls: false,
+    archivedLeads: false,
+  })
+
+  const toggleFullscreen = (sectionId: keyof typeof fullscreenStates) => {
+    setFullscreenStates(prev => ({ ...prev, [sectionId]: !prev[sectionId] }))
+  }
+
   // Load section order from localStorage on mount
   useEffect(() => {
     const savedOrder = localStorage.getItem('dbr-section-order')
@@ -371,6 +384,7 @@ export default function EnhancedDbrDashboard() {
         title: 'Hot Leads',
         count: hotLeads.length,
         color: 'border-orange-500/50 hover:border-orange-400',
+        onFullScreenClick: () => toggleFullscreen('hotLeads'),
         content: <UnifiedLeadSection
           leads={hotLeads}
           icon={Flame}
@@ -379,6 +393,8 @@ export default function EnhancedDbrDashboard() {
           colorScheme="orange"
           onRefresh={() => fetchStats(true)}
           expandedLeadId={expandedLeadFromActivity}
+          isFullScreen={fullscreenStates.hotLeads}
+          setIsFullScreen={(value) => setFullscreenStates(prev => ({ ...prev, hotLeads: value }))}
         />
       },
       warmLeads: {
@@ -386,6 +402,7 @@ export default function EnhancedDbrDashboard() {
         title: 'Warm Leads',
         count: warmLeads.length,
         color: 'border-yellow-500/50 hover:border-yellow-400',
+        onFullScreenClick: () => toggleFullscreen('warmLeads'),
         content: <UnifiedLeadSection
           leads={warmLeads}
           icon={TrendingUp}
@@ -394,6 +411,8 @@ export default function EnhancedDbrDashboard() {
           colorScheme="yellow"
           onRefresh={() => fetchStats(true)}
           expandedLeadId={expandedLeadFromActivity}
+          isFullScreen={fullscreenStates.warmLeads}
+          setIsFullScreen={(value) => setFullscreenStates(prev => ({ ...prev, warmLeads: value }))}
         />
       },
       upcomingCalls: {
@@ -401,6 +420,7 @@ export default function EnhancedDbrDashboard() {
         title: 'Upcoming Calls',
         count: callBookedLeads.length,
         color: 'border-purple-500/50 hover:border-purple-400',
+        onFullScreenClick: () => toggleFullscreen('upcomingCalls'),
         content: <UnifiedLeadSection
           leads={callBookedLeads}
           icon={Calendar}
@@ -411,6 +431,8 @@ export default function EnhancedDbrDashboard() {
           expandedLeadId={expandedLeadFromActivity}
           sortFn={sortCallBookedLeads}
           showCallTimeBadge={true}
+          isFullScreen={fullscreenStates.upcomingCalls}
+          setIsFullScreen={(value) => setFullscreenStates(prev => ({ ...prev, upcomingCalls: value }))}
         />
       },
       allBookedCalls: {
@@ -418,6 +440,7 @@ export default function EnhancedDbrDashboard() {
         title: 'All Booked Calls',
         count: allBookedCalls.length,
         color: 'border-indigo-500/50 hover:border-indigo-400',
+        onFullScreenClick: () => toggleFullscreen('allBookedCalls'),
         content: <UnifiedLeadSection
           leads={allBookedCalls}
           icon={Calendar}
@@ -427,6 +450,8 @@ export default function EnhancedDbrDashboard() {
           onRefresh={() => fetchStats(true)}
           expandedLeadId={expandedLeadFromActivity}
           showCallTimeBadge={true}
+          isFullScreen={fullscreenStates.allBookedCalls}
+          setIsFullScreen={(value) => setFullscreenStates(prev => ({ ...prev, allBookedCalls: value }))}
         />
       },
       recentActivity: {
@@ -535,6 +560,7 @@ export default function EnhancedDbrDashboard() {
         title: 'Archive',
         count: archivedLeads.length,
         color: 'border-gray-500/50 hover:border-gray-400',
+        onFullScreenClick: () => toggleFullscreen('archivedLeads'),
         content: <UnifiedLeadSection
           leads={archivedLeads}
           icon={Archive}
@@ -559,6 +585,8 @@ export default function EnhancedDbrDashboard() {
             { id: 'REMOVED', label: 'Removed', emoji: '🚫', color: 'from-red-400 to-rose-500' },
           ]}
           getLeadFilterValue={(lead) => lead.contactStatus}
+          isFullScreen={fullscreenStates.archivedLeads}
+          setIsFullScreen={(value) => setFullscreenStates(prev => ({ ...prev, archivedLeads: value }))}
         />
       },
     }
@@ -596,6 +624,7 @@ export default function EnhancedDbrDashboard() {
           draggable={true}
           onDragStart={handleDragStart(sectionId)}
           onDragEnd={handleDragEnd}
+          onFullScreenClick={'onFullScreenClick' in section ? section.onFullScreenClick : undefined}
         />
         {isExpanded && (
           <div className="border-t border-white/10">
