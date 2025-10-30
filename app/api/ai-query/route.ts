@@ -225,11 +225,11 @@ function analyzeObjections(leads: any[]) {
   const objectionCounts: any = {}
   const examples: any = {}
 
-  leads.forEach(lead => {
+  leads.forEach((lead: any) => {
     const text = `${lead.latestLeadReply || ''} ${lead.notes || ''}`.toLowerCase()
 
     Object.entries(objectionPatterns).forEach(([objection, keywords]) => {
-      const found = keywords.some(keyword => text.includes(keyword))
+      const found = keywords.some((keyword: string) => text.includes(keyword))
       if (found) {
         objectionCounts[objection] = (objectionCounts[objection] || 0) + 1
         if (!examples[objection]) {
@@ -264,12 +264,12 @@ function analyzeObjections(leads: any[]) {
 
 function analyzeSentimentShifts(leads: any[]) {
   // Find leads where sentiment changed (went negative or improved)
-  const negative = leads.filter(l =>
+  const negative = leads.filter((l: any) =>
     l.leadSentiment === 'NEGATIVE' &&
     (l.contactStatus === 'HOT' || l.contactStatus === 'WARM')
   )
 
-  const improved = leads.filter(l =>
+  const improved = leads.filter((l: any) =>
     l.contactStatus === 'HOT' &&
     (l.leadSentiment === 'POSITIVE' || !l.leadSentiment)
   )
@@ -277,7 +277,7 @@ function analyzeSentimentShifts(leads: any[]) {
   return {
     wentNegative: negative.length,
     improved: improved.length,
-    negativeExamples: negative.slice(0, 3).map(l => ({
+    negativeExamples: negative.slice(0, 3).map((l: any) => ({
       name: `${l.firstName} ${l.secondName}`,
       lastReply: l.latestLeadReply,
       status: l.contactStatus
@@ -290,7 +290,7 @@ function analyzeSentimentShifts(leads: any[]) {
 
 function analyzeSuccessPatterns(leads: any[]) {
   // Analyze leads that booked calls - what did they have in common?
-  const booked = leads.filter(l => l.callBookedTime)
+  const booked = leads.filter((l: any) => l.callBookedTime)
 
   if (booked.length === 0) {
     return { insight: 'No call bookings in this time period to analyze.' }
@@ -298,21 +298,21 @@ function analyzeSuccessPatterns(leads: any[]) {
 
   // Analyze timing
   const bookingHours = booked
-    .filter(l => l.callBookedTime)
-    .map(l => new Date(l.callBookedTime).getHours())
+    .filter((l: any) => l.callBookedTime)
+    .map((l: any) => new Date(l.callBookedTime).getHours())
 
   const avgHour = bookingHours.length > 0
     ? Math.round(bookingHours.reduce((a, b) => a + b, 0) / bookingHours.length)
     : null
 
   // Analyze which message stage got the booking
-  const m1Bookings = booked.filter(l => l.m1Sent && !l.m2Sent).length
-  const m2Bookings = booked.filter(l => l.m2Sent && !l.m3Sent).length
-  const m3Bookings = booked.filter(l => l.m3Sent).length
+  const m1Bookings = booked.filter((l: any) => l.m1Sent && !l.m2Sent).length
+  const m2Bookings = booked.filter((l: any) => l.m2Sent && !l.m3Sent).length
+  const m3Bookings = booked.filter((l: any) => l.m3Sent).length
 
   // Analyze postcodes
   const postcodes: any = {}
-  booked.forEach(l => {
+  booked.forEach((l: any) => {
     if (l.postcode) {
       const area = l.postcode.substring(0, 2).toUpperCase()
       postcodes[area] = (postcodes[area] || 0) + 1
@@ -337,10 +337,10 @@ function analyzeSuccessPatterns(leads: any[]) {
 
 function analyzeFailurePoints(leads: any[]) {
   // Find where conversations break down
-  const sent = leads.filter(l => l.m1Sent || l.m2Sent || l.m3Sent)
-  const replied = leads.filter(l => l.replyReceived)
-  const negative = leads.filter(l => l.leadSentiment === 'NEGATIVE')
-  const stalled = leads.filter(l =>
+  const sent = leads.filter((l: any) => l.m1Sent || l.m2Sent || l.m3Sent)
+  const replied = leads.filter((l: any) => l.replyReceived)
+  const negative = leads.filter((l: any) => l.leadSentiment === 'NEGATIVE')
+  const stalled = leads.filter((l: any) =>
     (l.m1Sent || l.m2Sent) &&
     !l.replyReceived &&
     l.contactStatus !== 'REMOVED'
@@ -354,7 +354,7 @@ function analyzeFailurePoints(leads: any[]) {
     replyRate: `${replyRate}%`,
     negative: negative.length,
     stalled: stalled.length,
-    stalledExamples: stalled.slice(0, 3).map(l => ({
+    stalledExamples: stalled.slice(0, 3).map((l: any) => ({
       name: `${l.firstName} ${l.secondName}`,
       phone: l.phoneNumber,
       messagesSent: [l.m1Sent && 'M1', l.m2Sent && 'M2', l.m3Sent && 'M3'].filter(Boolean).join(', ')
@@ -465,7 +465,7 @@ async function findHiddenPatterns(params: any) {
 function analyzeGeographicPatterns(leads: any[], minSize: number) {
   const postcodeStats: any = {}
 
-  leads.forEach(lead => {
+  leads.forEach((lead: any) => {
     if (lead.postcode) {
       const area = lead.postcode.substring(0, 2).toUpperCase()
       if (!postcodeStats[area]) {
@@ -502,7 +502,7 @@ function analyzeGeographicPatterns(leads: any[], minSize: number) {
 }
 
 function analyzeTimingPatterns(leads: any[], minSize: number) {
-  const repliedLeads = leads.filter(l => l.replyReceived)
+  const repliedLeads = leads.filter((l: any) => l.replyReceived)
 
   if (repliedLeads.length < minSize) {
     return { insight: 'Not enough reply data for timing analysis.' }
@@ -510,10 +510,10 @@ function analyzeTimingPatterns(leads: any[], minSize: number) {
 
   // Analyze hour of day for replies
   const replyHours = repliedLeads
-    .map(l => new Date(l.replyReceived).getHours())
+    .map((l: any) => new Date(l.replyReceived).getHours())
 
   const hourCounts: any = {}
-  replyHours.forEach(hour => {
+  replyHours.forEach((hour: number) => {
     hourCounts[hour] = (hourCounts[hour] || 0) + 1
   })
 
@@ -522,10 +522,10 @@ function analyzeTimingPatterns(leads: any[], minSize: number) {
 
   // Analyze day of week
   const replyDays = repliedLeads
-    .map(l => new Date(l.replyReceived).getDay())
+    .map((l: any) => new Date(l.replyReceived).getDay())
 
   const dayCounts: any = {}
-  replyDays.forEach(day => {
+  replyDays.forEach((day: number) => {
     dayCounts[day] = (dayCounts[day] || 0) + 1
   })
 
@@ -541,15 +541,15 @@ function analyzeTimingPatterns(leads: any[], minSize: number) {
 }
 
 function analyzeMessageStagePatterns(leads: any[], minSize: number) {
-  const withMessages = leads.filter(l => l.m1Sent || l.m2Sent || l.m3Sent)
+  const withMessages = leads.filter((l: any) => l.m1Sent || l.m2Sent || l.m3Sent)
 
-  const m1Only = withMessages.filter(l => l.m1Sent && !l.m2Sent)
-  const m2Reached = withMessages.filter(l => l.m2Sent)
-  const m3Reached = withMessages.filter(l => l.m3Sent)
+  const m1Only = withMessages.filter((l: any) => l.m1Sent && !l.m2Sent)
+  const m2Reached = withMessages.filter((l: any) => l.m2Sent)
+  const m3Reached = withMessages.filter((l: any) => l.m3Sent)
 
-  const m1Replied = m1Only.filter(l => l.replyReceived).length
-  const m2Replied = m2Reached.filter(l => l.replyReceived).length
-  const m3Replied = m3Reached.filter(l => l.replyReceived).length
+  const m1Replied = m1Only.filter((l: any) => l.replyReceived).length
+  const m2Replied = m2Reached.filter((l: any) => l.replyReceived).length
+  const m3Replied = m3Reached.filter((l: any) => l.replyReceived).length
 
   const m1Rate = m1Only.length > 0 ? (m1Replied / m1Only.length * 100).toFixed(1) : 0
   const m2Rate = m2Reached.length > 0 ? (m2Replied / m2Reached.length * 100).toFixed(1) : 0
@@ -561,18 +561,18 @@ function analyzeMessageStagePatterns(leads: any[], minSize: number) {
       m2: { sent: m2Reached.length, replied: m2Replied, rate: `${m2Rate}%` },
       m3: { sent: m3Reached.length, replied: m3Replied, rate: `${m3Rate}%` }
     },
-    insight: `M1 reply rate: ${m1Rate}%. ${parseFloat(m2Rate) > parseFloat(m1Rate) ? 'Follow-ups improve response rates - keep sending M2/M3.' : 'M1 is most effective - optimize first message.'}`
+    insight: `M1 reply rate: ${m1Rate}%. ${parseFloat(String(m2Rate)) > parseFloat(String(m1Rate)) ? 'Follow-ups improve response rates - keep sending M2/M3.' : 'M1 is most effective - optimize first message.'}`
   }
 }
 
 function analyzeSentimentJourney(leads: any[], minSize: number) {
   // Track how sentiment evolves
-  const positive = leads.filter(l => l.leadSentiment === 'POSITIVE').length
-  const negative = leads.filter(l => l.leadSentiment === 'NEGATIVE').length
-  const neutral = leads.filter(l => !l.leadSentiment || l.leadSentiment === 'NEUTRAL').length
+  const positive = leads.filter((l: any) => l.leadSentiment === 'POSITIVE').length
+  const negative = leads.filter((l: any) => l.leadSentiment === 'NEGATIVE').length
+  const neutral = leads.filter((l: any) => !l.leadSentiment || l.leadSentiment === 'NEUTRAL').length
 
-  const hot = leads.filter(l => l.contactStatus === 'HOT').length
-  const booked = leads.filter(l => l.callBookedTime).length
+  const hot = leads.filter((l: any) => l.contactStatus === 'HOT').length
+  const booked = leads.filter((l: any) => l.callBookedTime).length
 
   return {
     sentiment: { positive, negative, neutral },
@@ -610,7 +610,7 @@ async function suggestBotImprovements(params: any) {
     }
 
     if (improvementArea === 'response_quality' || improvementArea === 'all') {
-      const negative = leads.filter(l => l.leadSentiment === 'NEGATIVE')
+      const negative = leads.filter((l: any) => l.leadSentiment === 'NEGATIVE')
       if (negative.length > 5) {
         suggestions.push({
           area: 'Response Quality',
@@ -623,11 +623,11 @@ async function suggestBotImprovements(params: any) {
     }
 
     if (improvementArea === 'timing' || improvementArea === 'all') {
-      const sent = leads.filter(l => l.m1Sent || l.m2Sent || l.m3Sent).length
-      const replied = leads.filter(l => l.replyReceived).length
+      const sent = leads.filter((l: any) => l.m1Sent || l.m2Sent || l.m3Sent).length
+      const replied = leads.filter((l: any) => l.replyReceived).length
       const replyRate = sent > 0 ? (replied / sent * 100).toFixed(1) : 0
 
-      if (parseFloat(replyRate) < 30) {
+      if (parseFloat(String(replyRate)) < 30) {
         suggestions.push({
           area: 'Timing',
           priority: 'medium',
