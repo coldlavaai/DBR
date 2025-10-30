@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     const { analysisId, action, userFeedback, userName } = await request.json()
 
-    // action: 'agree' | 'disagree'
+    // action: 'agree' | 'disagree' | 'dismiss'
     // userFeedback: optional text feedback
 
     if (!analysisId || !action) {
@@ -29,6 +29,22 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields: analysisId and action' },
         { status: 400 }
       )
+    }
+
+    // Handle dismiss action
+    if (action === 'dismiss') {
+      await sanityClient
+        .patch(analysisId)
+        .set({
+          status: 'dismissed',
+          userFeedback: userFeedback || 'Dismissed - not worth reviewing',
+        })
+        .commit()
+
+      return NextResponse.json({
+        success: true,
+        message: '✅ Conversation dismissed',
+      })
     }
 
     // Fetch the analysis

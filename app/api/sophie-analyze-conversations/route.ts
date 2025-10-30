@@ -29,26 +29,18 @@ export async function POST(request: NextRequest) {
     let leadsToAnalyze: any[] = []
 
     if (mode === 'all_unanalyzed') {
-      // Calculate cutoff date (X days ago)
-      const cutoffDate = new Date()
-      cutoffDate.setDate(cutoffDate.getDate() - daysBack)
-      const cutoffISO = cutoffDate.toISOString()
-
       // Get all leads that haven't been analyzed yet
       const analyzedLeadIds = await sanityClient.fetch(
         `*[_type == "sophieAnalysis"]{ "leadId": lead._ref }`
       )
       const analyzedIds = analyzedLeadIds.map((a: any) => a.leadId)
 
+      // Get ALL unanalyzed leads with conversations (no date filtering)
       const allUnanalyzed = await sanityClient.fetch(
         `*[_type == "dbrLead" &&
            !(_id in $analyzedIds) &&
            defined(conversationHistory) &&
-           conversationHistory != "" &&
-           (defined(replyReceived) && replyReceived > $cutoffDate ||
-            defined(m3Sent) && m3Sent > $cutoffDate ||
-            defined(m2Sent) && m2Sent > $cutoffDate ||
-            defined(m1Sent) && m1Sent > $cutoffDate)
+           conversationHistory != ""
         ] {
           _id,
           firstName,
@@ -61,8 +53,8 @@ export async function POST(request: NextRequest) {
           m1Sent,
           m2Sent,
           m3Sent
-        }`, // Get all unanalyzed from last X days
-        { analyzedIds, cutoffDate: cutoffISO }
+        } | order(_createdAt desc)`, // Get ALL unanalyzed conversations
+        { analyzedIds }
       )
 
       // Filter for conversations with 2+ messages
@@ -71,7 +63,7 @@ export async function POST(request: NextRequest) {
           const messages = parseConversationMessages(lead.conversationHistory)
           return messages.length >= 2 // Only analyze conversations with 2+ messages
         })
-        .slice(0, 50) // Then limit to 50 for processing
+        .slice(0, 100) // Process 100 at a time
     } else if (leadIds && Array.isArray(leadIds)) {
       // Analyze specific leads
       leadsToAnalyze = await sanityClient.fetch(

@@ -45,11 +45,11 @@ export default function SophieQualityMonitor() {
   // Initial load: Auto-analyze and fetch
   useEffect(() => {
     const init = async () => {
-      const hasAnalyzed = localStorage.getItem('sophie_initial_analysis_done')
+      const hasAnalyzed = localStorage.getItem('sophie_initial_analysis_done_v2')
 
       if (!hasAnalyzed) {
-        await runBatchAnalysis(3) // Last 3 days
-        localStorage.setItem('sophie_initial_analysis_done', 'true')
+        await runBatchAnalysis() // Analyze ALL unanalyzed conversations
+        localStorage.setItem('sophie_initial_analysis_done_v2', 'true')
       }
 
       await fetchAnalyses()
@@ -66,10 +66,12 @@ export default function SophieQualityMonitor() {
 
   const fetchAnalyses = async () => {
     try {
-      const response = await fetch('/api/sophie-analyze-conversations?status=pending_review')
+      // Fetch ALL analyses (not just pending_review)
+      const response = await fetch('/api/sophie-analyze-conversations')
       if (response.ok) {
         const data = await response.json()
-        setAnalyses(data.analyses || [])
+        // Filter out dismissed ones
+        setAnalyses((data.analyses || []).filter((a: Analysis) => a.status !== 'dismissed'))
       }
     } catch (error) {
       console.error('Failed to fetch analyses:', error)
@@ -78,13 +80,13 @@ export default function SophieQualityMonitor() {
     }
   }
 
-  const runBatchAnalysis = async (daysBack: number = 3) => {
+  const runBatchAnalysis = async () => {
     setAnalyzing(true)
     try {
       const response = await fetch('/api/sophie-analyze-conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'all_unanalyzed', daysBack }),
+        body: JSON.stringify({ mode: 'all_unanalyzed' }),
       })
 
       if (response.ok) {
@@ -119,6 +121,28 @@ export default function SophieQualityMonitor() {
       }
     } catch (error) {
       console.error('Failed to submit feedback:', error)
+    }
+  }
+
+  const dismissConversation = async (analysisId: string) => {
+    try {
+      const response = await fetch('/api/sophie-review-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId,
+          action: 'dismiss',
+          userFeedback: 'Not worth reviewing',
+          userName: 'Oliver'
+        }),
+      })
+
+      if (response.ok) {
+        await fetchAnalyses()
+        setExpandedCard(null)
+      }
+    } catch (error) {
+      console.error('Failed to dismiss:', error)
     }
   }
 
@@ -237,10 +261,10 @@ export default function SophieQualityMonitor() {
         <div className="text-white text-xl font-semibold">All conversations reviewed!</div>
         <div className="text-gray-400">No pending reviews at the moment</div>
         <button
-          onClick={() => runBatchAnalysis(7)}
+          onClick={() => runBatchAnalysis()}
           className="mt-4 px-6 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium"
         >
-          Analyze Last 7 Days
+          Analyze New Conversations
         </button>
       </div>
     )
@@ -369,20 +393,28 @@ export default function SophieQualityMonitor() {
 
                   {/* Actions or Teaching Mode */}
                   {!teachingMode || teachingAnalysisId !== analysis._id ? (
-                    <div className="flex gap-3">
+                    <div className="space-y-2">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => submitFeedback(analysis._id, 'agree')}
+                          className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                        >
+                          <ThumbsUp className="w-5 h-5" />
+                          Agree & Learn
+                        </button>
+                        <button
+                          onClick={() => submitFeedback(analysis._id, 'disagree')}
+                          className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Disagree & Teach
+                        </button>
+                      </div>
                       <button
-                        onClick={() => submitFeedback(analysis._id, 'agree')}
-                        className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                        onClick={() => dismissConversation(analysis._id)}
+                        className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-medium text-sm"
                       >
-                        <ThumbsUp className="w-5 h-5" />
-                        Agree & Learn
-                      </button>
-                      <button
-                        onClick={() => submitFeedback(analysis._id, 'disagree')}
-                        className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium flex items-center justify-center gap-2"
-                      >
-                        <MessageCircle className="w-5 h-5" />
-                        Disagree & Teach
+                        Dismiss (Not Worth Reviewing)
                       </button>
                     </div>
                   ) : (
