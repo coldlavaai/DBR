@@ -234,30 +234,27 @@ export const dbrLead = defineType({
               content: 'content',
               messageType: 'messageType',
             },
-            prepare({ timestamp, sender, content, messageType }: {
-              timestamp: string;
-              sender: string;
-              content: string;
-              messageType: string;
-            }) {
-              const senderEmoji = {
+            prepare(selection: any) {
+              const { timestamp, sender, content, messageType } = selection
+
+              const senderEmoji: Record<string, string> = {
                 'ai': '🤖',
                 'customer': '👤',
                 'manual': '👨‍💼',
-              }[sender] || '❓'
+              }
 
-              const typeEmoji = {
+              const typeEmoji: Record<string, string> = {
                 'automated': '📋',
                 'manual': '✍️',
                 'customer': '💬',
                 'ai_generated': '🤖',
-              }[messageType] || ''
+              }
 
               const date = timestamp ? new Date(timestamp).toLocaleString() : 'No timestamp'
               const preview = content ? content.substring(0, 60) + '...' : 'No content'
 
               return {
-                title: `${senderEmoji} ${typeEmoji} ${date}`,
+                title: `${senderEmoji[sender] || '❓'} ${typeEmoji[messageType] || ''} ${date}`,
                 subtitle: preview,
               }
             },
