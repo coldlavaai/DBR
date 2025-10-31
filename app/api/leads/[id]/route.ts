@@ -13,6 +13,48 @@ const sanityClient = createClient({
   useCdn: false,
 })
 
+/**
+ * Parse conversationHistory string into structured messages
+ */
+function parseConversationHistory(conversationHistory: string, leadName: string) {
+  if (!conversationHistory || !conversationHistory.trim()) {
+    return []
+  }
+
+  const messages: any[] = []
+  const lines = conversationHistory.split('\n')
+
+  for (const line of lines) {
+    if (!line.trim()) continue
+
+    // Format: [19:15 30/10/2025] Sender: content
+    const format1 = line.match(/\[(\d{2}:\d{2} \d{2}\/\d{2}\/\d{4})\] ([^:]+): (.+)/)
+    // Format: [30/10/2025, 19:06] MANUAL: content
+    const format2 = line.match(/\[(\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2})\] ([^:]+): (.+)/)
+
+    if (format1 || format2) {
+      const match = format1 || format2
+      if (!match) continue
+
+      const [, timestamp, sender, content] = match
+
+      if (!content || !content.trim()) continue
+
+      const senderType = sender.trim() === 'AI' ? 'agent' :
+                        sender.trim() === 'MANUAL' ? 'agent' : 'lead'
+
+      messages.push({
+        _id: `msg_${Date.now()}_${Math.random()}`,
+        _createdAt: timestamp,
+        sender: senderType,
+        content: content.trim(),
+      })
+    }
+  }
+
+  return messages
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -20,16 +62,15 @@ export async function GET(
   try {
     const leadId = params.id
 
-    // Fetch lead with all messages
+    // Fetch lead with all messages (inline messages array)
     const lead = await sanityClient.fetch(`
       *[_type == "dbrLead" && _id == $leadId][0] {
         _id, _createdAt, _updatedAt, firstName, secondName, phoneNumber,
         contactStatus, leadSentiment, latestLeadReply, notes, postcode,
         replyReceived, replyProcessed, m1Sent, m2Sent, m3Sent,
         callBookedTime, lastSyncedAt, finalStatus,
-        "messages": *[_type == "message" && references(^._id)] | order(_createdAt asc) {
-          _id, _createdAt, sender, content
-        }
+        messages,
+        conversationHistory
       }
     `, { leadId })
 
@@ -38,6 +79,11 @@ export async function GET(
         { error: 'Lead not found' },
         { status: 404 }
       )
+    }
+
+    // FALLBACK: If no structured messages but conversationHistory exists, parse it
+    if ((!lead.messages || lead.messages.length === 0) && lead.conversationHistory) {
+      lead.messages = parseConversationHistory(lead.conversationHistory, lead.firstName)
     }
 
     return NextResponse.json(lead)
