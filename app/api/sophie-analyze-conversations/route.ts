@@ -333,6 +333,7 @@ function parseConversationMessages(conversation: string) {
       messages.push({
         sender: 'AI',
         timestamp: 'N/A',
+        timestampSort: new Date(0), // Earliest possible date for template messages
         content: content.trim(),
         isTemplate: templateCheck.isTemplate,
         templateType: templateCheck.templateType,
@@ -344,9 +345,16 @@ function parseConversationMessages(conversation: string) {
         const parsedSender = sender.trim() === 'AI' ? 'AI' : 'Lead'
         const templateCheck = isAutomatedFollowUp(content, parsedSender)
 
+        // Parse timestamp: "19:15 30/10/2025" -> Date object
+        const [time, date] = timestamp.split(' ')
+        const [hours, minutes] = time.split(':')
+        const [day, month, year] = date.split('/')
+        const timestampSort = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes))
+
         messages.push({
           sender: parsedSender,
           timestamp,
+          timestampSort,
           content: content.trim(),
           isTemplate: templateCheck.isTemplate,
           templateType: templateCheck.templateType,
@@ -356,23 +364,40 @@ function parseConversationMessages(conversation: string) {
       const content = oldAiMatch[2]
       const templateCheck = isAutomatedFollowUp(content, 'AI')
 
+      // Parse timestamp: "30/10/2025 19:15" -> Date object
+      const [date, time] = oldAiMatch[1].split(' ')
+      const [day, month, year] = date.split('/')
+      const [hours, minutes] = time.split(':')
+      const timestampSort = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes))
+
       messages.push({
         sender: 'AI',
         timestamp: oldAiMatch[1],
+        timestampSort,
         content: content,
         isTemplate: templateCheck.isTemplate,
         templateType: templateCheck.templateType,
       })
     } else if (oldLeadMatch) {
+      // Parse timestamp: "30/10/2025 19:15" -> Date object
+      const [date, time] = oldLeadMatch[1].split(' ')
+      const [day, month, year] = date.split('/')
+      const [hours, minutes] = time.split(':')
+      const timestampSort = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes))
+
       messages.push({
         sender: 'Lead',
         timestamp: oldLeadMatch[1],
+        timestampSort,
         content: oldLeadMatch[2],
         isTemplate: false,
         templateType: null,
       })
     }
   }
+
+  // **CRITICAL FIX: Sort messages by timestamp to ensure chronological order**
+  messages.sort((a, b) => a.timestampSort.getTime() - b.timestampSort.getTime())
 
   return messages
 }
