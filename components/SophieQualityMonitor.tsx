@@ -42,6 +42,7 @@ export default function SophieQualityMonitor() {
   const [userInput, setUserInput] = useState('')
   const [sophieThinking, setSophieThinking] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'to_review' | 'all' | 'reviewed' | 'dismissed'>('to_review')
+  const [priorityFilter, setPriorityFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'good'>('all')
 
   // Initial load: Auto-analyze and fetch
   useEffect(() => {
@@ -226,12 +227,22 @@ export default function SophieQualityMonitor() {
     return issueType.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
   }
 
-  // Filter based on status filter
+  // Filter based on status filter and priority filter
   const filteredAnalyses = analyses.filter((a) => {
-    if (statusFilter === 'to_review') return a.status === 'pending_review'
-    if (statusFilter === 'reviewed') return a.status === 'reviewed'
-    if (statusFilter === 'dismissed') return a.status === 'dismissed'
-    return true // 'all' shows everything
+    // Status filter
+    let statusMatch = true
+    if (statusFilter === 'to_review') statusMatch = a.status === 'pending_review'
+    if (statusFilter === 'reviewed') statusMatch = a.status === 'reviewed'
+    if (statusFilter === 'dismissed') statusMatch = a.status === 'dismissed'
+
+    // Priority filter
+    let priorityMatch = true
+    if (priorityFilter === 'critical') priorityMatch = a.priority === 'critical'
+    if (priorityFilter === 'high') priorityMatch = a.priority === 'high'
+    if (priorityFilter === 'medium') priorityMatch = a.priority === 'medium'
+    if (priorityFilter === 'good') priorityMatch = a.qualityScore >= 80
+
+    return statusMatch && priorityMatch
   })
 
   // Sort by priority and score
@@ -324,32 +335,60 @@ export default function SophieQualityMonitor() {
         </button>
       </div>
 
-      {/* Stats Bar */}
+      {/* Stats Bar - Clickable Priority Filters */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+        <button
+          onClick={() => setPriorityFilter(priorityFilter === 'critical' ? 'all' : 'critical')}
+          className={`text-left rounded-lg p-4 transition-all ${
+            priorityFilter === 'critical'
+              ? 'bg-red-500/30 border-2 border-red-500 ring-2 ring-red-500/50'
+              : 'bg-red-500/10 border border-red-500/20 hover:bg-red-500/20'
+          }`}
+        >
           <div className="text-red-400 text-sm font-medium">Critical</div>
           <div className="text-white text-2xl font-bold">
-            {filteredAnalyses.filter(a => a.priority === 'critical').length}
+            {analyses.filter(a => a.priority === 'critical' && (statusFilter === 'all' || (statusFilter === 'to_review' && a.status === 'pending_review') || (statusFilter === 'reviewed' && a.status === 'reviewed') || (statusFilter === 'dismissed' && a.status === 'dismissed'))).length}
           </div>
-        </div>
-        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+        </button>
+        <button
+          onClick={() => setPriorityFilter(priorityFilter === 'high' ? 'all' : 'high')}
+          className={`text-left rounded-lg p-4 transition-all ${
+            priorityFilter === 'high'
+              ? 'bg-orange-500/30 border-2 border-orange-500 ring-2 ring-orange-500/50'
+              : 'bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20'
+          }`}
+        >
           <div className="text-orange-400 text-sm font-medium">High</div>
           <div className="text-white text-2xl font-bold">
-            {filteredAnalyses.filter(a => a.priority === 'high').length}
+            {analyses.filter(a => a.priority === 'high' && (statusFilter === 'all' || (statusFilter === 'to_review' && a.status === 'pending_review') || (statusFilter === 'reviewed' && a.status === 'reviewed') || (statusFilter === 'dismissed' && a.status === 'dismissed'))).length}
           </div>
-        </div>
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+        </button>
+        <button
+          onClick={() => setPriorityFilter(priorityFilter === 'medium' ? 'all' : 'medium')}
+          className={`text-left rounded-lg p-4 transition-all ${
+            priorityFilter === 'medium'
+              ? 'bg-yellow-500/30 border-2 border-yellow-500 ring-2 ring-yellow-500/50'
+              : 'bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20'
+          }`}
+        >
           <div className="text-yellow-400 text-sm font-medium">Medium</div>
           <div className="text-white text-2xl font-bold">
-            {filteredAnalyses.filter(a => a.priority === 'medium').length}
+            {analyses.filter(a => a.priority === 'medium' && (statusFilter === 'all' || (statusFilter === 'to_review' && a.status === 'pending_review') || (statusFilter === 'reviewed' && a.status === 'reviewed') || (statusFilter === 'dismissed' && a.status === 'dismissed'))).length}
           </div>
-        </div>
-        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+        </button>
+        <button
+          onClick={() => setPriorityFilter(priorityFilter === 'good' ? 'all' : 'good')}
+          className={`text-left rounded-lg p-4 transition-all ${
+            priorityFilter === 'good'
+              ? 'bg-green-500/30 border-2 border-green-500 ring-2 ring-green-500/50'
+              : 'bg-green-500/10 border border-green-500/20 hover:bg-green-500/20'
+          }`}
+        >
           <div className="text-green-400 text-sm font-medium">Good (80%+)</div>
           <div className="text-white text-2xl font-bold">
-            {filteredAnalyses.filter(a => a.qualityScore >= 80).length}
+            {analyses.filter(a => a.qualityScore >= 80 && (statusFilter === 'all' || (statusFilter === 'to_review' && a.status === 'pending_review') || (statusFilter === 'reviewed' && a.status === 'reviewed') || (statusFilter === 'dismissed' && a.status === 'dismissed'))).length}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Conversation Cards Grid */}
@@ -417,6 +456,39 @@ export default function SophieQualityMonitor() {
                     <div className="text-blue-400 font-semibold mb-2">Sophie's Assessment:</div>
                     <p className="text-white text-sm leading-relaxed">{analysis.overallAssessment}</p>
                   </div>
+
+                  {/* Conversation History */}
+                  {analysis.leadDetails?.conversationHistory && (
+                    <div className="bg-gray-900/50 rounded-lg p-4 border border-white/10">
+                      <div className="text-coldlava-cyan text-sm font-semibold mb-3 flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" />
+                        Full Conversation:
+                      </div>
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {analysis.leadDetails.conversationHistory.split('\n').filter((line: string) => line.trim()).map((line: string, idx: number) => {
+                          // Check for various AI message formats
+                          const isAI = line.includes('] AI:') || line.startsWith('AI:') || line.match(/^AI \(/)
+                          const isLead = !isAI && (line.includes(']:') || line.match(/^Lead \(/))
+                          return (
+                            <div key={idx} className={`flex ${isAI ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`max-w-[80%] rounded-lg p-3 ${
+                                isAI
+                                  ? 'bg-blue-500/20 border border-blue-500/30'
+                                  : 'bg-gray-700/50 border border-white/10'
+                              }`}>
+                                <div className="text-xs text-gray-400 mb-1">
+                                  {isAI ? '🤖 AI' : '👤 Customer'}
+                                </div>
+                                <div className="text-white text-sm whitespace-pre-wrap">
+                                  {line.replace(/^\[.*?\]\s*(AI:|[^:]+:)\s*/, '')}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Issues */}
                   {analysis.issuesIdentified?.map((issue, index) => (
