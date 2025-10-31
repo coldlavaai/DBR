@@ -376,7 +376,7 @@ function parseConversationMessages(conversation: string) {
 async function loadPreviousLearnings() {
   try {
     const learnings = await sanityClient.fetch(
-      `*[_type == "sophieLearning"] | order(priority desc, _createdAt desc) {
+      `*[_type == "sophieLearning" && isActive == true] | order(priority desc, _createdAt desc) {
         _id,
         category,
         title,
@@ -384,7 +384,9 @@ async function loadPreviousLearnings() {
         doThis,
         dontDoThis,
         priority,
-        tags
+        tags,
+        isHardRule,
+        timesReinforced
       }`
     )
     return learnings
@@ -406,21 +408,36 @@ async function callAIForAnalysis(messages: any[], lead: any) {
   // CRITICAL: Load ALL previous learnings - Sophie's memory
   const learnings = await loadPreviousLearnings()
 
-  // Format learnings for the prompt
-  const learningsSection = learnings.length > 0
-    ? `\n\n## 🧠 SOPHIE'S MEMORY - PREVIOUS LEARNINGS
-**CRITICAL: You have been taught these lessons by the user. NEVER make these mistakes again:**
+  // Separate Hard Rules from regular learnings
+  const hardRules = learnings.filter((l: any) => l.isHardRule === true || l.timesReinforced >= 3)
+  const regularLearnings = learnings.filter((l: any) => !l.isHardRule && (!l.timesReinforced || l.timesReinforced < 3))
 
-${learnings.map((l: any, i: number) => `
-### Learning #${i + 1}: ${l.title} [${l.priority.toUpperCase()} PRIORITY]
-**Category:** ${l.category}
+  // Format Hard Rules section
+  const hardRulesSection = hardRules.length > 0
+    ? `\n\n## 🔥 UNBREAKABLE HARD RULES 🔥
+**These rules have been validated ${hardRules.length > 1 ? hardRules.length : ''} time(s). NEVER break them under ANY circumstances.**
+
+${hardRules.map((rule: any, i: number) => `
+### HARD RULE #${i + 1}: ${rule.title} [REINFORCED ${rule.timesReinforced || 3}x]
+**You were taught:** ${rule.userGuidance}
+**ALWAYS DO THIS:** ${rule.doThis}
+**NEVER DO THIS:** ${rule.dontDoThis}
+⚠️ **Breaking this rule = COMPLETE FAILURE**
+`).join('\n')}
+`
+    : ''
+
+  // Format regular learnings section
+  const learningsSection = regularLearnings.length > 0
+    ? `\n\n## 🧠 SOPHIE'S RUNNING MEMORY - RECENT LEARNINGS
+**These are being tested. Follow them carefully:**
+
+${regularLearnings.map((l: any, i: number) => `
+### Learning #${i + 1}: ${l.title} [${l.priority.toUpperCase()}]
 **What you were taught:** ${l.userGuidance}
 **DO THIS:** ${l.doThis}
 **DON'T DO THIS:** ${l.dontDoThis}
-**Tags:** ${l.tags.join(', ')}
 `).join('\n')}
-
-**IMPORTANT:** These learnings override any default rules. If you see a situation matching a previous learning, apply that learning instead of your default analysis.
 `
     : ''
 
@@ -428,7 +445,7 @@ ${learnings.map((l: any, i: number) => `
 
 ## ⚠️ UNBREAKABLE HARD RULES - READ FIRST ⚠️
 
-**RULE #1: CHRONOLOGICAL ORDER IS SACRED**
+**HARD RULE #0: CHRONOLOGICAL ORDER IS SACRED**
 Messages are ALWAYS displayed in chronological order:
 - **OLDEST messages at the TOP**
 - **NEWEST messages at the BOTTOM**
@@ -438,6 +455,8 @@ You MUST read conversations from TOP to BOTTOM to understand the flow correctly.
 **NEVER guess who said what - READ THE LABELS.**
 
 If you make this mistake again, you will fail completely. This rule has been taught to you MULTIPLE times.
+
+${hardRulesSection}
 
 ${learningsSection}
 

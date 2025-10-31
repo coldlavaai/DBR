@@ -217,6 +217,22 @@ export const sophieLearning = defineType({
     },
 
     {
+      name: 'isHardRule',
+      title: 'Is Hard Rule',
+      type: 'boolean',
+      description: 'Whether this has graduated to an unbreakable hard rule (taught 3+ times)',
+      initialValue: false,
+    },
+
+    {
+      name: 'timesReinforced',
+      title: 'Times Reinforced',
+      type: 'number',
+      description: 'How many times user has taught this same lesson (auto-promotes to hard rule at 3)',
+      initialValue: 1,
+    },
+
+    {
       name: 'source',
       title: 'Source',
       type: 'string',

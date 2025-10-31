@@ -113,6 +113,10 @@ export async function POST(request: NextRequest) {
       const allTags = learnings.flatMap((l: any) => l.tags || [])
       const uniqueTags = Array.from(new Set([...allTags, 'consolidated', 'meta_learning']))
 
+      // Auto-promote to Hard Rule if consolidating 3+ learnings
+      const isHardRule = learnings.length >= 3
+      const priority = isHardRule ? 'critical' : 'high'
+
       // Create new consolidated learning
       const metaLearning = await sanityClient.create({
         _type: 'sophieLearning',
@@ -121,11 +125,11 @@ export async function POST(request: NextRequest) {
         userGuidance: newGuidance || `Combined learning from ${learnings.length} related lessons:\n\n${learnings.map((l: any) => l.userGuidance).join('\n\n')}`,
         doThis: learnings.map((l: any) => l.doThis).join(' AND '),
         dontDoThis: learnings.map((l: any) => l.dontDoThis).join(' OR '),
-        priority: 'high', // Consolidated learnings are important
+        priority, // Critical if hard rule
         conversationExamples: uniqueExamples,
         createdBy: 'Sophie (Auto-consolidated)',
         lastUpdated: new Date().toISOString(),
-        tags: uniqueTags,
+        tags: isHardRule ? [...uniqueTags, 'hard_rule'] : uniqueTags,
         confidenceScore: avgConfidence,
         timesApplied: combinedStats.timesApplied,
         timesCorrect: combinedStats.timesCorrect,
@@ -134,6 +138,8 @@ export async function POST(request: NextRequest) {
         isActive: true,
         source: 'consolidated',
         consolidatedFrom: learningIds,
+        isHardRule, // Auto-promote if 3+ learnings
+        timesReinforced: learnings.length, // Track how many times this was taught
       })
 
       // Archive the original learnings
