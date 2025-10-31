@@ -124,10 +124,146 @@ export const dbrLead = defineType({
     },
     {
       name: 'conversationHistory',
-      title: 'Full Conversation History',
+      title: 'Full Conversation History (Legacy)',
       type: 'text',
-      description: 'Complete SMS conversation thread',
+      description: '⚠️ DEPRECATED: Use messages[] array instead. Kept for backward compatibility.',
       rows: 8,
+      hidden: true, // Hide from UI, prefer messages array
+    },
+
+    // Structured Conversation Messages (NEW - Preferred)
+    {
+      name: 'messages',
+      title: 'Conversation Messages',
+      type: 'array',
+      description: 'Structured conversation timeline with validated data',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'timestamp',
+              title: 'Message Timestamp',
+              type: 'datetime',
+              description: 'When this message was sent/received',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'sender',
+              title: 'Sender',
+              type: 'string',
+              description: 'Who sent this message',
+              options: {
+                list: [
+                  { title: '🤖 AI Agent', value: 'ai' },
+                  { title: '👤 Customer', value: 'customer' },
+                  { title: '👨‍💼 Manual Agent', value: 'manual' },
+                ],
+              },
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'senderName',
+              title: 'Sender Name',
+              type: 'string',
+              description: 'Display name (e.g., "Charlie", "AI Agent", "Support Team")',
+            },
+            {
+              name: 'content',
+              title: 'Message Content',
+              type: 'text',
+              description: 'The actual message text',
+              rows: 3,
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'messageType',
+              title: 'Message Type',
+              type: 'string',
+              description: 'Type of message',
+              options: {
+                list: [
+                  { title: '📋 Automated Template', value: 'automated' },
+                  { title: '✍️ Manual Response', value: 'manual' },
+                  { title: '💬 Customer Reply', value: 'customer' },
+                  { title: '🤖 AI Generated', value: 'ai_generated' },
+                ],
+              },
+            },
+            {
+              name: 'templateType',
+              title: 'Template Type',
+              type: 'string',
+              description: 'If automated, which template was used',
+              options: {
+                list: [
+                  { title: 'M1 - First Follow-up', value: 'M1' },
+                  { title: 'M2 - Second Follow-up (24h)', value: 'M2' },
+                  { title: 'M3 - Final Follow-up (48h)', value: 'M3' },
+                ],
+              },
+              hidden: ({ parent }: any) => parent?.messageType !== 'automated',
+            },
+            {
+              name: 'metadata',
+              title: 'Message Metadata',
+              type: 'object',
+              description: 'Additional message context',
+              fields: [
+                {
+                  name: 'deliveryStatus',
+                  title: 'Delivery Status',
+                  type: 'string',
+                  options: {
+                    list: ['sent', 'delivered', 'read', 'failed'],
+                  },
+                },
+                {
+                  name: 'sentimentScore',
+                  title: 'Sentiment Score',
+                  type: 'number',
+                  description: 'AI-detected sentiment (-1 to 1)',
+                },
+              ],
+            },
+          ],
+          preview: {
+            select: {
+              timestamp: 'timestamp',
+              sender: 'sender',
+              content: 'content',
+              messageType: 'messageType',
+            },
+            prepare({ timestamp, sender, content, messageType }: {
+              timestamp: string;
+              sender: string;
+              content: string;
+              messageType: string;
+            }) {
+              const senderEmoji = {
+                'ai': '🤖',
+                'customer': '👤',
+                'manual': '👨‍💼',
+              }[sender] || '❓'
+
+              const typeEmoji = {
+                'automated': '📋',
+                'manual': '✍️',
+                'customer': '💬',
+                'ai_generated': '🤖',
+              }[messageType] || ''
+
+              const date = timestamp ? new Date(timestamp).toLocaleString() : 'No timestamp'
+              const preview = content ? content.substring(0, 60) + '...' : 'No content'
+
+              return {
+                title: `${senderEmoji} ${typeEmoji} ${date}`,
+                subtitle: preview,
+              }
+            },
+          },
+        },
+      ],
     },
 
     // AI Processing

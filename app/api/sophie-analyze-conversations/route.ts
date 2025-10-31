@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
           phoneNumber,
           contactStatus,
           conversationHistory,
+          messages,
           latestLeadReply,
           replyReceived,
           m1Sent,
@@ -246,8 +247,25 @@ export async function GET(request: NextRequest) {
  * Analyze a single conversation and score it
  */
 async function analyzeConversation(lead: any) {
-  const conversation = lead.conversationHistory || ''
-  const messages = parseConversationMessages(conversation)
+  let messages: any[]
+  let conversationSnapshot: string
+
+  // PREFER STRUCTURED MESSAGES (new format)
+  if (lead.messages && Array.isArray(lead.messages) && lead.messages.length > 0) {
+    console.log(`✨ Using structured messages for ${lead.firstName} (${lead.messages.length} messages)`)
+    messages = lead.messages
+    // Create snapshot from structured data for storage
+    conversationSnapshot = messages.map((m: any) =>
+      `[${new Date(m.timestamp).toLocaleString()}] ${m.senderName}: ${m.content}`
+    ).join('\n')
+  }
+  // FALLBACK: Parse old conversationHistory format
+  else {
+    console.log(`⚠️  Falling back to parsing conversationHistory for ${lead.firstName}`)
+    const conversation = lead.conversationHistory || ''
+    messages = parseConversationMessages(conversation)
+    conversationSnapshot = conversation
+  }
 
   if (messages.length === 0) {
     return {
@@ -257,12 +275,12 @@ async function analyzeConversation(lead: any) {
       overallAssessment: 'No conversation to analyze',
       issuesIdentified: [],
       keyTakeaways: [],
-      conversationSnapshot: conversation,
+      conversationSnapshot: conversationSnapshot,
       messageCount: 0,
     }
   }
 
-  // Call OpenAI to analyze the conversation
+  // Call Anthropic Claude to analyze the conversation
   const aiAnalysis = await callAIForAnalysis(messages, lead)
 
   return {
@@ -274,7 +292,7 @@ async function analyzeConversation(lead: any) {
     issuesIdentified: aiAnalysis.issues,
     overallAssessment: aiAnalysis.overallAssessment,
     keyTakeaways: aiAnalysis.keyTakeaways,
-    conversationSnapshot: conversation,
+    conversationSnapshot: conversationSnapshot,
     messageCount: messages.length,
   }
 }
@@ -432,9 +450,31 @@ async function loadPreviousLearnings() {
  * Call Anthropic Claude to analyze conversation quality
  */
 async function callAIForAnalysis(messages: any[], lead: any) {
+  // Format messages with EXTREME CLARITY to prevent hallucination
   const conversationText = messages.map((m, i) => {
-    const prefix = m.isTemplate ? `Message ${i + 1} [${m.sender} - ${m.templateType} TEMPLATE]:` : `Message ${i + 1} [${m.sender}]:`
-    return `${prefix} ${m.content}`
+    // Handle both old parsed format and new structured format
+    const sender = m.senderName || m.sender || 'Unknown'
+    const senderType = m.sender || (m.senderName?.includes('AI') ? 'ai' : 'customer')
+    const messageType = m.messageType || (m.isTemplate ? 'automated' : 'customer')
+    const templateType = m.templateType
+    const timestamp = m.timestamp ? new Date(m.timestamp).toLocaleString() : 'N/A'
+
+    // Build ultra-clear message label
+    const senderEmoji = senderType === 'ai' || sender === 'AI' ? '🤖 AI AGENT' :
+                        senderType === 'manual' ? '👨‍💼 MANUAL AGENT' :
+                        '👤 CUSTOMER'
+
+    const templateLabel = templateType ? ` [${templateType} TEMPLATE]` : ''
+    const timeLabel = timestamp !== 'N/A' ? ` at ${timestamp}` : ''
+
+    return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MESSAGE #${i + 1}
+Sender: ${senderEmoji}${templateLabel}${timeLabel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${m.content}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`.trim()
   }).join('\n\n')
 
   // CRITICAL: Load ALL previous learnings - Sophie's memory
