@@ -29,6 +29,10 @@ interface Analysis {
     firstName: string
     conversationHistory: string
   }
+  agreedWithSophie?: boolean
+  userFeedback?: string
+  reviewedBy?: string
+  reviewedAt?: string
 }
 
 export default function SophieQualityMonitor() {
@@ -43,6 +47,9 @@ export default function SophieQualityMonitor() {
   const [sophieThinking, setSophieThinking] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'to_review' | 'all' | 'reviewed' | 'dismissed'>('to_review')
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'good'>('all')
+  const [showReanalysisPrompt, setShowReanalysisPrompt] = useState(false)
+  const [latestLearningId, setLatestLearningId] = useState<string | null>(null)
+  const [reanalyzing, setReanalyzing] = useState(false)
 
   // Initial load: Auto-analyze and fetch
   useEffect(() => {
@@ -195,14 +202,48 @@ export default function SophieQualityMonitor() {
       })
 
       if (response.ok) {
+        const data = await response.json()
         setTeachingMode(false)
         setDialogueHistory([])
         setTeachingAnalysisId(null)
         await fetchAnalyses()
         setExpandedCard(null)
+
+        // Show re-analysis prompt with the new learning ID
+        if (data.learning?._id) {
+          setLatestLearningId(data.learning._id)
+          setShowReanalysisPrompt(true)
+        }
       }
     } catch (error) {
       console.error('Save learning error:', error)
+    }
+  }
+
+  const triggerReanalysis = async () => {
+    if (!latestLearningId) return
+
+    setReanalyzing(true)
+    try {
+      const response = await fetch('/api/sophie-reanalyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'reanalyze_affected',
+          learningId: latestLearningId,
+          limit: 50,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setShowReanalysisPrompt(false)
+        await fetchAnalyses() // Refresh to show updated analyses
+      }
+    } catch (error) {
+      console.error('Re-analysis error:', error)
+    } finally {
+      setReanalyzing(false)
     }
   }
 
@@ -451,6 +492,37 @@ export default function SophieQualityMonitor() {
               {/* Expanded Content */}
               {isExpanded && (
                 <div className="border-t border-white/10 bg-gray-900/30 p-6 space-y-4">
+                  {/* Feedback History (if reviewed) */}
+                  {analysis.status === 'reviewed' && analysis.agreedWithSophie !== undefined && (
+                    <div className={`${
+                      analysis.agreedWithSophie
+                        ? 'bg-green-900/20 border-green-500/30'
+                        : 'bg-orange-900/20 border-orange-500/30'
+                    } border rounded-lg p-4`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {analysis.agreedWithSophie ? (
+                          <>
+                            <ThumbsUp className="w-5 h-5 text-green-400" />
+                            <div className="text-green-400 font-semibold">You Agreed with Sophie</div>
+                          </>
+                        ) : (
+                          <>
+                            <ThumbsDown className="w-5 h-5 text-orange-400" />
+                            <div className="text-orange-400 font-semibold">You Disagreed & Taught Sophie</div>
+                          </>
+                        )}
+                      </div>
+                      {analysis.userFeedback && (
+                        <p className="text-white text-sm mt-2 pl-7">{analysis.userFeedback}</p>
+                      )}
+                      {analysis.reviewedBy && (
+                        <p className="text-gray-400 text-xs mt-2 pl-7">
+                          Reviewed by {analysis.reviewedBy} {analysis.reviewedAt && `on ${new Date(analysis.reviewedAt).toLocaleDateString('en-GB')}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Assessment */}
                   <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
                     <div className="text-blue-400 font-semibold mb-2">Sophie's Assessment:</div>
@@ -620,6 +692,51 @@ export default function SophieQualityMonitor() {
           )
         })}
       </div>
+
+      {/* Re-analysis Prompt Modal */}
+      {showReanalysisPrompt && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 border border-coldlava-cyan rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white">Learning Captured!</h3>
+              <p className="text-gray-300">
+                Sophie has learned from this conversation. Would you like to re-analyze similar conversations with this new knowledge?
+              </p>
+              <p className="text-sm text-gray-400">
+                This will apply the new learning to past conversations that may have had the same issue.
+              </p>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowReanalysisPrompt(false)}
+                  className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={triggerReanalysis}
+                  disabled={reanalyzing}
+                  className="flex-1 px-4 py-3 bg-coldlava-cyan hover:bg-coldlava-cyan/80 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                >
+                  {reanalyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Re-analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-5 h-5" />
+                      Re-analyze
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

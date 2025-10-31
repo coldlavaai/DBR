@@ -36,7 +36,8 @@ export async function GET(request: Request) {
 
     query += ` | order(priority asc, lastUpdated desc) {
       _id, _createdAt, category, title, userGuidance, doThis, dontDoThis,
-      exampleResponses, conversationExamples, priority, tags, notes, createdBy, lastUpdated
+      exampleResponses, conversationExamples, priority, tags, notes, createdBy, lastUpdated,
+      confidenceScore, timesApplied, timesCorrect, timesIncorrect, version, isActive, source
     }`
 
     const learnings = await sanityClient.fetch(query, params)

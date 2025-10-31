@@ -165,6 +165,105 @@ export const sophieLearning = defineType({
       description: 'When this learning was last modified',
       readOnly: true,
     },
+
+    // NEW: v2.0 Confidence & Tracking Fields
+    {
+      name: 'confidenceScore',
+      title: 'Confidence Score',
+      type: 'number',
+      description: 'How confident Sophie is in this learning (0.0-1.0)',
+      initialValue: 1.0,
+      validation: (Rule) => Rule.min(0).max(1),
+    },
+
+    {
+      name: 'timesApplied',
+      title: 'Times Applied',
+      type: 'number',
+      description: 'How many times this learning was used in analyses',
+      initialValue: 0,
+    },
+
+    {
+      name: 'timesCorrect',
+      title: 'Times Correct',
+      type: 'number',
+      description: 'How many times this learning led to correct analysis',
+      initialValue: 0,
+    },
+
+    {
+      name: 'timesIncorrect',
+      title: 'Times Incorrect',
+      type: 'number',
+      description: 'How many times this learning led to mistakes',
+      initialValue: 0,
+    },
+
+    {
+      name: 'version',
+      title: 'Version',
+      type: 'number',
+      description: 'Version number of this learning',
+      initialValue: 1,
+    },
+
+    {
+      name: 'isActive',
+      title: 'Is Active',
+      type: 'boolean',
+      description: 'Whether this learning is currently active (or archived)',
+      initialValue: true,
+    },
+
+    {
+      name: 'source',
+      title: 'Source',
+      type: 'string',
+      description: 'How this learning was created',
+      options: {
+        list: [
+          { title: '✅ User Agreed', value: 'user_agreed' },
+          { title: '💬 Teaching Dialogue', value: 'teaching_dialogue' },
+          { title: '🔄 Consolidated', value: 'consolidated' },
+        ],
+      },
+    },
+
+    {
+      name: 'originalIssue',
+      title: 'Original Issue Type',
+      type: 'string',
+      description: 'The issue type that triggered this learning',
+    },
+
+    {
+      name: 'dialogueTranscript',
+      title: 'Dialogue Transcript',
+      type: 'array',
+      description: 'Full teaching conversation (if from teaching dialogue)',
+      of: [{ type: 'object', fields: [
+        { name: 'role', type: 'string' },
+        { name: 'message', type: 'text' },
+        { name: 'timestamp', type: 'datetime' },
+      ]}],
+    },
+
+    {
+      name: 'supersededBy',
+      title: 'Superseded By',
+      type: 'reference',
+      to: [{ type: 'sophieLearning' }],
+      description: 'If archived, which learning replaced this',
+    },
+
+    {
+      name: 'consolidatedFrom',
+      title: 'Consolidated From',
+      type: 'array',
+      description: 'If this is a meta-learning, which learnings were merged',
+      of: [{ type: 'string' }],
+    },
   ],
 
   preview: {

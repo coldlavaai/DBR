@@ -171,6 +171,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         learningId: learning._id,
+        learning: learning, // Return full learning object for re-analysis
         message: '✅ Sophie learned from this! Learning captured.',
       })
     }

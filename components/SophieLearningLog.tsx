@@ -15,6 +15,12 @@ interface Learning {
   tags?: string[]
   createdBy?: string
   lastUpdated: string
+  confidenceScore?: number
+  timesApplied?: number
+  timesCorrect?: number
+  timesIncorrect?: number
+  source?: string
+  isActive?: boolean
 }
 
 export default function SophieLearningLog() {
@@ -200,12 +206,46 @@ export default function SophieLearningLog() {
                 </div>
               )}
 
+              {/* Tracking Stats */}
+              {(learning.confidenceScore !== undefined || learning.timesApplied !== undefined) && (
+                <div className="mt-3 bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                  <p className="text-purple-400 font-semibold text-xs mb-2">Learning Performance:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {learning.confidenceScore !== undefined && (
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-white">{(learning.confidenceScore * 100).toFixed(0)}%</div>
+                        <div className="text-xs text-gray-400">Confidence</div>
+                      </div>
+                    )}
+                    {learning.timesApplied !== undefined && (
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-coldlava-cyan">{learning.timesApplied}</div>
+                        <div className="text-xs text-gray-400">Times Used</div>
+                      </div>
+                    )}
+                    {(learning.timesCorrect !== undefined && learning.timesIncorrect !== undefined) && (
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-green-400">{learning.timesCorrect}/{learning.timesCorrect + learning.timesIncorrect}</div>
+                        <div className="text-xs text-gray-400">Correct</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Footer */}
               <div className="mt-3 pt-3 border-t border-gray-700 flex items-center justify-between text-xs">
-                <span className="text-gray-500">
-                  {learning.createdBy && `by ${learning.createdBy} • `}
-                  {new Date(learning.lastUpdated).toLocaleDateString('en-GB')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">
+                    {learning.createdBy && `by ${learning.createdBy} • `}
+                    {new Date(learning.lastUpdated).toLocaleDateString('en-GB')}
+                  </span>
+                  {learning.source && (
+                    <span className="px-2 py-0.5 bg-purple-900/30 text-purple-400 rounded-full text-xs">
+                      {learning.source === 'user_agreed' ? '✅ Agreed' : learning.source === 'teaching_dialogue' ? '💬 Taught' : learning.source === 'consolidated' ? '🔄 Consolidated' : learning.source}
+                    </span>
+                  )}
+                </div>
                 {learning.tags && learning.tags.length > 0 && (
                   <div className="flex gap-1">
                     {learning.tags.slice(0, 3).map((tag, idx) => (
