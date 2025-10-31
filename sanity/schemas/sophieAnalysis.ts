@@ -84,6 +84,7 @@ export const sophieAnalysis = defineType({
             type: 'string',
             options: {
               list: [
+                { title: '❌ No Response (AI Didn\'t Respond)', value: 'no_response' },
                 { title: '🚫 Wrong Response', value: 'wrong_response' },
                 { title: '⏹️ Should Have Stopped', value: 'should_stop' },
                 { title: '📅 Missed Booking Opportunity', value: 'missed_booking' },
@@ -114,9 +115,17 @@ export const sophieAnalysis = defineType({
             rows: 2,
           },
           {
+            name: 'customerMessage',
+            title: 'What Customer Said',
+            type: 'text',
+            description: 'The customer message that triggered this issue (especially for no_response scenarios)',
+            rows: 2,
+          },
+          {
             name: 'actualResponse',
             title: 'What AI Actually Said',
             type: 'text',
+            description: 'What AI said (empty/null if issue is no_response)',
             rows: 2,
           },
           {

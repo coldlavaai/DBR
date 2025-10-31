@@ -783,14 +783,27 @@ Return your analysis as JSON with this structure:
   "appliedLearnings": ["Learning #1", "Learning #3"] /* which learnings from your memory influenced this analysis */,
   "issues": [
     {
-      "issueType": "no_response|should_stop|missed_booking|bad_price_handling|bad_timing_handling|trust_issue|too_long|too_short|lost_context|wrong_tone|repetitive|didnt_answer|too_pushy|not_assertive",
+      "issueType": "no_response|wrong_response|should_stop|missed_booking|bad_price_handling|bad_timing_handling|trust_issue|too_long|too_short|lost_context|wrong_tone|repetitive|didnt_answer|too_pushy|not_assertive",
       "messageIndex": 1,
       "explanation": "what was wrong and why it matters (sales tactics, objection handling, sentiment, or cultural fit)",
-      "actualResponse": "exact quote of what the AI said at this messageIndex - MUST be from an [AI] message (can be empty string if issue is no_response), NEVER from [Lead]",
+      "customerMessage": "what the customer said (REQUIRED for no_response issues, optional for others to provide context)",
+      "actualResponse": "exact quote of what AI said - MUST be empty string/null if issueType is no_response, otherwise quote the AI's actual message",
       "suggestedResponse": "what AI should have said instead - professional, respectful, effective"
     }
   ]
 }
+
+**CRITICAL FIELD USAGE RULES:**
+
+1. **When issueType = "no_response"** (AI failed to respond to customer):
+   - customerMessage: "exact quote of what customer said" (REQUIRED)
+   - actualResponse: "" (empty string - AI said nothing)
+   - suggestedResponse: "what AI should have said in response to the customer"
+
+2. **When issueType = anything else** (AI responded but poorly):
+   - customerMessage: "customer's message for context" (optional but helpful)
+   - actualResponse: "exact quote of AI's bad response" (REQUIRED)
+   - suggestedResponse: "what AI should have said instead"
 
 NOTE: In "appliedLearnings", list which learnings from your memory (if any) you applied. This helps us track which learnings are working.
 
@@ -798,7 +811,59 @@ REMEMBER:
 - Each messageIndex must appear ONLY ONCE
 - Choose the single most important issue per AI message
 - Template messages (M1/M2/M3) are NOT responses - don't analyze them as such
-- If AI doesn't respond after customer message, flag it as "no_response"`
+- If AI doesn't respond after customer message, flag it as "no_response"
+
+**CRITICAL: WHEN TO FLAG "no_response"**
+
+NOT every silence is a problem! Evaluate CONTEXT to determine if AI should have responded:
+
+✅ **APPROPRIATE SILENCE (Don't flag as issue):**
+- Customer says "thank you" after call is booked → Conversation complete, no response needed
+- Customer says "ok" or "sounds good" after AI provides info → No question asked, no response needed
+- AI already said goodbye and customer confirms → Conversation ended naturally
+
+❌ **INAPPROPRIATE SILENCE (Flag as "no_response"):**
+- Customer requests removal ("stop messaging me", "remove me") → AI MUST confirm removal
+- Customer asks a direct question → AI MUST answer
+- Customer expresses concern/objection → AI MUST acknowledge
+- Customer shows interest but AI doesn't engage → Missed opportunity
+
+**EXAMPLE - INAPPROPRIATE NO RESPONSE (Flag this):**
+Message 1 [AI - M1]: Hi, is this John?
+Message 2 [Customer]: I've never enquired about solar panels. Remove me from your system.
+Message 3 [AI - M2]: Just checking in again...
+
+Correct Issue Object:
+{
+  "issueType": "no_response",
+  "messageIndex": 3,
+  "explanation": "Customer clearly requested removal but AI sent automated M2 template instead of acknowledging and removing them - this is CRITICAL customer service failure",
+  "customerMessage": "I've never enquired about solar panels. Remove me from your system.",
+  "actualResponse": "",
+  "suggestedResponse": "Thank you for letting us know. I apologize for the confusion - we'll remove you from our system immediately. Have a great day!"
+}
+
+**EXAMPLE - APPROPRIATE NO RESPONSE (Don't flag as issue):**
+Message 1 [AI]: Great! I've booked your free consultation for Tuesday at 2pm. You'll receive a confirmation email shortly.
+Message 2 [Customer]: Thank you!
+(No Message 3 - conversation complete)
+
+Analysis: AI correctly didn't respond - conversation ended naturally after booking confirmation and thank you. No issue to flag.
+
+**EXAMPLE - WRONG RESPONSE SCENARIO:**
+Message 1 [AI]: Hi, is this John?
+Message 2 [Customer]: Not interested
+Message 3 [AI]: Let me tell you about our amazing deals!
+
+Correct Issue Object:
+{
+  "issueType": "should_stop",
+  "messageIndex": 3,
+  "explanation": "Customer clearly stated not interested but AI continued selling anyway",
+  "customerMessage": "Not interested",
+  "actualResponse": "Let me tell you about our amazing deals!",
+  "suggestedResponse": "No problem at all, thanks for letting me know. Have a great day!"
+}`
 
   const userPrompt = `Analyze this conversation with ${lead.firstName}:\n\nLead Status: ${lead.contactStatus}\n\n${conversationText}`
 
