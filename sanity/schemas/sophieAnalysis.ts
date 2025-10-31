@@ -172,6 +172,22 @@ export const sophieAnalysis = defineType({
     },
 
     {
+      name: 'appliedLearningIds',
+      title: 'Applied Learning IDs',
+      type: 'array',
+      description: 'IDs of learnings that were active when this analysis was done (for version control)',
+      of: [{ type: 'string' }],
+    },
+
+    {
+      name: 'analysisVersion',
+      title: 'Analysis Version',
+      type: 'number',
+      description: 'Version number based on count of learnings at analysis time',
+      initialValue: 0,
+    },
+
+    {
       name: 'conversationSnapshot',
       title: 'Conversation Snapshot',
       type: 'text',

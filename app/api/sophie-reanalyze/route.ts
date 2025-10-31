@@ -77,15 +77,17 @@ export async function POST(request: NextRequest) {
       const relevantTags = learning.tags || []
       const exampleLeadIds = learning.conversationExamples?.map((ex: any) => ex._ref) || []
 
+      // **SMART RE-ANALYSIS**: Only get analyses that DON'T already have this learning applied
       analysesToRerun = await sanityClient.fetch(
         `*[_type == "sophieAnalysis" && (
           issuesIdentified[].issueType match $tags ||
           lead._ref in $leadIds
-        )] | order(_createdAt desc) [0...${limit}] {
+        ) && !($learningId in appliedLearningIds)] | order(_createdAt desc) [0...${limit}] {
           _id,
-          lead->{_id, firstName}
+          lead->{_id, firstName},
+          appliedLearningIds
         }`,
-        { tags: relevantTags, leadIds: exampleLeadIds }
+        { tags: relevantTags, leadIds: exampleLeadIds, learningId }
       )
     }
 
@@ -103,26 +105,42 @@ export async function POST(request: NextRequest) {
     )
     await Promise.all(deletionPromises)
 
-    // Trigger re-analysis via the main analysis endpoint
-    const reanalysisResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://greenstar-dbr-dashboard.vercel.app'}/api/sophie-analyze-conversations`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mode: 'specific_leads',
-          leadIds: analysesToRerun.map((a) => a.lead._id),
-        }),
-      }
-    )
+    // **RATE LIMITING**: Process in batches with delays
+    const batchSize = 5 // Process 5 at a time
+    const delayBetweenBatches = 2000 // 2 second delay between batches
+    const leadIds = analysesToRerun.map((a) => a.lead._id)
+    let successCount = 0
 
-    if (!reanalysisResponse.ok) {
-      throw new Error('Re-analysis failed')
+    for (let i = 0; i < leadIds.length; i += batchSize) {
+      const batch = leadIds.slice(i, i + batchSize)
+
+      // Trigger re-analysis for this batch
+      const reanalysisResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'https://greenstar-dbr-dashboard.vercel.app'}/api/sophie-analyze-conversations`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mode: 'specific_leads',
+            leadIds: batch,
+          }),
+        }
+      )
+
+      if (reanalysisResponse.ok) {
+        const data = await reanalysisResponse.json()
+        successCount += data.results?.length || 0
+      }
+
+      // Wait before next batch (except for last batch)
+      if (i + batchSize < leadIds.length) {
+        await new Promise(resolve => setTimeout(resolve, delayBetweenBatches))
+      }
     }
 
-    const reanalysisData = await reanalysisResponse.json()
+    const reanalysisData = { results: [], count: successCount }
 
     return NextResponse.json({
       success: true,

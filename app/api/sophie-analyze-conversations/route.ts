@@ -122,6 +122,10 @@ export async function POST(request: NextRequest) {
 
         const analysis = await analyzeConversation(lead)
 
+        // Get all active learning IDs for version tracking
+        const allLearnings = await loadPreviousLearnings()
+        const activeLearningIds = allLearnings.map((l: any) => l._id)
+
         // Store in Sanity
         const savedAnalysis = await sanityClient.create({
           _type: 'sophieAnalysis',
@@ -140,6 +144,9 @@ export async function POST(request: NextRequest) {
           // Track which learnings were applied in this analysis
           appliedLearnings: (analysis as any).appliedLearnings || [],
           learningCount: ((analysis as any).appliedLearnings)?.length || 0,
+          // Version control: track ALL learning IDs that existed when this analysis was done
+          appliedLearningIds: activeLearningIds,
+          analysisVersion: allLearnings.length, // Simple version = count of learnings
         })
 
         results.push({
