@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
           priority = 'high'
         }
 
-        // Create the learning entry
+        // Create the learning entry with confidence tracking
         const learning = await sanityClient.create({
           _type: 'sophieLearning',
           category,
@@ -123,7 +123,15 @@ export async function POST(request: NextRequest) {
           }],
           createdBy: userName || 'Sophie',
           lastUpdated: new Date().toISOString(),
-          tags: [issue.issueType, 'uk_psychology', 'dbr_campaign'],
+          tags: [issue.issueType, 'uk_psychology', 'dbr_campaign', 'positive_reinforcement'],
+          // NEW: Confidence tracking
+          confidenceScore: 1.0, // Start with full confidence (user agreed)
+          timesApplied: 0,
+          timesCorrect: 1, // This analysis was correct
+          timesIncorrect: 0,
+          version: 1,
+          isActive: true,
+          source: 'user_agreed', // vs 'teaching_dialogue'
         })
 
         learningsCreated.push({

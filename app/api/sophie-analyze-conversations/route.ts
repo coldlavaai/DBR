@@ -137,6 +137,9 @@ export async function POST(request: NextRequest) {
             messageCount: analysis.messageCount,
             lastMessageDate: lead.replyReceived || lead.m3Sent || lead.m2Sent || lead.m1Sent,
           },
+          // Track which learnings were applied in this analysis
+          appliedLearnings: (analysis as any).appliedLearnings || [],
+          learningCount: ((analysis as any).appliedLearnings)?.length || 0,
         })
 
         results.push({
@@ -633,6 +636,7 @@ Return your analysis as JSON with this structure:
   "qualityScore": 0-100,
   "overallAssessment": "string (2-3 sentences summary)",
   "keyTakeaways": ["specific lesson 1", "specific lesson 2", "specific lesson 3"],
+  "appliedLearnings": ["Learning #1", "Learning #3"] /* which learnings from your memory influenced this analysis */,
   "issues": [
     {
       "issueType": "no_response|should_stop|missed_booking|bad_price_handling|bad_timing_handling|trust_issue|too_long|too_short|lost_context|wrong_tone|repetitive|didnt_answer|too_pushy|not_assertive",
@@ -643,6 +647,8 @@ Return your analysis as JSON with this structure:
     }
   ]
 }
+
+NOTE: In "appliedLearnings", list which learnings from your memory (if any) you applied. This helps us track which learnings are working.
 
 REMEMBER:
 - Each messageIndex must appear ONLY ONCE

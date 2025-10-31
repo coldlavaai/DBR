@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         userMessage
       )
 
-      // Save the refined learning to Sanity
+      // Save the refined learning to Sanity with confidence tracking
       const learning = await sanityClient.create({
         _type: 'sophieLearning',
         category: refinedLearning.category,
@@ -142,6 +142,16 @@ export async function POST(request: NextRequest) {
         lastUpdated: new Date().toISOString(),
         tags: ['taught_by_user', 'refined_through_dialogue', issue.issueType],
         notes: `Refined through teaching dialogue. Original Sophie analysis disagreed with by user.`,
+        // NEW: Confidence tracking
+        confidenceScore: 1.0, // Start with full confidence (user taught directly)
+        timesApplied: 0,
+        timesCorrect: 0,
+        timesIncorrect: 1, // Sophie was wrong initially
+        version: 1,
+        isActive: true,
+        source: 'teaching_dialogue',
+        originalIssue: issue.issueType,
+        dialogueTranscript: dialogueHistory,
       })
 
       // Update the analysis to mark it as reviewed with teaching
