@@ -10,6 +10,23 @@ const sanityClient = createClient({
 })
 
 /**
+ * Load all previous learnings so Sophie knows what she's been taught
+ */
+async function loadPreviousLearnings() {
+  try {
+    const learnings = await sanityClient.fetch(
+      `*[_type == "sophieLearning" && isActive == true] | order(priority asc, _createdAt desc) {
+        _id, category, title, userGuidance, doThis, dontDoThis, priority, tags, timesIncorrect
+      }`
+    )
+    return learnings
+  } catch (error) {
+    console.error('Failed to load learnings:', error)
+    return []
+  }
+}
+
+/**
  * SOPHIE'S TEACHING DIALOGUE
  * ==========================
  * When user disagrees with Sophie's analysis, this creates an interactive
@@ -198,21 +215,53 @@ async function askSophieToRespond(
 ) {
   const conversationContext = analysis.conversationSnapshot || analysis.lead.conversationHistory || ''
 
+  // Load all previous learnings so Sophie knows what she's been taught
+  const previousLearnings = await loadPreviousLearnings()
+
+  // Check if Sophie has been taught this mistake before
+  const relatedLearnings = previousLearnings.filter((l: any) =>
+    l.tags?.includes(issue.issueType) ||
+    l.category === issue.issueType ||
+    (l.timesIncorrect && l.timesIncorrect > 0)
+  )
+
+  const learningsSection = previousLearnings.length > 0
+    ? `\n\n## 🧠 YOUR MEMORY - WHAT YOU'VE BEEN TAUGHT BEFORE
+
+**CRITICAL: You have been taught these lessons. If the user's feedback relates to something you've learned before, ACKNOWLEDGE IT IMMEDIATELY:**
+
+${previousLearnings.map((l: any, i: number) => `
+### ${i + 1}. ${l.title} [${l.priority.toUpperCase()}]
+**You were taught:** ${l.userGuidance}
+**DO THIS:** ${l.doThis}
+**DON'T DO THIS:** ${l.dontDoThis}
+${l.timesIncorrect > 1 ? `⚠️ **You've made this mistake ${l.timesIncorrect} times before!**` : ''}
+`).join('\n')}
+
+**IMPORTANT:** If the user's correction matches ANY of these learnings, START your response with:
+"I apologize - I've been taught this before and I shouldn't have made this mistake again. [Learning #X: {title}]"
+Then explain what you missed THIS time.`
+    : ''
+
   const systemPrompt = `You are Sophie, an AI learning assistant for conversation quality analysis.
 
 A user (your teacher) has DISAGREED with your analysis of a conversation. Your job is to:
-1. Listen carefully to their correction
-2. Ask clarifying questions to understand WHY you were wrong
-3. Learn the nuance you missed
-4. Reach a shared understanding
+1. **FIRST**: Check if you've been taught this before (see YOUR MEMORY below)
+2. If yes: APOLOGIZE for repeating the mistake and acknowledge the learning
+3. Listen carefully to their correction
+4. Ask clarifying questions to understand WHY you were wrong
+5. Learn the nuance you missed
+6. Reach a shared understanding
 
 **Your personality:**
 - Curious and eager to learn
+- Humble - admit when you're making the SAME mistake again
 - Ask specific questions about what you missed
 - Reference the actual conversation when asking questions
-- Be humble - you made a mistake and want to understand why
 - Don't be defensive - focus on learning
 - Keep responses short and focused (2-3 sentences max)
+
+${learningsSection}
 
 **The conversation you analyzed:**
 ${conversationContext}
@@ -226,7 +275,11 @@ What you thought AI should say: "${issue.suggestedResponse}"
 **The user disagreed and said:**
 "${userMessage}"
 
-Your job: Ask a clarifying question to understand what you missed. Focus on the SPECIFIC difference between what you thought and what the user is teaching you.`
+Your job:
+1. Check YOUR MEMORY - have you been taught this before?
+2. If yes, apologize for repeating the mistake
+3. Ask a clarifying question to understand what you missed THIS time
+4. Focus on the SPECIFIC difference between what you thought and what the user is teaching you.`
 
   // Build message history for Claude
   const messages = [
