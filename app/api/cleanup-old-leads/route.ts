@@ -16,9 +16,11 @@ export async function POST() {
   try {
     console.log('🧹 Starting cleanup of old records without campaign field...')
 
-    // Find all records WITHOUT a campaign field
+    // Find all records with OLD ID format (dbr-{phone} without campaign prefix)
+    // New format is: dbr-October-{phone} or dbr-10th-Nov-{phone}
+    // Old format is: dbr-{phone} (starts with dbr-4 since all UK numbers start with 44)
     const oldRecords = await sanityClient.fetch<Array<{ _id: string }>>(
-      `*[_type == "dbrLead" && !defined(campaign)] { _id }`
+      `*[_type == "dbrLead" && _id match "dbr-4*" && !(_id match "dbr-October-*") && !(_id match "dbr-10th-Nov-*")] { _id }`
     )
 
     console.log(`📊 Found ${oldRecords.length} old records without campaign field`)
