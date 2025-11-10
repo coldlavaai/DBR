@@ -36,21 +36,24 @@ export async function POST(request: Request) {
 
     console.log(`✅ Updated Sanity contact status for lead ${leadId}`)
 
-    // Get lead data
+    // Get lead data including campaign
     const lead = await sanityClient.fetch(
-      `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber }`,
+      `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber, campaign }`,
       { leadId }
     )
 
     // Update Google Sheets Final_status column by searching for phone number
-    if (lead?.phoneNumber) {
+    if (lead?.phoneNumber && lead?.campaign) {
       const sheets = getGoogleSheetsClient()
+
+      // Determine sheet name from campaign
+      const sheetName = lead.campaign // 'October' or '10th Nov'
 
       // Search for the phone number in column D (index 3)
       const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
       const allRows = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: 'D2:D', // Column D (Phone_number) from row 2 onwards
+        range: `${sheetName}!D2:D`, // Column D (Phone_number) in the correct sheet tab
       })
 
       const rows = allRows.data.values || []
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
 
       if (rowIndex >= 0) {
         const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
-        const range = `A${sheetRow}` // Column A = Contact_Status
+        const range = `${sheetName}!A${sheetRow}` // Column A = Contact_Status in the correct sheet
 
         await sheets.spreadsheets.values.update({
           spreadsheetId: SPREADSHEET_ID,
@@ -71,7 +74,7 @@ export async function POST(request: Request) {
           },
         })
 
-        console.log(`✅ Updated Google Sheets Contact_Status for row ${sheetRow} to ${contactStatus}`)
+        console.log(`✅ Updated Google Sheets (${sheetName}) Contact_Status for row ${sheetRow} to ${contactStatus}`)
       } else {
         console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
       }

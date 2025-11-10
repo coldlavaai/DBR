@@ -112,15 +112,28 @@ export async function POST(request: Request) {
     // Update Google Sheets directly (same pattern as update-lead-status)
     try {
       console.log(`📊 Attempting to update Google Sheets for phone: ${phone}`)
+
+      // Get the lead's campaign to determine which sheet tab to update
+      const lead = await sanityClient.fetch(
+        `*[_type == "dbrLead" && _id == $leadId][0]{ campaign }`,
+        { leadId }
+      )
+
+      if (!lead?.campaign) {
+        console.warn(`⚠️ No campaign found for lead ${leadId}, skipping Google Sheets update`)
+        throw new Error('No campaign found')
+      }
+
       const sheets = getGoogleSheetsClient()
+      const sheetName = lead.campaign // 'October' or '10th Nov'
 
       // Search for the phone number in column D (index 3)
       const phoneWithoutPlus = phone.replace(/\+/g, '')
-      console.log(`🔍 Searching for phone: ${phoneWithoutPlus} (original: ${phone})`)
+      console.log(`🔍 Searching for phone: ${phoneWithoutPlus} in sheet: ${sheetName}`)
 
       const allRows = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: 'D2:D', // Column D (Phone_number) from row 2 onwards
+        range: `${sheetName}!D2:D`, // Column D (Phone_number) in the correct sheet tab
       })
 
       const rows = allRows.data.values || []
@@ -160,15 +173,15 @@ export async function POST(request: Request) {
           requestBody: {
             data: [
               {
-                range: `A${sheetRow}`,
+                range: `${sheetName}!A${sheetRow}`,
                 values: [['CALL_BOOKED']]
               },
               {
-                range: `V${sheetRow}`,
+                range: `${sheetName}!V${sheetRow}`,
                 values: [['YES']]
               },
               {
-                range: `X${sheetRow}`,
+                range: `${sheetName}!X${sheetRow}`,
                 values: [[formattedTime]]
               }
             ],

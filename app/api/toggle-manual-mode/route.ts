@@ -62,20 +62,23 @@ export async function POST(request: Request) {
 
     // Update Google Sheets by searching for phone number
     try {
-      // Get the lead's phone number
+      // Get the lead's phone number and campaign
       const lead = await sanityClient.fetch(
-        `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber }`,
+        `*[_type == "dbrLead" && _id == $leadId][0]{ phoneNumber, campaign }`,
         { leadId }
       )
 
-      if (lead?.phoneNumber) {
+      if (lead?.phoneNumber && lead?.campaign) {
         const sheets = getGoogleSheetsClient()
+
+        // Determine sheet name from campaign
+        const sheetName = lead.campaign // 'October' or '10th Nov'
 
         // Search for the phone number in column D (index 3)
         const phoneWithoutPlus = lead.phoneNumber.replace(/\+/g, '')
         const allRows = await sheets.spreadsheets.values.get({
           spreadsheetId: SPREADSHEET_ID,
-          range: 'D2:D', // Column D (Phone_number) from row 2 onwards
+          range: `${sheetName}!D2:D`, // Column D (Phone_number) in the correct sheet tab
         })
 
         const rows = allRows.data.values || []
@@ -85,7 +88,7 @@ export async function POST(request: Request) {
 
         if (rowIndex >= 0) {
           const sheetRow = rowIndex + 2 // +2 because we start from row 2 and arrays are 0-indexed
-          const range = `V${sheetRow}` // Column V = Manual_Mode
+          const range = `${sheetName}!V${sheetRow}` // Column V = Manual_Mode in the correct sheet
 
           await retryOperation(async () => {
             await sheets.spreadsheets.values.update({
@@ -98,7 +101,7 @@ export async function POST(request: Request) {
             })
           })
 
-          console.log(`✅ Updated Google Sheet row ${sheetRow} with manual mode: ${manualMode ? 'YES' : 'empty'}`)
+          console.log(`✅ Updated Google Sheet (${sheetName}) row ${sheetRow} with manual mode: ${manualMode ? 'YES' : 'empty'}`)
         } else {
           console.warn(`⚠️ Phone number ${lead.phoneNumber} not found in Google Sheets`)
         }
