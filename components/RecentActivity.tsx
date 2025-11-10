@@ -14,10 +14,11 @@ interface ActivityItem {
 
 interface RecentActivityProps {
   activities: ActivityItem[]
+  campaign?: string
   onActivityClick?: (leadId: string, leadName: string) => void
 }
 
-export default function RecentActivity({ activities: initialActivities, onActivityClick }: RecentActivityProps) {
+export default function RecentActivity({ activities: initialActivities, campaign = 'October', onActivityClick }: RecentActivityProps) {
   const [activities, setActivities] = useState<ActivityItem[]>(initialActivities)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -31,7 +32,7 @@ export default function RecentActivity({ activities: initialActivities, onActivi
   const loadMore = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/recent-activity?offset=${activities.length}&limit=5`)
+      const response = await fetch(`/api/recent-activity?offset=${activities.length}&limit=5&campaign=${encodeURIComponent(campaign)}`)
       if (!response.ok) throw new Error('Failed to load more activities')
 
       const data = await response.json()

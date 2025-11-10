@@ -476,7 +476,7 @@ export default function EnhancedDbrDashboard() {
         title: 'Recent Activity',
         count: recentActivity.length,
         color: 'border-cyan-500/50 hover:border-cyan-400',
-        content: <RecentActivity activities={recentActivity} onActivityClick={handleActivityClick} />
+        content: <RecentActivity activities={recentActivity} campaign={campaign} onActivityClick={handleActivityClick} />
       },
       leadStatusBuckets: {
         id: 'lead-status-buckets-section',

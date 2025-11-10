@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const offset = parseInt(searchParams.get('offset') || '0')
     const limit = parseInt(searchParams.get('limit') || '5')
+    const campaign = searchParams.get('campaign') || 'October'
 
-    // Fetch all leads with replies, sorted by most recent reply
-    const query = `*[_type == "dbrLead" && replyReceived != null] | order(replyReceived desc) {
+    // Fetch all leads with replies for this campaign, sorted by most recent reply
+    const query = `*[_type == "dbrLead" && campaign == $campaign && replyReceived != null] | order(replyReceived desc) {
       _id,
       firstName,
       secondName,
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       contactStatus
     }`
 
-    const allLeadsWithReplies = await sanityClient.fetch(query)
+    const allLeadsWithReplies = await sanityClient.fetch(query, { campaign })
 
     // Apply pagination
     const paginatedLeads = allLeadsWithReplies.slice(offset, offset + limit)
