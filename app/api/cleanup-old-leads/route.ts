@@ -16,11 +16,10 @@ export async function POST() {
   try {
     console.log('🧹 Starting cleanup of old records without campaign field...')
 
-    // Find all records with OLD ID format (dbr-{phone} without campaign prefix)
-    // New format is: dbr-October-{phone} or dbr-10th-Nov-{phone}
-    // Old format is: dbr-{phone} (starts with dbr-4 since all UK numbers start with 44)
+    // Delete ALL dbrLead records to start fresh
+    // All data is safely stored in Google Sheets and will be re-synced
     const oldRecords = await sanityClient.fetch<Array<{ _id: string }>>(
-      `*[_type == "dbrLead" && _id match "dbr-4*" && !(_id match "dbr-October-*") && !(_id match "dbr-10th-Nov-*")] { _id }`
+      `*[_type == "dbrLead"] { _id }`
     )
 
     console.log(`📊 Found ${oldRecords.length} old records without campaign field`)
@@ -39,15 +38,23 @@ export async function POST() {
 
     for (let i = 0; i < oldRecords.length; i += BATCH_SIZE) {
       const batch = oldRecords.slice(i, i + BATCH_SIZE)
-      const transaction = sanityClient.transaction()
 
-      batch.forEach(record => {
-        transaction.delete(record._id)
-      })
+      // Delete each record individually with error handling
+      for (const record of batch) {
+        try {
+          await sanityClient.delete(record._id)
+          deleted++
+        } catch (error: any) {
+          // If deletion fails due to references, skip it
+          if (error.message?.includes('cannot be deleted as there are references')) {
+            console.log(`⚠️ Skipping ${record._id} (has references)`)
+          } else {
+            console.error(`❌ Error deleting ${record._id}:`, error.message)
+          }
+        }
+      }
 
-      await transaction.commit()
-      deleted += batch.length
-      console.log(`✅ Deleted ${deleted}/${oldRecords.length}`)
+      console.log(`✅ Progress: ${deleted}/${oldRecords.length}`)
     }
 
     return NextResponse.json({
