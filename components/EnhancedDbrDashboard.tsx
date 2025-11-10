@@ -34,7 +34,16 @@ export default function EnhancedDbrDashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all')
-  const [campaign, setCampaign] = useState<'October' | '10th Nov'>('October')
+  const [campaign, setCampaign] = useState<'October' | '10th Nov'>(() => {
+    // Load saved campaign from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dbr-selected-campaign')
+      if (saved === 'October' || saved === '10th Nov') {
+        return saved
+      }
+    }
+    return 'October'
+  })
   const [modalOpen, setModalOpen] = useState(false)
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -282,6 +291,13 @@ export default function EnhancedDbrDashboard() {
   useEffect(() => {
     loadUserPreferences()
   }, [loadUserPreferences])
+
+  // Save campaign selection to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dbr-selected-campaign', campaign)
+    }
+  }, [campaign])
 
   // Auto-refresh every 30 seconds for near real-time updates
   useEffect(() => {
