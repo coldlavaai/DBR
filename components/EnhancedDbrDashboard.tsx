@@ -34,6 +34,7 @@ export default function EnhancedDbrDashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all')
+  const [campaign, setCampaign] = useState<'October' | '10th Nov'>('October')
   const [modalOpen, setModalOpen] = useState(false)
   const [modalFilter, setModalFilter] = useState<{ type: string; label: string }>({ type: '', label: '' })
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -169,7 +170,7 @@ export default function EnhancedDbrDashboard() {
     try {
       // UNIFIED ENDPOINT - One API call instead of 7!
       const cacheBuster = `_=${Date.now()}`
-      const response = await fetch(`/api/dashboard?timeRange=${timeRange}&${cacheBuster}`, {
+      const response = await fetch(`/api/dashboard?timeRange=${timeRange}&campaign=${campaign}&${cacheBuster}`, {
         cache: 'no-store'
       })
 
@@ -193,7 +194,7 @@ export default function EnhancedDbrDashboard() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [timeRange])
+  }, [timeRange, campaign])
 
   // Sync from Google Sheets
   const syncFromSheets = useCallback(async () => {
@@ -672,6 +673,26 @@ export default function EnhancedDbrDashboard() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 animate-fade-in">
+        {/* Campaign Selector */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
+          <span className="text-white font-semibold text-sm sm:text-base whitespace-nowrap">Campaign:</span>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 flex-1 w-full sm:w-auto">
+            {(['October', '10th Nov'] as const).map((camp) => (
+              <button
+                key={camp}
+                onClick={() => setCampaign(camp)}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm md:text-base whitespace-nowrap ${
+                  campaign === camp
+                    ? 'bg-gradient-to-r from-orange-500 to-pink-600 text-white shadow-lg'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm active:scale-95'
+                }`}
+              >
+                {camp}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Time Range Filters */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
           <span className="text-white font-semibold text-sm sm:text-base whitespace-nowrap">Time Range:</span>

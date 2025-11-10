@@ -22,8 +22,8 @@ dotenv.config({ path: resolve(process.cwd(), '.env.local') })
 
 // Configuration
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
-const SHEET_NAME = 'October' // Which sheet tab to sync from
-const CAMPAIGN_NAME = 'October' // Campaign identifier for this batch
+const SHEET_NAME = '10th Nov' // Which sheet tab to sync from
+const CAMPAIGN_NAME = '10th Nov' // Campaign identifier for this batch
 const RANGE = `${SHEET_NAME}!A2:U` // Start from row 2 (skip headers), columns A-U, ALL rows
 
 // Sanity Client

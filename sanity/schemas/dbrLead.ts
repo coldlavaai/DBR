@@ -411,6 +411,21 @@ export const dbrLead = defineType({
       hidden: true,
       readOnly: true,
     },
+    {
+      name: 'campaign',
+      title: 'Campaign Name',
+      type: 'string',
+      description: 'Which campaign/batch this lead belongs to (e.g., "October", "10th Nov")',
+      options: {
+        list: [
+          { title: 'October Campaign', value: 'October' },
+          { title: '10th November Campaign', value: '10th Nov' },
+        ],
+        layout: 'dropdown',
+      },
+      validation: (Rule) => Rule.required(),
+      initialValue: 'October',
+    },
   ],
 
   preview: {

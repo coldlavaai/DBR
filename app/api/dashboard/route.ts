@@ -31,10 +31,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const timeRange = searchParams.get('timeRange') || 'all'
+    const campaign = searchParams.get('campaign') || 'October'
 
-    // SINGLE QUERY - Fetch ALL leads once
+    // SINGLE QUERY - Fetch ALL leads for this campaign
     const allLeads = await sanityClient.fetch(
-      `*[_type == "dbrLead"] | order(_createdAt desc) {
+      `*[_type == "dbrLead" && campaign == $campaign] | order(_createdAt desc) {
         _id,
         firstName,
         secondName,
@@ -58,7 +59,8 @@ export async function GET(request: Request) {
         archivedAt,
         _createdAt,
         enquiryDate
-      }`
+      }`,
+      { campaign }
     )
 
     // Apply time filter if needed

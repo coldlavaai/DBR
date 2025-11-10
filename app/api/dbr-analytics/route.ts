@@ -120,12 +120,13 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const timeRange = searchParams.get('timeRange') || 'all'
+    const campaign = searchParams.get('campaign') || 'October' // Default to October campaign
 
     const { currentStart, currentEnd, previousStart, previousEnd } = getDateRanges(timeRange)
 
-    // Fetch all leads for calculations
-    const allLeadsQuery = `*[_type == "dbrLead"]`
-    const allLeads = await sanityClient.fetch(allLeadsQuery)
+    // Fetch all leads for this campaign
+    const allLeadsQuery = `*[_type == "dbrLead" && campaign == $campaign]`
+    const allLeads = await sanityClient.fetch(allLeadsQuery, { campaign })
 
     // Filter leads by date ranges
     const currentLeads = timeRange === 'all'
