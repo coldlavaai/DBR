@@ -34,8 +34,9 @@ export async function GET(request: Request) {
     const campaign = searchParams.get('campaign') || 'October'
 
     // SINGLE QUERY - Fetch ALL leads for this campaign
+    // Note: Records without campaign field are treated as 'October' for backwards compatibility
     const allLeads = await sanityClient.fetch(
-      `*[_type == "dbrLead" && campaign == $campaign] | order(_createdAt desc) {
+      `*[_type == "dbrLead" && (campaign == $campaign || ($campaign == "October" && !defined(campaign)))] | order(_createdAt desc) {
         _id,
         firstName,
         secondName,

@@ -125,7 +125,8 @@ export async function GET(request: NextRequest) {
     const { currentStart, currentEnd, previousStart, previousEnd } = getDateRanges(timeRange)
 
     // Fetch all leads for this campaign
-    const allLeadsQuery = `*[_type == "dbrLead" && campaign == $campaign]`
+    // Note: Records without campaign field are treated as 'October' for backwards compatibility
+    const allLeadsQuery = `*[_type == "dbrLead" && (campaign == $campaign || ($campaign == "October" && !defined(campaign)))]`
     const allLeads = await sanityClient.fetch(allLeadsQuery, { campaign })
 
     // Filter leads by date ranges

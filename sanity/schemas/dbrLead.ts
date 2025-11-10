@@ -423,7 +423,6 @@ export const dbrLead = defineType({
         ],
         layout: 'dropdown',
       },
-      validation: (Rule) => Rule.required(),
       initialValue: 'October',
     },
   ],
