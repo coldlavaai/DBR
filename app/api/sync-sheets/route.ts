@@ -19,7 +19,21 @@ const sanityClient = createClient({
 
 // Your actual Google Sheet ID
 const SPREADSHEET_ID = '1yYcSd6r8MJodVbZSZVwY8hkijPxxuWSTfNYDWBYdW0g'
-const RANGE = 'A2:Z' // First sheet, starting from row 2 (includes Manual_Mode column V, call_booked column X, and Archived column Z)
+
+// Determine which sheet and campaign to sync based on query parameter
+function getSheetConfig(campaign: string) {
+  if (campaign === '10th Nov') {
+    return {
+      range: '10th Nov!A2:Z',
+      campaign: '10th Nov'
+    }
+  }
+  // Default to October
+  return {
+    range: 'October!A2:Z',
+    campaign: 'October'
+  }
+}
 
 // Calculate British timezone offset dynamically based on date
 // BST: Last Sunday in March (1am) to last Sunday in October (1am)
@@ -155,9 +169,16 @@ function normalizeContactStatus(status: string | undefined): string {
   return status
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log('🔄 Starting Google Sheets → Sanity sync...')
+    // Get campaign parameter from URL
+    const { searchParams } = new URL(request.url)
+    const campaignParam = searchParams.get('campaign') || 'October'
+
+    const config = getSheetConfig(campaignParam)
+
+    console.log(`🔄 Starting Google Sheets → Sanity sync for campaign: ${config.campaign}`)
+    console.log(`📊 Reading from sheet: ${config.range}`)
 
     // Initialize Google Sheets API with service account
     const sheets = getGoogleSheetsClient()
@@ -165,7 +186,7 @@ export async function GET() {
     // Fetch data from Google Sheets
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: RANGE,
+      range: config.range,
     })
 
     const rows = response.data.values || []
@@ -245,6 +266,7 @@ export async function GET() {
           secondName,
           contactStatus: normalizeContactStatus(contactStatus),
           lastSyncedAt: new Date().toISOString(),
+          campaign: config.campaign, // Tag with campaign name
         }
 
         // Optional string fields

@@ -200,7 +200,7 @@ export default function EnhancedDbrDashboard() {
   const syncFromSheets = useCallback(async () => {
     setSyncing(true)
     try {
-      const response = await fetch('/api/sync-sheets', {
+      const response = await fetch(`/api/sync-sheets?campaign=${campaign}`, {
         method: 'GET',
         cache: 'no-store'
       })
@@ -220,7 +220,7 @@ export default function EnhancedDbrDashboard() {
     } finally {
       setSyncing(false)
     }
-  }, [fetchStats])
+  }, [fetchStats, campaign])
 
   // Load user preferences
   const loadUserPreferences = useCallback(async () => {
