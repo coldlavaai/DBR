@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageSquare, Phone, Calendar, TrendingUp, ChevronDown, Loader2 } from 'lucide-react'
 
 interface ActivityItem {
@@ -21,6 +21,12 @@ export default function RecentActivity({ activities: initialActivities, onActivi
   const [activities, setActivities] = useState<ActivityItem[]>(initialActivities)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+
+  // Update activities when initialActivities changes (e.g., campaign switch)
+  useEffect(() => {
+    setActivities(initialActivities)
+    setHasMore(true) // Reset hasMore when activities change
+  }, [initialActivities])
 
   const loadMore = async () => {
     setLoading(true)
