@@ -257,7 +257,10 @@ export async function GET(request: Request) {
 
         // Normalize phone number to international format (+44...)
         const normalizedPhone = normalizePhoneNumber(phoneNumber)
-        const docId = `dbr-${normalizedPhone.replace(/\D/g, '')}`
+        // Include campaign name in document ID to allow same phone in multiple campaigns
+        const phoneDigits = normalizedPhone.replace(/\D/g, '')
+        const campaignSlug = config.campaign.replace(/\s+/g, '-')
+        const docId = `dbr-${campaignSlug}-${phoneDigits}`
 
         const leadData: any = {
           _type: 'dbrLead',
