@@ -310,6 +310,29 @@ export default function EnhancedDbrDashboard() {
     return () => clearInterval(interval)
   }, [autoRefresh, fetchStats])
 
+  // Auto-sync from Google Sheets every 2 minutes to keep Sanity up-to-date
+  useEffect(() => {
+    if (!autoRefresh) return
+
+    const syncInterval = setInterval(async () => {
+      console.log(`🔄 Auto-syncing ${campaign} campaign from Google Sheets...`)
+      try {
+        const response = await fetch(`/api/sync-sheets?campaign=${encodeURIComponent(campaign)}`, {
+          cache: 'no-store'
+        })
+        if (response.ok) {
+          const result = await response.json()
+          console.log(`✅ Auto-sync complete: ${result.processed} leads synced`)
+          // Dashboard will pick up changes on next auto-refresh (within 30s)
+        }
+      } catch (error) {
+        console.error('Auto-sync error:', error)
+      }
+    }, 120000) // 2 minutes
+
+    return () => clearInterval(syncInterval)
+  }, [autoRefresh, campaign])
+
   const openModal = (filterType: string, filterLabel: string) => {
     setModalFilter({ type: filterType, label: filterLabel })
     setModalOpen(true)
