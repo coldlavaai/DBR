@@ -426,6 +426,7 @@ export default function EnhancedDbrDashboard() {
         color: 'border-orange-500/50 hover:border-orange-400',
         onFullScreenClick: () => toggleFullscreen('hotLeads'),
         content: <UnifiedLeadSection
+          key={`hot-leads-${campaign}-${hotLeads.length}`}
           leads={hotLeads}
           icon={Flame}
           title="Hot Leads"
@@ -444,6 +445,7 @@ export default function EnhancedDbrDashboard() {
         color: 'border-yellow-500/50 hover:border-yellow-400',
         onFullScreenClick: () => toggleFullscreen('warmLeads'),
         content: <UnifiedLeadSection
+          key={`warm-leads-${campaign}-${warmLeads.length}`}
           leads={warmLeads}
           icon={TrendingUp}
           title="Warm Leads"
@@ -462,6 +464,7 @@ export default function EnhancedDbrDashboard() {
         color: 'border-purple-500/50 hover:border-purple-400',
         onFullScreenClick: () => toggleFullscreen('upcomingCalls'),
         content: <UnifiedLeadSection
+          key={`upcoming-calls-${campaign}-${callBookedLeads.length}`}
           leads={callBookedLeads}
           icon={Calendar}
           title="Upcoming Calls"
@@ -482,6 +485,7 @@ export default function EnhancedDbrDashboard() {
         color: 'border-indigo-500/50 hover:border-indigo-400',
         onFullScreenClick: () => toggleFullscreen('allBookedCalls'),
         content: <UnifiedLeadSection
+          key={`all-booked-calls-${campaign}-${allBookedCalls.length}`}
           leads={allBookedCalls}
           icon={Calendar}
           title="Booked Calls"
@@ -499,7 +503,12 @@ export default function EnhancedDbrDashboard() {
         title: 'Recent Activity',
         count: recentActivity.length,
         color: 'border-cyan-500/50 hover:border-cyan-400',
-        content: <RecentActivity activities={recentActivity} campaign={campaign} onActivityClick={handleActivityClick} />
+        content: <RecentActivity
+          key={`recent-activity-${campaign}-${recentActivity.length}`}
+          activities={recentActivity}
+          campaign={campaign}
+          onActivityClick={handleActivityClick}
+        />
       },
       leadStatusBuckets: {
         id: 'lead-status-buckets-section',
