@@ -239,30 +239,13 @@ function calculateStats(allLeads: any[], activeLeads: any[], timeRange: string) 
   const leadsWithMessages = activeLeads.filter(l => l.m1Sent || l.m2Sent || l.m3Sent).length
   const replyRate = leadsWithMessages > 0 ? (repliedLeads / leadsWithMessages) * 100 : 0
 
-  // Average response time (hours) - calculated from LAST message sent before reply
+  // Average response time (hours) - from M1 sent to first reply received
   const responseTimes = activeLeads
     .filter(l => l.m1Sent && l.replyReceived)
     .map(l => {
+      const sent = new Date(l.m1Sent).getTime()
       const replied = new Date(l.replyReceived).getTime()
-
-      // Find the last message sent before the reply
-      let lastMessageTime = new Date(l.m1Sent).getTime()
-
-      if (l.m2Sent) {
-        const m2Time = new Date(l.m2Sent).getTime()
-        if (m2Time < replied) {
-          lastMessageTime = m2Time
-        }
-      }
-
-      if (l.m3Sent) {
-        const m3Time = new Date(l.m3Sent).getTime()
-        if (m3Time < replied) {
-          lastMessageTime = m3Time
-        }
-      }
-
-      return (replied - lastMessageTime) / (1000 * 60 * 60) // hours
+      return (replied - sent) / (1000 * 60 * 60) // hours
     })
 
   const avgResponseTime = responseTimes.length > 0
