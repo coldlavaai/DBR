@@ -310,7 +310,7 @@ export default function EnhancedDbrDashboard() {
     return () => clearInterval(interval)
   }, [autoRefresh, fetchStats])
 
-  // Auto-sync from Google Sheets every 2 minutes to keep Sanity up-to-date
+  // Auto-sync from Google Sheets every 30 seconds for near real-time updates
   useEffect(() => {
     if (!autoRefresh) return
 
@@ -328,7 +328,7 @@ export default function EnhancedDbrDashboard() {
       } catch (error) {
         console.error('Auto-sync error:', error)
       }
-    }, 120000) // 2 minutes
+    }, 30000) // 30 seconds for near real-time sync
 
     return () => clearInterval(syncInterval)
   }, [autoRefresh, campaign])
